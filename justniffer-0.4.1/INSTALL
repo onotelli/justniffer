@@ -1,0 +1,13 @@
+./configure
+make
+make install
+
+NOTES:
+justniffer has been developed with following libraries and tools:
+
+boost 1.34.1      http://www.boost.org/
+pcap  0.9.8       http://www.tcpdump.org/
+gcc   4.2.4       http://gcc.gnu.org/
+bash  3.2         http://www.gnu.org/software/bash/
+tar   1.19        http://www.gnu.org/software/tar/
+patch 2.5.9       http://www.gnu.org/software/patch/

@@ -1,0 +1,30 @@
+********************************************************
+* Copyright (c) 2008-2007 Plecno s.r.l. All Rights Reserved 
+* info@plecno.com
+* via Giovio 8, 20144 Milano, Italy
+*
+* Released under the terms of the GPLv3 or later
+*
+* Author: Oreste Notelli <oreste.notelli@plecno.com>	
+********************************************************
+
+justniffer captures TCP packets, reassembles and reorders them, performs IP packet defragmentation and displays the tcp flow in the standard output. It is usefull for logging network traffic in a 'standard' (web server like) or in a customized way. It can log timings (e.g. response time), usefull for tracking network services performances (e.g. web server, application server, etc.) . 
+
+The main differences with other sniffers is:
+- capture tcp/ip traffic and handle all tcp/ip stuff (reordering, retrasmissions, defragmentation). The tcp flow adjustment is performed using linux kernel code.    
+- report timing informations. So it can be usefull for tracking network system performances
+
+Justniffer put together features of stream and packet sniffers.
+
+Oreste Notelli
+
+
+WHAT'S NEW on 0.3
+ - no default tcp filter.
+ - finer timing tracking
+ - traceability of tcp destintion and source port
+ - debian packaging
+WHAT'S NEW on 0.2
+ - No more checksum (it gives problems when sniffing some interfaces). We trust in kernel checks
+ - More keywords
+ - simple encoding for unprintable characters

@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+		<title>Justniffer</title>
+		<style>
+			#copyright
+			{
+				/*
+				position:fixed;
+				bottom:0px;
+				left:10px;
+				*/
+			}
+			#content
+			{
+				/*
+				top:120px;
+				left:10px;
+				position:fixed;
+				*/
+			}
+		</style>
+	</head>
+	<body>
+
+<a href="http://sourceforge.net"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=205860&amp;type=2" width="125" height="37" border="0" alt="SourceForge.net Logo" /></a><br/><br/>	
+<h1>Justniffer</h1>
+<div id="content"> 
+justniffer is a tcp packet sniffer. It captures TCP packets, reassembles and reorders them, performs IP 
+packet defragmentation and displays the tcp flow in the standard output. It is
+ usefull for logging network traffic in a 'standard' (web server like) or in a 
+ customized way. It can log timings (e.g. response time), usefull for tracking 
+ network services performances (e.g. web server, application server, etc.) . <br/>
+
+The main differences with other sniffers are:<br/>
+- it captures tcp/ip traffic and handle all tcp/ip stuff (reordering, 
+retrasmissions, defragmentation). The tcp flow adjustment is performed using 
+linux kernel code included in a slightly modified version of the <a href="http://libnids.sourceforge.net/">nids</a> library.<br/>
+
+- it reports timing informations. So it can be usefull for tracking network system 
+performances <br/>
+
+
+<h2>Examples</h2>
+<table>
+<tr><td>	<code>justniffer -i eth0</code><br/></td><td width="20"></td><td>produce apache like access_log</td></tr>
+<tr>	<td><code>justniffer -f /file.cap </code></td><td width="20"></td><td>read from a capture file</td></tr>
+<tr>	<td><code>justniffer -i eth0 -l "%request.line"</code></td><td width="20"></td><td>print only request line : Ex. "GET /index.html HTTP/1.1" </td></tr>
+
+<tr>	<td><code>justniffer -i eth0 -l "%request.header.host - %request.url - %response.code - %response.time"</code></td><td width="20"></td><td>print something like this:"www.plecno.com - /index.html - 200 - 0.23345" </td></tr>
+</table>
+<br/><a href="man.htm">Look at the man page</a>
+<br/><a href="http://sourceforge.net/projects/justniffer/">Project Summary</a>
+<br/><a href="http://sourceforge.net/project/showfiles.php?group_id=205860">Download</a>
+</div>
+<h2>Copyright</h2>
+<div id="copyright">
+<pre>
+Copyright (c) 2007 Plecno s.r.l. All Rights Reserved 
+info@plecno.com
+via Giovio 8, 20144 Milano, Italy
+Released under the terms of the GPLv3 or later
+Author: Oreste Notelli &lt oreste.notelli at plecno.com &gt
+
+</pre>
+</div>
+	</body>
+</html>
