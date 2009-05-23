@@ -1,0 +1,18 @@
+Source: justniffer
+Section: net
+Priority: optional
+Maintainer: Oreste Notelli <oreste.notelli@plecno.com>
+Build-Depends: patch, tar, debhelper (>= 5), autotools-dev, make, g++, libboost-iostreams-dev,  libboost-program-options-dev , libboost-regex-dev , libc6-dev , gcc (>= 4.1), libpcap0.8-dev 
+Standards-Version: 3.7.2
+
+Package: justniffer
+Homepage: http://justniffer.sourceforge.net/
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: tcp and http sniffer. It displays the tcp flow and network timings
+ tcp packet sniffer. It captures reassembles and reorders TCP packets ,
+ performs IP packet defragmentation and displays the tcp flow in the standard 
+ output. It is useful for logging network traffic in a 'standard' (web server 
+ like) or in a customized way. It can log timings (e.g. response time), useful
+ for tracking network services performances (e.g. web server, application 
+ server, etc.) 

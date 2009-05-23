@@ -1,0 +1,19 @@
+2009-05-23  Oreste Notelli  <oreste.notelli@plecno.com>
+
+      * debianization
+
+
+2009-04-21  Oreste Notelli  <oreste.notelli@plecno.com>
+
+      * script extensions option
+      
+      * grabbing http example
+
+
+2007-09-18  Oreste Notelli  <oreste.notelli@plecno.com>
+
+	* configure.in: version 1.2
+
+	* src/formatter.cpp:
+	don't print log for connection open and closed without data transfer
+
