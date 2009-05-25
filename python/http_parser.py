@@ -1,20 +1,25 @@
 #!/usr/bin/python 
 # -*- coding: utf-8 -*-
+#	Copyright (c) 2009 Plecno s.r.l. All Rights Reserved 
+#	info@plecno.com
+#	via Giovio 8, 20144 Milano, Italy
+#	Released under the terms of the GPLv3 or later
+#	Author: Oreste Notelli <oreste.notelli@plecno.com>	
+
 import sys
 import StringIO
 import string
 import httplib
 import mimetools
 import mimetypes
-import signal
 import os
 import shutil
-import commands
 import time
 import calendar
 import gzip
 import urlparse
 import cgi
+import hashlib
 from optparse import OptionParser
 
 
@@ -98,10 +103,7 @@ def make_path(filepath):
     recursive_mkdir(d)
 
 def recursive_mkdir(path):
-  cmd = "mkdir -p \""+path+"\""
-  s, o=  commands.getstatusoutput(cmd)
-  if (s != 0):
-    raise Exception(" mkdir  error: "+ cmd + " - "+ o)
+  os.makedirs(path)
 
 def guess_extension(content_type):
   try:
@@ -118,6 +120,10 @@ def guess_all_extensions(content_type):
   return l
 
 admittable = string.ascii_letters + string.digits +"_.-=[](),:;{}"
+
+def hash_function(value):
+  sha = hashlib.sha1(value)
+  return sha.hexdigest()
 
 def encode_param(param):
   to_hash = False
@@ -160,9 +166,9 @@ def encode_url(url):
     r = url_path
 
   if (len (r) > 200):
-    r = r[:190] + "_"+ str(hash(url))
+    r = r[:190] + "_"+ str(hash_function(url))
   elif (to_hash):
-      r+="_"+ str(hash(url))
+      r+="_"+ str(hash_function(url))
   return r
 
 def make_filename(default_hostname, request, response):

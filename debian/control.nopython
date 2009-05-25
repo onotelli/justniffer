@@ -8,7 +8,7 @@ Standards-Version: 3.7.2
 Package: justniffer
 Homepage: http://justniffer.sourceforge.net/
 Architecture: any
-Depends: ${shlibs:Depends}, python (>=2.6)
+Depends: ${shlibs:Depends}
 Description: tcp and http sniffer. It displays the tcp flow and network timings
  tcp packet sniffer. It captures reassembles and reorders TCP packets ,
  performs IP packet defragmentation and displays the tcp flow in a customizable

@@ -8,11 +8,11 @@
 * Author: Oreste Notelli <oreste.notelli@plecno.com>	
 ********************************************************
 
-justniffer captures TCP packets, reassembles and reorders them, performs IP packet defragmentation and displays the tcp flow in the standard output. It is usefull for logging network traffic in a 'standard' (web server like) or in a customized way. It can log timings (e.g. response time), usefull for tracking network services performances (e.g. web server, application server, etc.) . 
+justniffer captures TCP packets, reassembles and reorders them, performs IP packet defragmentation and displays the tcp flow in a customizable way. It is useful for logging network traffic in a 'standard' (web server like) or in a customized way. It can log timings (e.g. response time), useful for tracking network services performances (e.g. web server, application server, etc.) . 
 
-The main differences with other sniffers is:
+Main differences from other sniffers:
 - capture tcp/ip traffic and handle all tcp/ip stuff (reordering, retrasmissions, defragmentation). The tcp flow adjustment is performed using linux kernel code.    
-- report timing informations. So it can be usefull for tracking network system performances
+- report timing informations. So it can be useful for tracking network system performances
 
 Justniffer put together features of stream and packet sniffers.
 

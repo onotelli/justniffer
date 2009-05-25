@@ -1,0 +1,18 @@
+#!/usr/bin/python 
+# -*- coding: utf-8 -*-
+
+import sys
+
+in_filename	= sys.argv[1]
+out_filename	= sys.argv[2]
+replace_dir	= sys.argv[3]
+
+infile = open(in_filename)
+c = infile.read().replace("019dacaa-cf19-4082-b5a3-4b8d5b85efe2", replace_dir)
+infile.close()
+
+out_file = open(out_filename, "w")
+out_file.write(c)
+out_file.close()
+
+print "******** "+ out_filename +" created ********"

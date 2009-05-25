@@ -104,4 +104,14 @@ AC_CHECK_FILE(lib/$LIBNIDS/README.original, ,
 
 AC_CONFIG_SUBDIRS([lib/libnids-1.21])
 	
-AC_OUTPUT(Makefile src/Makefile)
+AX_PYTHON
+PYTHONCODEDIR=${datarootdir}/justniffer/scripts
+AC_SUBST(PYTHONCODEDIR)
+if test "$AX_PYTHON_ENABLED" == "enabled"; then
+  PYTHONSUBDIR="python"
+fi
+
+AC_SUBST(PYTHONSUBDIR)
+
+	
+AC_OUTPUT(Makefile src/Makefile python/Makefile )

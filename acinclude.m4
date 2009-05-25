@@ -415,3 +415,20 @@ AC_DEFUN([AX_BOOST_IOSTREAMS],
         fi
 ])
 
+AC_DEFUN([AX_PYTHON],
+[
+        AC_ARG_ENABLE(python, AS_HELP_STRING([--enable-python],[install python-scripts (default is yes)]) ,
+        [
+	 if test "$enableval" == "yes"; then
+	    AX_PYTHON_ENABLED="enabled"
+	 else
+	    AX_PYTHON_ENABLED="disabled"
+	 fi
+	],
+	[
+	  AX_PYTHON_ENABLED="enabled"	
+	])
+	if test "$AX_PYTHON_ENABLED" == "enabled";then
+	  AM_PATH_PYTHON(2.6, , [AC_MSG_NOTICE([your need python >=2.6, disabling python feature]) ; AX_PYTHON_ENABLED="disabled"])
+	fi
+])
