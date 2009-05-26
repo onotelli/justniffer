@@ -21,6 +21,7 @@ import urlparse
 import cgi
 import hashlib
 from optparse import OptionParser
+import common
 
 
 def list_to_str(list_):
@@ -88,6 +89,7 @@ class proxy(object):
 extensions= {\
 "text/plain":".txt",
 "text/javascript": ".js",
+"image/jpeg": ".jpg",
 "application/x-www-form-urlencoded": ".txt"
 }
 
@@ -121,100 +123,11 @@ def guess_all_extensions(content_type):
 
 admittable = string.ascii_letters + string.digits +"_.-=[](),:;{}"
 
-def hash_function(value):
-  sha = hashlib.sha1(value)
-  return sha.hexdigest()
-
-def encode_param(param):
-  to_hash = False
-  r =""
-  for c in param:
-    if c  in admittable:
-      r+=c
-    else:
-      r+="_"
-      to_hash = True
-  return r, to_hash
-
-
-def encode_query(query):
-  d = parsed_query = cgi.parse_qs(query)
-  first = True
-  r_tohash = False
-  s =""
-  for key, value in d.items():
-    for elem in value:
-      if not (first):
-	s += "&"
-      enc_param, to_hash  = encode_param(key)
-      r_tohash |= to_hash
-      enc_val , to_hash = encode_param(elem)
-      r_tohash |= to_hash
-      s += enc_param + "=" + enc_val
-      first = False
-  return s, r_tohash
-
-def encode_url(url):
-  p = urlparse.urlparse(url)
-  url_path = p[2].lstrip("/")
-  query = p[4]
-  encoded_query, to_hash= encode_query(query)
-  
-  if len(encoded_query) > 0:
-    r = url_path + "?"+ encoded_query
-  else:
-    r = url_path
-
-  if (len (r) > 200):
-    r = r[:190] + "_"+ str(hash_function(url))
-  elif (to_hash):
-      r+="_"+ str(hash_function(url))
-  return r
-
-def make_filename(default_hostname, request, response):
-  hostname = request.get_header("host")
-  if (hostname == None):
-    hostname = default_hostname
-  encoded_url = encode_url (request.get_url())
-  filename = os.path.join(hostname, encoded_url)
-  content_type ="text/plain"
-  try:
-    content_type = response.get_header("content-type").split(";")[0]
-  except:
-    pass
-  extensions = guess_all_extensions(content_type)
-  coherent_extension = False
-  for extension in extensions:
-    if (filename.endswith(extension)):
-      coherent_extension = True
-      break;  
-  if (not (coherent_extension )):
-    ext = guess_extension(content_type)
-    if (ext != None):
-      filename +="/index" + ext
-  return os.path.normpath(filename)
-
 def gzip_handler(body):
   content = gzip.GzipFile(fileobj=StringIO.StringIO(body)).read()
   return content
 
 HTTPMessage_handlers={"gzip": gzip_handler}
-
-
-def rebuild_path(path):
-  """ rebuild the path looking if part of it is an existing file
-  """
-  if (path == "/"):
-    return
-  isFile =  os.path.isfile(path)
-  if (isFile):
-    tmp_target = os.tmpnam()
-    ext = os.path.splitext(path)[-1]
-    shutil.move(path, tmp_target)
-    recursive_mkdir(path)
-    shutil.move(tmp_target, os.path.join (path, "index"+ext  ))
-  parent , child = os.path.split(path)
-  rebuild_path(parent)
 
 class HTTPMessage:
   def __init__(self, first_line, mimeMessage, body):
@@ -345,45 +258,11 @@ def find_until(in_, is_to_break):
     line = readline(in_)
   return c
 
-last_mod_formats = ["%a, %d %b %Y %H:%M:%S %Z", "%a, %d %b %Y %H:%M:%S +0000"]
-"""Mon, 20 Apr 2009 10:22:50 GMT"""
-"""Thu, 02 Apr 2009 23:56:11 +0000"""
-
-def timestamp_from_last_modified(last_modified):
-  for last_mod_format in last_mod_formats:
-    try:
-      return calendar.timegm(time.strptime( last_modified, last_mod_format))
-    except ValueError:
-      pass
-  return time.time()
-
-def is_file_to_refresh(filepath, last_modified):
-  ft = os.path.getmtime(filepath)
-  lt = timestamp_from_last_modified(last_modified)
-  return  ft < lt
 
 def save_content_to_file(base_dir, request, response):
-  filename = make_filename("default", request, response)
-  filepath = os.path.abspath(os.path.realpath(os.path.join(base_dir, filename)))
-  abs_base = os.path.abspath(base_dir)
-  if (not (filepath.startswith(abs_base))):
-    raise Exception(filepath + " is not subdir of "+ abs_base)
-  last_modified = response.get_header("Last-Modified")
-  if os.path.isfile(filepath):
-    if (last_modified != None):
-      if not (is_file_to_refresh(filepath, last_modified)):
-	return 
-  make_path(filepath)
-  content = response.get_decoded_body()
-  out = open(filepath, "wb")
-  try:
-    out.write(content)
-  finally:
-    out.close()
-    if (last_modified != None):
-      mtstmp = timestamp_from_last_modified(last_modified)
-      os.utime(filepath, (mtstmp, mtstmp))
-  
+  #be = common.file_system_back_end(base_dir)
+  be = common.flat_files_back_end(base_dir)
+  be.save_response(request, response)
 
 def print_info(in_, base_dir):
   requests , response_line= get_requests(in_)
@@ -391,17 +270,23 @@ def print_info(in_, base_dir):
     responses = get_responses(in_, response_line)
   index =0
   for request in requests:
-    method, url, rest = request.first_line.split(None, 2)
-    host = request.get_header("host")
-    response = responses[index] 
-    response_code = response.first_line.split()[1]
-    if (response_code == "200"):
-      print ("---------------------------------------------------------")
-      print "saving file.. ",make_filename("default", request, response)
-      print "from ",method, host, url 
-      print "of type '" +str( response.get_header("content-type"))+"'"
-      save_content_to_file(base_dir, request, response)
-    index +=1
+    try:
+      method, url, rest = request.first_line.split(None, 2)
+      host = request.get_header("host")
+      response = responses[index] 
+      response_code = response.first_line.split()[1]
+      if (response_code == "200"):
+	print ("---------------------------------------------------------")
+	#print "saving file.. ",make_filename("default", request, response)
+	print "from ",method, host, url 
+	print "of type '" +str( response.get_header("content-type"))+"'"
+	save_content_to_file(base_dir, request, response)
+      index +=1
+    except IndexError: 
+	  print ("---------------------------------------------------------")
+	  print "from ",method, host, url 
+	  print "empty response (truncated connection)"
+    
 
 in_ =proxy(sys.stdin)
 
