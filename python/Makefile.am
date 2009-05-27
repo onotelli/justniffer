@@ -1,5 +1,5 @@
 justnifferpythoncodedir = $(PYTHONCODEDIR)
-justnifferpythoncode_DATA = http_parser.py
+justnifferpythoncode_DATA = http_parser.py common.py
 
 
 
