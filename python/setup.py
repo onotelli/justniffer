@@ -15,7 +15,11 @@ e = commands.getstatusoutput
 s, p = e ("which justniffer")
 if (s == 0):
   scripts_path = p.replace("bin/justniffer", "share/justniffer/scripts")
-  os.makedirs(scripts_path)
+  try:
+    os.makedirs(scripts_path)
+  except OSError, ex:
+    if (ex.errno ==17):
+      pass    
   e ("chmod a+x http_parser.py") 
   shutil.copy("common.py",scripts_path)
   shutil.copy("http_parser.py",scripts_path)
@@ -25,5 +29,5 @@ if (s == 0):
   e ("chmod a+x justniffer-grab-http-traffic") 
   shutil.copy("justniffer-grab-http-traffic", bin_path)
 
-  print "INSTALLAZIONE COMPLETATA"
+  print "INSTALLATION COMPLETED"
 
