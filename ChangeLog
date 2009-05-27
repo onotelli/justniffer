@@ -1,9 +1,12 @@
-2009-05-23  Oreste Notelli  <oreste.notelli@plecno.com>
+2009-05-27  Oreste Notelli
+
+      * added new extension scripts for saving http captured contents
+
+2009-05-23  Oreste Notelli 
 
       * debianization
 
-
-2009-04-21  Oreste Notelli  <oreste.notelli@plecno.com>
+2009-04-21  Oreste Notelli 
 
       * script extensions option
       
