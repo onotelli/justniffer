@@ -47,7 +47,14 @@ def check_user(opt, options_to_pass):
     uid = os.getuid()
     name = pwd.getpwuid(uid)[0]
   else:
-    uid = pwd.getpwnam(opt)[2]
+    try:
+      uid = pwd.getpwnam(opt)[2]
+    except KeyError:
+      print "ERROR: user "+opt+ " not found"
+      print
+      parser.print_help()
+      sys.exit(-1)
+      
   if (uid== 0):
     print
     print "ERROR: you must specify a no root user (-U <username>)"
