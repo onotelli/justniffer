@@ -8,18 +8,10 @@
 
 import sys
 import StringIO
-import string
 import httplib
 import mimetools
-import mimetypes
 import os
-import shutil
-import time
-import calendar
 import gzip
-import urlparse
-import cgi
-import hashlib
 from optparse import OptionParser
 import common
 

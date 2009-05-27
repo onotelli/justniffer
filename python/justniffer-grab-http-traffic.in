@@ -10,6 +10,7 @@ import subprocess
 import sys
 from optparse import OptionParser
 import pwd
+import os
 
 default_parser_script="019dacaa-cf19-4082-b5a3-4b8d5b85efe2/http_parser.py"
 
@@ -17,15 +18,15 @@ parser = OptionParser(version="%prog 0.1")
 parser.add_option("-d", "--directory", dest="directory",
                   help="MANDATORY: directory where to save files")
 parser.add_option("-p", "--packet-filter", dest="packet_filter",
-                  help="	packet filter (tcpdump filter syntax)", default="\"port 80\"")
+                  help="packet filter (tcpdump filter syntax), default ='port 80'", default="\"port 80\"")
 parser.add_option("-U", "--user", dest="user",
-                  help="user to impersonate when saving files")
+                  help="user to impersonate when saving files, cannot be root user")
 parser.add_option("-i", "--interface", dest="interface",
                   help="network interface to listen on (e.g. eth0, en1, etc.)")
 parser.add_option("-f", "--filecap", dest="filecap",
                   help="input file in 'tcpdump capture file format'")
 parser.add_option("-P", "--parser_script", dest="parser_script", default =default_parser_script,
-                  help="parser script to execute")
+                  help="parser script to execute, default is 019dacaa-cf19-4082-b5a3-4b8d5b85efe2/http_parser.py")
 
 (options, args) = parser.parse_args()
 
