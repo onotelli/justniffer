@@ -86,43 +86,6 @@ class proxy(object):
     self.c+=res
     return res
 
-extensions= {\
-"text/plain":".txt",
-"text/javascript": ".js",
-"image/jpeg": ".jpg",
-"application/x-www-form-urlencoded": ".txt"
-}
-
-def make_path(filepath):
-  if (os.path.isfile(filepath)):
-    return
-  if (os.path.isdir(filepath)):
-    shutil.rmtree(filepath)
-    return
-  rebuild_path(filepath)
-  d, f = os.path.split(filepath)
-  if (not (os.path.exists(d))):
-    recursive_mkdir(d)
-
-def recursive_mkdir(path):
-  os.makedirs(path)
-
-def guess_extension(content_type):
-  try:
-    return extensions[content_type]
-  except:
-    return mimetypes.guess_extension(content_type)
-
-def guess_all_extensions(content_type):
-  l = mimetypes.guess_all_extensions(content_type)
-  try:
-    l.append(extensions[content_type])
-  except:
-    pass
-  return l
-
-admittable = string.ascii_letters + string.digits +"_.-=[](),:;{}"
-
 def gzip_handler(body):
   content = gzip.GzipFile(fileobj=StringIO.StringIO(body)).read()
   return content
