@@ -1,5 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+#	Copyright (c) 2009 Plecno s.r.l. All Rights Reserved 
+#	info@plecno.com
+#	via Giovio 8, 20144 Milano, Italy
+#	Released under the terms of the GPLv3 or later
+#	Author: Oreste Notelli <oreste.notelli@plecno.com>	
 
 import SimpleHTTPServer
 import BaseHTTPServer
@@ -14,11 +19,17 @@ import mimetypes
 # minimal web server.  serves files relative to the
 # current directory.
 
-def is_image(path):
+def is_of_main_content_type(path, content_type):
   try:
-    return mimetypes.guess_type(path)[0].split("/")[0].startswith("image")    
+    return mimetypes.guess_type(path)[0].split("/")[0].startswith(content_type)    
   except:
     return False
+
+def is_image(path):
+  return is_of_main_content_type(path, "image")
+
+def is_text(path):
+  return is_of_main_content_type(path, "text")
 
 docuemnt_root = "/tmp/pippo/" 
 
@@ -69,6 +80,16 @@ class img_link:
     linkname = self.name
     linkname = urllib.quote(linkname)
     return '<li><img src="%s"></img>\n' % (linkname)
+
+class text_link:
+  def __init__(self, path, name):
+    self.path = path
+    self.name = name
+  def get_html(self):
+    linkname = self.name
+    linkname = urllib.quote(linkname)
+    return '<li><iframe src="%s"></iframe>\n' % (linkname)
+
 
 class MyHTTPRequestHandler (SimpleHTTPServer.SimpleHTTPRequestHandler):
   def __init__(self, *args, **kargs):
@@ -127,8 +148,11 @@ class MyHTTPRequestHandler (SimpleHTTPServer.SimpleHTTPRequestHandler):
 		l = dir_link(path, name)
 	    if os.path.islink(fullname):
 		l = link_link(path, name)
-	    if (os.path.isfile(fullname) and (is_image(fullname))):
+	    if (os.path.isfile(fullname)):
+	      if (is_image(fullname)):
 		l = img_link(path, name)
+	      elif (is_text(fullname)):
+		l = text_link(path, name)
 		# Note: a link to a directory displays with @ and links with /
 	    if (path.rstrip("/") == docuemnt_root.rstrip("/")):
 		l = host_link(path, name)
