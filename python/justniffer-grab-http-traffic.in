@@ -9,6 +9,7 @@
 import subprocess
 import sys
 from optparse import OptionParser
+import pwd
 
 default_parser_script="019dacaa-cf19-4082-b5a3-4b8d5b85efe2/http_parser.py"
 
@@ -38,11 +39,27 @@ def check(opt, str_opt, options_to_pass):
   if (opt):
     options_to_pass.append(str_opt)
     options_to_pass.append(opt)
-  
-check(options.user, "-U", options_to_pass)
+
+def check_user(opt, options_to_pass):
+  name = opt
+  if (opt == None) :
+    uid = os.getuid()
+    name = pwd.getpwuid(uid)[0]
+  else:
+    uid = pwd.getpwnam(opt)[2]
+  if (uid== 0):
+    print
+    print "ERROR: you must specify a no root user (-U <username>)"
+    print
+    parser.print_help()
+    sys.exit(-1)
+  check(name, "-U", options_to_pass)
+    
+    
 check(options.interface, "-i", options_to_pass)
 check(options.filecap, "-f", options_to_pass)
 check(options.packet_filter, "-p", options_to_pass)
+check_user(options.user, options_to_pass)
 options_to_pass.append("-r")
 options_to_pass.append("-e")
 options_to_pass.append('"'+options.parser_script+' -d '+options.directory+'"')
