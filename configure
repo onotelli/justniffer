@@ -7853,12 +7853,12 @@ fi
 
         if test -n "$PYTHON"; then
       # If the user set $PYTHON, use it and don't search something else.
-      { $as_echo "$as_me:$LINENO: checking whether $PYTHON version >= 2.6" >&5
-$as_echo_n "checking whether $PYTHON version >= 2.6... " >&6; }
+      { $as_echo "$as_me:$LINENO: checking whether $PYTHON version >= 2.4" >&5
+$as_echo_n "checking whether $PYTHON version >= 2.4... " >&6; }
       prog="import sys, string
 # split strings by '.' and convert to numeric.  Append some zeros
 # because we need at least 4 digits for the hex conversion.
-minver = map(int, string.split('2.6', '.')) + [0, 0, 0]
+minver = map(int, string.split('2.4', '.')) + [0, 0, 0]
 minverhex = 0
 for i in xrange(0, 4): minverhex = (minverhex << 8) + minver[i]
 sys.exit(sys.hexversion < minverhex)"
@@ -7879,8 +7879,8 @@ fi
     else
       # Otherwise, try each interpreter until we find one that satisfies
       # VERSION.
-      { $as_echo "$as_me:$LINENO: checking for a Python interpreter with version >= 2.6" >&5
-$as_echo_n "checking for a Python interpreter with version >= 2.6... " >&6; }
+      { $as_echo "$as_me:$LINENO: checking for a Python interpreter with version >= 2.4" >&5
+$as_echo_n "checking for a Python interpreter with version >= 2.4... " >&6; }
 if test "${am_cv_pathless_PYTHON+set}" = set; then
   $as_echo_n "(cached) " >&6
 else
@@ -7890,7 +7890,7 @@ else
 	  prog="import sys, string
 # split strings by '.' and convert to numeric.  Append some zeros
 # because we need at least 4 digits for the hex conversion.
-minver = map(int, string.split('2.6', '.')) + [0, 0, 0]
+minver = map(int, string.split('2.4', '.')) + [0, 0, 0]
 minverhex = 0
 for i in xrange(0, 4): minverhex = (minverhex << 8) + minver[i]
 sys.exit(sys.hexversion < minverhex)"
@@ -7956,8 +7956,8 @@ fi
 
 
   if test "$PYTHON" = :; then
-      { $as_echo "$as_me:$LINENO: your need python >=2.6, disabling python feature" >&5
-$as_echo "$as_me: your need python >=2.6, disabling python feature" >&6;} ; AX_PYTHON_ENABLED="disabled"
+      { $as_echo "$as_me:$LINENO: your need python >=2.4, disabling python feature" >&5
+$as_echo "$as_me: your need python >=2.4, disabling python feature" >&6;} ; AX_PYTHON_ENABLED="disabled"
   else
 
 
