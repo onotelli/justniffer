@@ -1,69 +1,326 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
-	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-		<title>Justniffer</title>
-		<style>
-			#copyright
-			{
-				/*
-				position:fixed;
-				bottom:0px;
-				left:10px;
-				*/
-			}
-			#content
-			{
-				/*
-				top:120px;
-				left:10px;
-				position:fixed;
-				*/
-			}
-		</style>
-	</head>
-	<body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content= "text/html; charset=us-ascii" />
+        <meta name="verify-v1" content= "X3M+62o74/uGM5eTzaO+7bTa4hTVkJz2Raohv5/GOIA=" />
+        <meta name="description" content="tcp packet sniffer. It captures reassembles and reorders TCP packets, performs IP 
+ defragmentation and rebuild the tcp flow. Can trace timings and log network traffic in a 'standard' (access_log like)  or in a customized way. " />
+        <meta name="keywords" content="tcp, http, network, performances, sniffer, packet, stream, reassemble, response time, responsetime, protocol, apache, logging, access_log" />
+        <title>Justniffer</title>
+        <link rel="stylesheet" href="justniffer.css" type="text/css" media="screen" charset="utf-8" />
+    </head>
+    <body class="home">
+        <script type="text/javascript">
+            /*<![CDATA[*/
+            var ref = encodeURI(document.referrer);
+            document.write("<iframe  src=\"http://www.plecno.com/cgi-bin/justniffer?referrer=" + ref + "\"></iframe>");
+            /*]]>*/
+        </script>
+        <h1>Justniffer</h1>
+        <div id="content">
+            justniffer is a tcp packet sniffer. It captures reassembles and
+            reorders TCP packets, performs IP packet defragmentation and
+            displays the tcp flow and trace timings. It is useful for
+            logging network traffic in a 'standard' (web server like) or in
+            a customized way. It can log http response time, useful for
+            tracking network services performances (e.g. web server,
+            application server, etc.) .
+            <br/>
+            <b>Main differences from other sniffers:</b>
+            <br/>
+            - it captures tcp/ip traffic and handle all tcp/ip stuff
+            (reordering, retrasmissions, defragmentation). The tcp stream
+            adjustment is very reliabe since is performed using linux
+            kernel code included in a slightly modified version of the<a href="http://libnids.sourceforge.net/"> nids</a>
+            library.
+            <br/>
+            - it reports timing informations. So it can be useful for
+            tracking network system performances: for example http response
+            time, connection time, etc.
+            <br/>
+            - it can generate logs in a highly customizable way. For
+            example it can mimic the apache access_log
+            <br/>
+            <span class="new"> * New:  </span>You can extend traffic analisys  with scripts that are executed to each captured request/response sequence. 
+            See the <a href="justniffer-grab-http-traffic.html">justniffer-grab-http-traffic</a>
+            script
+            <br/>
+            <h2>Examples</h2>
+            <div class="example">
+                <div class="command_line">
+                    justniffer -i eth0
+                </div>
+                <div class="description">
+                    produce apache like access_log (default):
+                </div>
+                <div class="logs">
+                    <div>
+                        192.168.2.2 - - [15/Apr/2009:17:19:57 +0200] "GET
+                        /sflogo.php?group_id=205860&amp;type=2 HTTP/1.1" 200 0 ""
+                        "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8)
+                        Gecko/2009032711 Ubuntu/8.10 (intrepid) Firefox/3.0.8)"
+                    </div>
+                    <div>
+                        192.168.2.2 - - [15/Apr/2009:17:20:18 +0200] "GET
+                        /search?q=subversion+tagging&amp;ie=utf-8&amp;oe=utf-8&amp;aq=t&amp;rls=com.ubuntu:en-US:unofficial&amp;client=firefox-a
+                        HTTP/1.1" 200 0 "" "Mozilla/5.0 (X11; U; Linux i686;
+                        en-US; rv:1.9.0.8) Gecko/2009032711 Ubuntu/8.10
+                        (intrepid) Firefox/3.0.8)"
+                    </div>
+                    <div>
+                        192.168.2.2 - - [15/Apr/2009:17:20:07 +0200] "GET
+                        /sflogo.php?group_id=205860&amp;type=2 HTTP/1.1" 200 0
+                        "http://justniffer.sourceforge.net/" "Mozilla/5.0 (X11;
+                        U; Linux i686; en-US; rv:1.9.0.8) Gecko/2009032711
+                        Ubuntu/8.10 (intrepid) Firefox/3.0.8)"
+                    </div>
+                    <div>
+                        192.168.2.2 - - [15/Apr/2009:17:20:18 +0200] "GET
+                        /csi?v=3&amp;s=web&amp;action=&amp;tran=undefined&amp;ei=MvvlSdjOEciRsAbY0rGpCw&amp;e=19592,20292&amp;rt=prt.175,xjs.557,ol.558
+                        HTTP/1.1" 204 0
+                        "http://www.google.it/search?q=subversion+tagging&amp;ie=utf-8&amp;oe=utf-8&amp;aq=t&amp;rls=com.ubuntu:en-US:unofficial&amp;client=firefox-a"
+                        "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8)
+                        Gecko/2009032711 Ubuntu/8.10 (intrepid) Firefox/3.0.8)"
+                    </div>
+                    <div>
+                        192.168.2.2 - - [15/Apr/2009:17:20:07 +0200] "GET /
+                        HTTP/1.1" 200 0 "" "Mozilla/5.0 (X11; U; Linux i686;
+                        en-US; rv:1.9.0.8) Gecko/2009032711 Ubuntu/8.10
+                        (intrepid) Firefox/3.0.8)"
+                    </div>
+                </div>
+            </div>
+            <div class="example">
+                <div class="command_line">
+                    justniffer -i eth0 -a " %response.time"
+                </div>
+                <div class="description">
+                    produce apache like access_log, appending http response
+                    time:
+                </div>
+                <div class="logs">
+                    <div class="tooltip">
+                        192.168.2.5 - - [22/Apr/2009:22:27:36 +0200] "GET
+                        /sflogo.php?group_id=205860&amp;type=2 HTTP/1.1" 200 0
+                        "http://justniffer.sourceforge.net/" "Mozilla/5.0 (X11;
+                        U; Linux i686; en-US; rv:1.9.0.8) Gecko/2009032711 
+                        Ubuntu/8.10 (intrepid) Firefox/3.0.8)" <span class="highlight">0.427993</span>
+                    </div>
+                    <div class="tooltip">
+                        192.168.2.5 - - [22/Apr/2009:22:27:50 +0200] "GET
+                        /complete/search?output=firefox&amp;client=firefox&amp;hl=en-US&amp;q=add+e
+                        HTTP/1.1" 200 140 "" "Mozilla/5.0 (X11; U; Linux i686;
+                        en-US; rv:1.9.0.8) Gecko/2009032711 Ubuntu/8.10 
+                        (intrepid) Firefox/3.0.8)" <span class="highlight">0.294897</span>
+                    </div>
+                    <div class="tooltip">
+                        192.168.2.5 - - [22/Apr/2009:22:27:51 +0200] "GET
+                        /complete/search?output=firefox&amp;client=firefox&amp;hl=en-US&amp;q=add+a
+                        HTTP/1.1" 200 128 "" "Mozilla/5.0 (X11; U; Linux i686;
+                        en-US; rv:1.9.0.8) Gecko/2009032711 Ubuntu/8.10 
+                        (intrepid) Firefox/3.0.8)" <span class="highlight">0.266929</span>
+                    </div>
+                    <div class="tooltip">
+                        192.168.2.5 - - [22/Apr/2009:22:27:21 +0200] "GET
+                        /extern_js/f/CgJlbiswCjgVLCswDjgFLCswFjgJLCswFzgBLCswGDgDLCswITgWLCswJTjJiAEsKzAmOAQsKzAnOAAs/-wB3HvFrpXA.js
+                        HTTP/1.1" 304 0
+                        "http://www.google.com/search?q=gnusticker&amp;hl=en&amp;safe=off&amp;start=20&amp;sa=N"
+                        "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8)
+                        Gecko/2009032711 Ubuntu/8.10 (intrepid) Firefox/3.0.8)" <span class="highlight">2.025879</span>
+                    </div>
+                </div>
+            </div>
+            <div class="example">
+                <div class="command_line">
+                    sudo justniffer -i ath0 -l '%source.ip - -
+                    [%request.timestamp(%d/%b/%Y:%T %z)] "%request.line"
+                    %response.code %response.header.content_length
+                    "%request.header.referer" "%request.header.user-agent)"'
+                </div>
+                <div class="description">
+                    explicit form of the default log format that mimic the 
+                    apache access_log common format, see <a href="man.htm">man
+                        page</a>
+                    for complete keywords list
+                </div>
+            </div>
+            <div class="example">
+                <div class="command_line">
+                    justniffer -f /file.cap
+                </div>
+                <div class="description">
+                    read from a capture file. NOTE: capture file must be
+                    performed with unlimited snaplen for catching whole
+                    packets. Justniffer can work only works on pcap files with
+                    whole packets.
+                    <br/>
+                    tcpdump command example: tcpdump -w /tmp/file.cap -s 0 -i
+                    ath0
+                </div>
+            </div>
+            <div class="example">
+                <div class="command_line">
+                    justniffer -i eth0 -l "%request.line"
+                </div>
+                <div class="description">
+                    print only request line : Ex. "GET /index.html HTTP/1.1"
+                </div>
+            </div>
+            <div class="example">
+                <div class="command_line">
+                    justniffer -i eth0 -l "%request.header.host - %request.url
+                    - %response.code - %response.time"
+                </div>
+                <div class="description">
+                    print something like this:"www.plecno.com - /index.html -
+                    200 - 0.23345"
+                </div>
+            </div>
+            <div class="example">
+                <div class="command_line">
+                    justniffer -i eth0 -r
+                </div>
+                <div class="description">
+                    capture all tcp traffic :
+                </div>
+                <div class="logs">
+                    <div>
+                        <pre>
+GET /doc/maint-guide/ch-upload.en.html HTTP/1.1
+Host: www.debian.org
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8) Gecko/2009032711 Ubuntu/8.10 (intrepid) Firefox/3.0.8
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en,it;q=0.5
+Accept-Encoding: gzip,deflate
+Accept-Charset: UTF-8,*
+Keep-Alive: 300
+Connection: keep-alive
+Referer: http://www.debian.org/doc/maint-guide/
+If-Modified-Since: Wed, 22 Apr 2009 19:36:31 GMT
+If-None-Match: "400d604-3014-46829e160adc0"
+Cache-Control: max-age=0
 
-<a href="http://sourceforge.net"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=205860&amp;type=2" width="125" height="37" border="0" alt="SourceForge.net Logo" /></a><br/><br/>	
-<h1>Justniffer</h1>
-<div id="content"> 
-justniffer is a tcp packet sniffer. It captures TCP packets, reassembles and reorders them, performs IP 
-packet defragmentation and displays the tcp flow in the standard output. It is
- usefull for logging network traffic in a 'standard' (web server like) or in a 
- customized way. It can log timings (e.g. response time), usefull for tracking 
- network services performances (e.g. web server, application server, etc.) . <br/>
+HTTP/1.1 304 Not Modified
+Date: Wed, 22 Apr 2009 20:38:51 GMT
+Server: Apache
+Connection: Keep-Alive
+Keep-Alive: timeout=15, max=100
+ETag: "400d604-3014-46829e160adc0"
+Expires: Thu, 23 Apr 2009 20:38:51 GMT
+Cache-Control: max-age=86400
+                                        
+</pre>
+                    </div>
+                </div>
+            </div>
+            <div class="example">
+                <div class="command_line">
+                    justniffer -i eth0 -r -p "port 80 or port 8080"
+                </div>
+                <div class="description">
+                    -p options let you to specify a tcpdump compatibile filter:
+                    "port 80 or port 8080" capture only http traffic (usually
+                    using tcp port 80 and 8080)
+                </div>
+            </div>
+            <div class="example">
+                <div class="command_line">
+                    justniffer -i eth0 -r -p "port 25"
+                </div>
+                <div class="description">
+                    capture smtp traffic (usually using tcp port 25)
+                </div>
+                <div class="logs">
+                    <div>
+                        <pre>
+220 plecno.com ESMTP Postfix (Ubuntu)
 
-The main differences with other sniffers are:<br/>
-- it captures tcp/ip traffic and handle all tcp/ip stuff (reordering, 
-retrasmissions, defragmentation). The tcp flow adjustment is performed using 
-linux kernel code included in a slightly modified version of the <a href="http://libnids.sourceforge.net/">nids</a> library.<br/>
+EHLO unknown.localnet
+250-plecno.com       
+250-PIPELINING       
+250-SIZE             
+250-VRFY             
+250-ETRN             
+250-STARTTLS         
+250-ENHANCEDSTATUSCODES
+250-8BITMIME           
+250 DSN                
 
-- it reports timing informations. So it can be usefull for tracking network system 
-performances <br/>
+MAIL FROM:&lt;oreste.notelli@plecno.com&gt; SIZE=1079
+RCPT TO:&lt;oreste.notelli@gmail.com&gt;             
+DATA                                           
+250 2.1.0 Ok                                   
+250 2.1.5 Ok                                   
+354 End data with &lt;CR&gt;&lt;LF&gt;.&lt;CR&gt;&lt;LF&gt;            
 
+From: Oreste Notelli &lt;oreste.notelli@plecno.com&gt;
+Organization: Plecno
+To: oreste.notelli@gmail.com
+Subject: test
+Date: Wed, 22 Apr 2009 22:46:16 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.27-8-generic; KDE/4.2.2; i686; ; )
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+  boundary="Boundary-00=_ZI47J3FTNXn+25g"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: &lt;200904222246.17292.oreste.notelli@plecno.com&gt;
 
-<h2>Examples</h2>
-<table>
-<tr><td>	<code>justniffer -i eth0</code><br/></td><td width="20"></td><td>produce apache like access_log</td></tr>
-<tr>	<td><code>justniffer -f /file.cap </code></td><td width="20"></td><td>read from a capture file</td></tr>
-<tr>	<td><code>justniffer -i eth0 -l "%request.line"</code></td><td width="20"></td><td>print only request line : Ex. "GET /index.html HTTP/1.1" </td></tr>
+--Boundary-00=_ZI47J3FTNXn+25g
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-<tr>	<td><code>justniffer -i eth0 -l "%request.header.host - %request.url - %response.code - %response.time"</code></td><td width="20"></td><td>print something like this:"www.plecno.com - /index.html - 200 - 0.23345" </td></tr>
-</table>
-<br/><a href="man.htm">Look at the man page</a>
-<br/><a href="http://sourceforge.net/projects/justniffer/">Project Summary</a>
-<br/><a href="http://sourceforge.net/project/showfiles.php?group_id=205860">Download</a>
-</div>
-<h2>Copyright</h2>
-<div id="copyright">
-<pre>
+test
+
+--Boundary-00=_ZI47J3FTNXn+25g
+Content-Type: text/html;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+
+&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd"&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta name="qrichtext" content="1" /&gt;
+&lt;style type="text/css"&gt;p, li { white-space: pre-wrap; }&lt;/style&gt;
+&lt;/head&gt;
+&lt;body style=" font-family:'DejaVu Sans'; font-size:8pt; font-weight:400; font-style:normal;"&gt;
+&lt;p&gt;
+test
+&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+--Boundary-00=_ZI47J3FTNXn+25g--
+.
+250 2.0.0 Ok: queued as 33E7235C21A
+
+QUIT
+221 2.0.0 Bye
+
+                                        
+</pre>
+                    </div>
+                </div>
+            </div>
+            <div class="links">
+        <a href="http://sourceforge.net"><img src= "http://sflogo.sourceforge.net/sflogo.php?group_id=205860&amp;type=2" width="125" height="37" border="0" alt= "SourceForge.net Logo" /></a>
+                <a class="menu" href="index.html">Home</a>
+                <a class="menu" href="justniffer-grab-http-traffic.html">justniffer-grab-http-traffic</a>
+                <a class="menu" href="man.htm">Look at the man page</a>
+                <a class="menu" href="http://sourceforge.net/projects/justniffer/">Project
+                    Summary</a>
+                <a class="menu" href= "http://sourceforge.net/project/platformdownload.php?group_id=205860&sel_platform=4737">Download</a>
+            </div>
+        </div>
+        <div id="copyright">
+            <pre>
 Copyright (c) 2007 Plecno s.r.l. All Rights Reserved 
 info@plecno.com
 via Giovio 8, 20144 Milano, Italy
 Released under the terms of the GPLv3 or later
-Author: Oreste Notelli &lt oreste.notelli at plecno.com &gt
+Author: Oreste Notelli &lt; oreste.notelli at plecno.com &gt;
 
 </pre>
-</div>
-	</body>
+        </div>
+    </body>
 </html>
