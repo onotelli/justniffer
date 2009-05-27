@@ -14,11 +14,13 @@ dnl			Linux Distributions)
 
 AC_PREREQ(2.60)
 AC_COPYRIGHT(2007-2009 (c) Plecno s.r.l)
-AC_INIT(justniffer, [0.4.1], info@plecno.com)
+AC_INIT(justniffer, [0.5], info@plecno.com)
+AC_DEFINE(JUSTNIFFER_VERSION, ["0.4.1"], [justniffer version])
 
 AM_INIT_AUTOMAKE
 AC_DEFINE([HAVE_LIB_PCAP], [], [has not libcap])
 AM_CONFIG_HEADER(include/config.h)
+
 
 AM_INIT_AUTOMAKE([-Wall -Werror])
 
