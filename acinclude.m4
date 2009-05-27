@@ -429,6 +429,6 @@ AC_DEFUN([AX_PYTHON],
 	  AX_PYTHON_ENABLED="enabled"	
 	])
 	if test "$AX_PYTHON_ENABLED" == "enabled";then
-	  AM_PATH_PYTHON(2.6, , [AC_MSG_NOTICE([your need python >=2.6, disabling python feature]) ; AX_PYTHON_ENABLED="disabled"])
+	  AM_PATH_PYTHON(2.4, , [AC_MSG_NOTICE([your need python >=2.4, disabling python feature]) ; AX_PYTHON_ENABLED="disabled"])
 	fi
 ])
