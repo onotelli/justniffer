@@ -1,3 +1,10 @@
+justniffer (0.5.1) unstable; urgency=low
+  * added connection.timestamp
+  * fixed idle.time.0 formatting
+  * fixed documentation
+
+ -- Oreste Notelli <oreste.notelli@plecno.com>  Sun, 31 May 2009 19:48:00 +0100
+
 justniffer (0.5) unstable; urgency=low
   * added new extension scripts for saving http captured contents
 

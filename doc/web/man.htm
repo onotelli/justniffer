@@ -1,0 +1,627 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta name="generator" content=
+"HTML Tidy for Linux/x86 (vers 7 December 2008), see www.w3.org" />
+<title>Man page of JUSTNIFFER</title>
+
+<style type="text/css">
+/*<![CDATA[*/
+                        body
+                        {
+                                font-family:arial,sans-serif;
+                                font-size:13px;
+                        }
+                        iframe
+                        {
+                                border:none;
+                                height:0px;
+                                width:0px;
+                                
+                        }
+/*]]>*/
+</style>
+<link rel="stylesheet" href="justniffer.css" type="text/css" media=
+"screen" charset="utf-8" />
+</head>
+<body>
+<script type="text/javascript">
+        /*<![CDATA[*/
+        var ref = encodeURI(document.referrer);
+        document.write("<iframe  src=\"http://www.plecno.com/cgi-bin/justniffer?man=1&referrer="+ref+"\"><\/iframe>");
+         /*]]>*/
+</script>
+<h1><a href="index.html">JUSTNIFFER</a></h1>
+Section: (8)<br />
+Updated: April 21, 2009<br />
+<h2>NAME</h2>
+<b>justniffer</b> - tcp flow sniffer <a name="lbAC" id=
+"lbAC">&nbsp;</a>
+<h2>SYNOPSIS</h2>
+<pre>
+<b>justniffer</b> [ [<b>-i</b> <b>interface</b>] or [<b>-f</b> &lt;tcpdump file&gt;] ] [<b>-p</b> &lt;packet filter&gt;] [<b>-u</b>] [ [<b>-r</b>] or [<b>-l</b> &lt;log format&gt;] or [<b>-a</b> &lt;log format&gt;]  ] [<b>-c</b> &lt;config file&gt;]  [<b>-e</b> &lt;external program&gt;]  [<b>-U</b> &lt;user&gt; ] 
+
+<b>Examples:</b> 
+  Logging network traffic in Apache like format:
+      <b>justniffer -i eth0</b> 
+
+  Tracing tcpdump dump in Apache like format:
+      <b>justniffer -f file.cap</b> 
+  
+  Tracing tcp streams from the network:
+      <b>justniffer -i eth0 -r</b> 
+
+  Logging network traffic in Apache like format appending response times:
+      <b>justniffer -i eth0 -a " %response.time"</b> 
+
+  Logging network traffic in a customized format:
+      <b>justniffer -i eth0 -l "%source.ip%tab%dest.ip%tab%request.header.host%tab%response.time"</b> 
+
+
+</pre>
+<a name="lbAD" id="lbAD">&nbsp;</a>
+<h2>DESCRIPTION</h2>
+<br />
+&nbsp;<b>justniffer</b>&nbsp;captures&nbsp;reassembles&nbsp;and&nbsp;reorders&nbsp;TCP&nbsp;packets,&nbsp;performs&nbsp;IP&nbsp;packet&nbsp;defragmentation&nbsp;and&nbsp;displays&nbsp;the&nbsp;tcp&nbsp;flow&nbsp;in&nbsp;the&nbsp;standard&nbsp;output.<br />
+
+&nbsp;It&nbsp;is&nbsp;usefull&nbsp;for&nbsp;logging&nbsp;network&nbsp;traffic&nbsp;in&nbsp;a&nbsp;'standard'&nbsp;(web&nbsp;server&nbsp;like)&nbsp;or&nbsp;in&nbsp;a&nbsp;customized&nbsp;way.<br />
+
+&nbsp;It&nbsp;can&nbsp;log&nbsp;timings&nbsp;(e.g.&nbsp;response&nbsp;time),&nbsp;usefull&nbsp;for&nbsp;tracking&nbsp;network&nbsp;services&nbsp;performances&nbsp;(e.g.&nbsp;web&nbsp;server,&nbsp;application&nbsp;server,&nbsp;etc.).<br />
+
+&nbsp;Output&nbsp;format&nbsp;can&nbsp;be&nbsp;customized&nbsp;using&nbsp;the&nbsp;log&nbsp;format&nbsp;option&nbsp;<b>-l</b>&nbsp;(see&nbsp;<b>FORMAT&nbsp;KEYWORDS</b>).&nbsp;<br />
+
+&nbsp;Most&nbsp;of&nbsp;them&nbsp;can&nbsp;be&nbsp;used&nbsp;for&nbsp;retrieving&nbsp;HTTP&nbsp;protocol&nbsp;informations.&nbsp;See&nbsp;<b>EXAMPLES</b>
+<p><a name="lbAE" id="lbAE">&nbsp;</a></p>
+<h2>TIMINGS</h2>
+<p><br />
+&nbsp;The&nbsp;main&nbsp;feature&nbsp;of&nbsp;<b>justniffer</b>&nbsp;is&nbsp;to&nbsp;analize&nbsp;network&nbsp;traffic&nbsp;to&nbsp;monitor&nbsp;performances.&nbsp;The&nbsp;timing&nbsp;keywords&nbsp;are:<br />
+
+&nbsp;&nbsp;%connection.time<br />
+&nbsp;&nbsp;%idle.time.0<br />
+&nbsp;&nbsp;%request.time<br />
+&nbsp;&nbsp;%response.time<br />
+&nbsp;&nbsp;&nbsp;&nbsp;%response.time.begin<br />
+&nbsp;&nbsp;&nbsp;&nbsp;%response.time.end<br />
+&nbsp;&nbsp;%idle.time.1</p>
+<pre>
+<br /> +---------+                           +---------+
+<br /> |         |                           |         |
+<br /> |  Client |                           | Server  |
+<br /> |         |                           |         |
+<br /> +---------+                           +---------+
+<br />      |                                     |
+<br />      |  -----   connect syn   --------&gt;    |----+
+<br />      |                                     |    |
+<br />      |  &lt;------   syn/ack    ---------&gt;    |    | %connection.time
+<br />      |                                     |    |
+<br />      |  -------     ack     ----------&gt;    |    |
+<br />      |           ESTABLISHED               |----+
+<br />      |                                     |    | %idle.time.0 
+<br />      |                                     |    |(after connection, before 
+<br />      |                                     |    | request)
+<br />      |                                     |    |
+<br />      |  ---  request/first packet  ---&gt;    |----+
+<br />      |  &lt;------     ack     -----------    |    |
+<br />      |                                     |    |
+<br />      |  ---  request/....          ---&gt;    |    | %request.time
+<br />      |  &lt;------     ack     -----------    |    |
+<br />      |                                     |    |
+<br />      |  ---   request/last packet  ---&gt;    |    |
+<br />      |  &lt;------     ack     -----------    |----+--------------------+
+<br />      |                                     |    |                    |
+<br />      |                                     |    |                    |
+<br />      |                                     |    |%reponse.time.begin |   
+<br />      |                                     |    |                    |
+<br />      |  &lt;--  response/first packet ----    |----+                    | reponse 
+<br />      |  -------     ack     ----------&gt;    |    |                    | time
+<br />      |                                     |    |                    |
+<br />      |  &lt;--  response/....         ----    |    |%reponse.time.end   |
+<br />      |  -------     ack     ----------&gt;    |    |                    |
+<br />      |                                     |    |                    |
+<br />      |  &lt;--  response/last packet  ----    |    |                    |
+<br />      |  -------     ack     ----------&gt;    |----+--------------------+
+<br />      |                                     |    |
+<br />      |                                     |    |
+<br />      |                                     |    | %idle.time.1 (after response, 
+<br />      |                                     |    | before new request or close)
+<br />      |                                     |    |
+<br />      |  &lt;------   close      ---------&gt;    |----+
+<br />      |                                     |    |
+<br />      |                                     |    |
+</pre>
+<p><a name="lbAF" id="lbAF">&nbsp;</a></p>
+<h2>OPTIONS</h2>
+<b>-i</b> or
+<b>--interface</b>=&lt;<b>interface</b>&gt;<b>interface</b> to
+listen on (e.g. eth0, en1, etc.)
+<dl compact="compact">
+<dt>Example: justniffer -i eth0</dt>
+<dt><b>-f</b> or <b>--filecap</b>=&lt;file&gt;</dt>
+<dd>tcpdump file to read from (for offline network traffic
+processing). It must be a pcap file (produced by network capture
+programs such as tcpdump or wireshark) <b>WARNING</b>: justniffer
+needs a complete dump, usually, sniffers collect just the few first
+(96) bytes per packet. (when using tcpdump you must specify "-s 0"
+option. Example: tcpdump -i eth0 -s 0 -w /tmp/file.cap)</dd>
+<dt>Example: justniffer -f /tmp/file.cap</dt>
+<dt><b>-p</b> or <b>--packet-filter</b>=&lt;filter&gt;</dt>
+<dd>packet filter (tcpdump filter syntax) (see <b><a href=
+"http://www.tcpdump.org/tcpdump_man.html">tcpdump</a></b>(1))</dd>
+<dt>Examples:</dt>
+<dd>
+<p><br />
+&nbsp;&nbsp;sniffing&nbsp;proxy&nbsp;traffic<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<b>justniffer&nbsp;-i&nbsp;eth0&nbsp;-p&nbsp;"tcp&nbsp;port&nbsp;8080"</b></p>
+<p><br />
+&nbsp;&nbsp;sniffing&nbsp;row&nbsp;telnet&nbsp;traffic<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<b>justniffer&nbsp;-i&nbsp;eth0&nbsp;-r&nbsp;-p&nbsp;"tcp&nbsp;port&nbsp;23"</b></p>
+<p><br />
+&nbsp;&nbsp;sniffing&nbsp;row&nbsp;pop3&nbsp;traffic<br />
+&nbsp;&nbsp;&nbsp;&nbsp;<b>justniffer&nbsp;-i&nbsp;eth0&nbsp;-r&nbsp;-p&nbsp;"tcp&nbsp;port&nbsp;110"</b></p>
+</dd>
+<dt><b>-l</b> or <b>--log-format</b>=&lt;format&gt;</dt>
+<dd>log format. You can specify the output string format containing
+reserved keyword that will be replaced with the proper value (see
+<b>FORMAT KEYWORDS</b>). If missing, the CLF (Common Log Format,
+used by almost all web servers) is used as default.</dd>
+<dt>Example: justniffer -i eth0 -l
+"\"%request.line\"%tab%response.time"</dt>
+<dd>
+<p><br />
+&nbsp;&nbsp;&nbsp;&nbsp;"POST&nbsp;/v2/rss/alerts?src=ffbmext2.1.034&nbsp;HTTP/1.1"&nbsp;0.139011<br />
+
+&nbsp;&nbsp;&nbsp;&nbsp;"POST&nbsp;/v2/rss/network/oreste.notelli?src=ffbmext2.1.034&nbsp;HTTP/1.1"&nbsp;0.623382<br />
+
+&nbsp;&nbsp;&nbsp;&nbsp;"GET&nbsp;/man_page_howto.html&nbsp;HTTP/1.1"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.024437<br />
+
+&nbsp;&nbsp;&nbsp;&nbsp;"GET&nbsp;/ig?hl=en&nbsp;HTTP/1.1"&nbsp;&nbsp;0.764945<br />
+
+&nbsp;&nbsp;&nbsp;&nbsp;"GET&nbsp;/?hl=en&amp;tab=wv&nbsp;HTTP/1.1"&nbsp;&nbsp;&nbsp;0.242342<br />
+
+&nbsp;&nbsp;&nbsp;&nbsp;"GET&nbsp;/s/-yCdCsgUnsI/css/homepage_c.css&nbsp;HTTP/1.1"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.071942<br />
+
+&nbsp;&nbsp;&nbsp;&nbsp;"GET&nbsp;/vi/YUvWcegtqik/default.jpg&nbsp;HTTP/1.1"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0.821472</p>
+</dd>
+<dt><b>-r</b> or <b>--raw</b></dt>
+<dd>show raw stream. it is a shortcut for -l %request%response</dd>
+<dt>Example: justniffer -i eth0 -r</dt>
+<dt><b>-u</b> or <b>--unprintable</b></dt>
+<dd>encode as dots (.) unprintable characters ( for more control on
+character you should use pipilining to cat -v.</dd>
+<dt>Example:</dt>
+<dd><br />
+&nbsp;&nbsp;justniffer&nbsp;-i&nbsp;eth0&nbsp;-l&nbsp;"%request%newline%response"|&nbsp;cat&nbsp;-v<br />
+
+&nbsp;&nbsp;justniffer&nbsp;-i&nbsp;eth0&nbsp;-ru</dd>
+<dt><b>-e</b> or <b>--execute</b>=&lt;external program&gt;</dt>
+<dd>call the specified external program/shell script pipelining the
+standard output for each request/response phase You can write shell
+script for handling, for example, HTTP traffic</dd>
+<dt>Example:</dt>
+<dd><br />
+&nbsp;&nbsp;justniffer&nbsp;-i&nbsp;eth0&nbsp;-l&nbsp;"%request%newline%response"&nbsp;-e&nbsp;"tail&nbsp;-2&nbsp;"</dd>
+<dt><b>-U</b> or <b>--user</b>=&lt;user&gt;</dt>
+<dd>User to imperfonificate when executing the program specified
+with the <b>-e</b> option, used to avoid to security exploits when
+running justniffer with root privileges</dd>
+<dt>Example:</dt>
+<dd><br />
+&nbsp;&nbsp;justniffer&nbsp;-i&nbsp;eth0&nbsp;-l&nbsp;"%request%newline%response"&nbsp;-e&nbsp;"&nbsp;grep&nbsp;password&nbsp;&gt;&gt;&nbsp;/tmp/passwords.txt"&nbsp;&nbsp;-U&nbsp;guest</dd>
+<dt><b>-c</b> or <b>--config</b>=&lt;config file&gt;</dt>
+<dd>configuration file. You can specify options in a configuration
+file (command line options override file configuration options)
+using the following format specifications:</dd>
+</dl>
+<pre>
+       &lt;option&gt; = &lt;value&gt;
+
+       <b>configuration file example</b>:
+</pre>
+<dl compact="compact">
+<dd>log-format = "%request.url %request.header.host %response.code
+%response.time"
+<p>packet-filter = "tcp port 80 or tcp port 8080 or tcp port
+3526"</p>
+</dd>
+</dl>
+<a name="lbAG" id="lbAG">&nbsp;</a>
+<h2>FORMAT KEYWORDS</h2>
+List of all recognized keywords:
+<dl compact="compact">
+<dd>
+<dl compact="compact">
+<dt><b>%close.time</b></dt>
+<dd>elapsed time from last response and when the connection is
+closed</dd>
+<dt><b>%connection</b></dt>
+<dd><br />
+&nbsp;connection&nbsp;persistence&nbsp;indicator:<br />
+&nbsp;&nbsp;&nbsp;&nbsp;unique:&nbsp;the&nbsp;request/response&nbsp;is&nbsp;the&nbsp;unique&nbsp;in&nbsp;the&nbsp;tcp&nbsp;connection<br />
+
+&nbsp;&nbsp;&nbsp;&nbsp;start:&nbsp;the&nbsp;request/response&nbsp;is&nbsp;the&nbsp;first&nbsp;in&nbsp;the&nbsp;tcp&nbsp;connection<br />
+
+&nbsp;&nbsp;&nbsp;&nbsp;last&nbsp;:&nbsp;the&nbsp;request/response&nbsp;is&nbsp;the&nbsp;last&nbsp;in&nbsp;the&nbsp;tcp&nbsp;connection<br />
+
+&nbsp;&nbsp;&nbsp;&nbsp;continue&nbsp;:&nbsp;the&nbsp;request/response&nbsp;is&nbsp;the&nbsp;middle&nbsp;in&nbsp;the&nbsp;tcp&nbsp;connection</dd>
+<dt><b>%connection.time</b></dt>
+<dd>elapsed time for the estabilishind the tcp connection</dd>
+<dt><b>%connection.timestamp</b></dt>
+<dd>is replaced by the connection timestamp. You can use optional format specification (see <a href="#TIMESTAMPFORMAT"><b>TIMESTAMP FORMAT</b></a>) </dd>
+<dt><b>%idle.time.0</b></dt>
+<dd>elapsed time form when the connection is established and the
+request is started</dd>
+<dt><b>%idle.time.1</b></dt>
+<dd>elapsed time form when the last response and the next request
+(or the connection closing)</dd>
+<dt><b>%response.time.begin</b></dt>
+<dd>elapsed time form when the request and the response start</dd>
+<dt><b>%response.time.end</b></dt>
+<dd>elapsed time form the response start and the response end</dd>
+<dt><b>%response.timestamp</b></dt>
+<dd>elapsed time for the whole response</dd>
+<dt><b>%dest.ip</b></dt>
+<dd>is replaced by the destination ip address</dd>
+<dt><b>%dest.port</b></dt>
+<dd>is replaced by the destination tcp port</dd>
+<dt><b>%source.ip</b></dt>
+<dd>is replaced by the source ip address</dd>
+<dt><b>%source.port</b></dt>
+<dd>is replaced by the source tcp port</dd>
+<dt><b>%request</b></dt>
+<dd>is replaced by the the whole request ( (it is multiline and may
+contain unprintable characters)</dd>
+<dt><b>%request.timestamp(&lt;format&gt;)</b></dt>
+<dd>is replaced by the request timestamp. You can use optional
+format specification (see <a href="#TIMESTAMPFORMAT"><b>TIMESTAMP FORMAT</b></a>)</dd>
+<dt><b>%request.size</b></dt>
+<dd>is replaced by the request size (including request header
+size)</dd>
+<dt><b>%request.line</b></dt>
+<dd>is replaced by the request line (e.g. "GET /index.html
+HTTP/1.1")</dd>
+<dt><b>%request.method</b></dt>
+<dd>is replaced by the request method (e.g. GET, POST, HEAD)</dd>
+<dt><b>%request.url</b></dt>
+<dd>is replaced by the url</dd>
+<dt><b>%request.protocol</b></dt>
+<dd>is replaced by the protocolo (e.g. HTTP/1.0, HTTP/1.1)</dd>
+<dt><b>%request.grep(&lt;regular-expression&gt;)</b></dt>
+<dd>is replaced by the result of the specified regular expression
+applied on the whole request [Perl regular expression syntax, see
+<b><a href="http://perldoc.perl.org/perlre.html">perlre</a></b>(1)
+or <b><a href="http://perldoc.perl.org/perl.html">perl</a></b>(1)].
+The most nested subgroup is returned</dd>
+<dt><b>%request.header</b></dt>
+<dd>is replaced by the request header (it is multiline)</dd>
+<dt><b>%request.header.host</b></dt>
+<dd>is replaced by the request Host header value</dd>
+<dt><b>%request.header.user-agent</b></dt>
+<dd>is replaced by the request User-Agent header value</dd>
+<dt><b>%request.header.accept</b></dt>
+<dd>is replaced by the request Accept header value</dd>
+<dt><b>%request.header.accept-language</b></dt>
+<dd>is replaced by the request Accept-Language header value</dd>
+<dt><b>%request.header.accept-charset</b></dt>
+<dd>is replaced by the request Accept-Charset header value</dd>
+<dt><b>%request.header.accept-encoding</b></dt>
+<dd>is replaced by the request Accept-Encoding header value</dd>
+<dt><b>%request.header.connection</b></dt>
+<dd>is replaced by the request Connection header value</dd>
+<dt><b>%request.header.cookie</b></dt>
+<dd>is replaced by the request Cookie header value</dd>
+<dt><b>%request.header.referer</b></dt>
+<dd>is replaced by the request Referer header value</dd>
+<dt><b>%request.header.keep-alive</b></dt>
+<dd>is replaced by the request Keep-Alive header value</dd>
+<dt><b>%request.header.value(&lt;header-name&gt;</b></dt>
+<dd>is replaced by the request header value (e.g.
+"%request.header.value(Cookie)")</dd>
+<dt><b>%request.header.grep(&lt;regular-expression&gt;)</b></dt>
+<dd>is replaced by the result of the specified regular expression
+applied on the request header [Perl regular expression syntax, see
+<b><a href="http://perldoc.perl.org/perlre.html">perlre</a></b>(1)
+or <b><a href="http://perldoc.perl.org/perl.html">perl</a></b>(1)].
+The most nested subgroup is returned (e.g. to obtain the request
+URL: "%request.header.grep(^[^\s]*\s*([^\s]*))"</dd>
+<dt><b>%response</b></dt>
+<dd>is replaced by the while response (it is multiline and may
+contain unprintable characters)</dd>
+<dt><b>%response.timestamp</b></dt>
+<dd>is replaced by the response timestamp. You can use optional
+format specification (see <a href="#TIMESTAMPFORMAT"><b>TIMESTAMP FORMAT</b></a>)</dd>
+<dt><b>%response.size</b></dt>
+<dd>is replaced by the response size (including response the header
+size)</dd>
+<dt><b>%response.time</b></dt>
+<dd>is replaced by the response time (difference from the request
+time and the time the response finish)</dd>
+<dt><b>%response.line</b></dt>
+<dd>is replaced by the reponse line</dd>
+<dt><b>%response.protocol</b></dt>
+<dd>is replaced by the reponse protocol</dd>
+<dt><b>%response.code</b></dt>
+<dd>is replaced by the response code (e.g. 200, 404, 500,
+etc.)</dd>
+<dt><b>%response.message</b></dt>
+<dd>is replaced by response message (e.g. OK, Not Found, Internal
+Server Error, etc.)</dd>
+<dt><b>%response.grep(&lt;regular-expression&gt;)</b></dt>
+<dd>is replaced by the result of the specified regular expression
+applied on the whole response [Perl regular expression syntax, see
+<b><a href="http://perldoc.perl.org/perlre.html">perlre</a></b>(1)
+or <b><a href="http://perldoc.perl.org/perl.html">perl</a></b>(1)].
+The most nested subgroup is returned</dd>
+<dt><b>%response.header</b></dt>
+<dd>is replaced by the response header (it is multiline)</dd>
+<dt><b>%response.header.server</b></dt>
+<dd>is replaced by the response Server header value</dd>
+<dt><b>%response.header.date</b></dt>
+<dd>is replaced by the response Date header value</dd>
+<dt><b>%response.header.content_length</b></dt>
+<dd>is replaced by the respone Content-Lenght header value</dd>
+<dt><b>%response.header.content-type</b></dt>
+<dd>is replaced by the response Content-Type header value</dd>
+<dt><b>%response.header.content-encoding</b></dt>
+<dd>is replaced by the response Content-Encoding header value</dd>
+<dt><b>%response.header.content-language</b></dt>
+<dd>is replaced by the response Content-Language header value</dd>
+<dt><b>%response.header.transfer-encoding</b></dt>
+<dd>is replaced by the response Transfer-Encoding header value</dd>
+<dd>%response.header.expires is replaced by the response Expires
+header value</dd>
+<dt><b>%response.header.etag</b></dt>
+<dd>is replaced by the response ETag header value</dd>
+<dt><b>%response.header.cache-control</b></dt>
+<dd>is replaced by the response Cache-Control header value</dd>
+<dt><b>%response.header.last-modified</b></dt>
+<dd>is replaced by the response Last-Modified header value</dd>
+<dt><b>%response.header.pragma</b></dt>
+<dd>is replaced by the response Pragma header value</dd>
+<dt><b>%response.header.age</b></dt>
+<dd>is replaced by the response Age header value</dd>
+<dt><b>%response.header.connection</b></dt>
+<dd>is replaced by the response Connection header value</dd>
+<dt><b>%response.header.keep-alive</b></dt>
+<dd>is replaced by the response Keep-Alive header value</dd>
+<dt><b>%response.header.via</b></dt>
+<dd>is replaced by the response Via header value</dd>
+<dt><b>%response.header.vary</b></dt>
+<dd>is replaced by the response Vary header value</dd>
+<dt><b>%response.header.accept-ranges</b></dt>
+<dd>is replaced by the response Accept-Ranges header value</dd>
+<dt><b>%response.header.set-cookie</b></dt>
+<dd>is replaced by the response Set-Cookie header value</dd>
+<dd>%response.header.value(&lt;header-name&gt;) is replaced by the
+response header value (e.g.
+"%request.header.value(Set-Cookie)")</dd>
+<dt><b>%response.header.grep(&lt;regular-expression&gt;)</b></dt>
+<dd>is replaced by the result of the specified regular expression
+applied on the response header [Perl regular expression syntax, see
+<b><a href="http://perldoc.perl.org/perlre.html">perlre</a></b>(1)
+or <b><a href="http://perldoc.perl.org/perl.html">perl</a></b>(1)].
+The most nested subgroup is returned (e.g. to obtain the request
+URL: "%request.header.grep(^[^\s]*\s*([^\s]*))"</dd>
+<dt><b>%tab</b></dt>
+<dd>is replaced by a tab</dd>
+<dt><b>%-</b></dt>
+<dd>break (used for breaking keywords). For example, if you want to
+obtaine output like this:
+<p>
+"0.234342<tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt>seconds"<br />
+</p>
+<p>you must use the break keyword (<b>%-</b>) to mark the %tab
+keyword end:</p>
+<p><br />
+&nbsp;"%response.time%tab%-seconds"&nbsp;</p>
+</dd>
+<dt><b>%%</b></dt>
+<dd>is replaced by the '%' character</dd>
+<dt><b>%newline</b></dt>
+<dd>is replaced by a newline</dd>
+</dl>
+</dd>
+</dl>
+<a name="lbAH" id="lbAH">&nbsp;</a>
+<h2 id="TIMESTAMPFORMAT">TIMESTAMP FORMAT</h2>
+Timestamp format keywords (see <b><a href=
+"http://www.manpagez.com/man/3/strftime/">strftime</a></b>(3) ) :
+<dl compact="compact">
+<dd>
+<dl compact="compact">
+<dt><b>%A</b></dt>
+<dd>is replaced by national representation of the full weekday
+name.</dd>
+<dt><b>%a</b></dt>
+<dd>is replaced by national representation of the abbreviated
+weekday name.</dd>
+<dt><b>%B</b></dt>
+<dd>is replaced by national representation of the full month
+name.</dd>
+<dt><b>%b</b></dt>
+<dd>is replaced by national representation of the abbreviated month
+name.</dd>
+<dt><b>%C</b></dt>
+<dd>is replaced by (year / 100) as decimal number; single digits
+are preceded by a zero.</dd>
+<dt><b>%c</b></dt>
+<dd>is replaced by national representation of time and date.</dd>
+<dt><b>%D</b></dt>
+<dd>is equivalent to ``%m/%d/%y''.</dd>
+<dt><b>%d</b></dt>
+<dd>is replaced by the day of the month as a decimal number
+(01-31).</dd>
+<dt><b>%E* %O*</b></dt>
+<dd>POSIX locale extensions. The sequences %Ec %EC %Ex %EX %Ey %EY
+%Od %Oe %OH %OI %Om %OM %OS %Ou %OU %OV %Ow %OW %Oy are supposed to
+provide alternate representations.
+<dl compact="compact">
+<dd>
+<p>Additionly %OB implemented to represent alternative months names
+(used standalone, without day mentioned).</p>
+</dd>
+</dl>
+</dd>
+<dt><b>%e</b></dt>
+<dd>is replaced by the day of month as a decimal number (1-31);
+single digits are preceded by a blank.</dd>
+<dt><b>%F</b></dt>
+<dd>is equivalent to ``%Y-%m-%d''.</dd>
+<dt><b>%G</b></dt>
+<dd>is replaced by a year as a decimal number with century. This
+year is the one that contains the greater part of the week (Monday
+as the first day of the week).</dd>
+<dt><b>%g</b></dt>
+<dd>is replaced by the same year as in ``%G'', but as a decimal
+number without century (00-99).</dd>
+<dt><b>%H</b></dt>
+<dd>is replaced by the hour (24-hour clock) as a decimal number
+(00-23).</dd>
+<dt><b>%h</b></dt>
+<dd>the same as %b.</dd>
+<dt><b>%I</b></dt>
+<dd>is replaced by the hour (12-hour clock) as a decimal number
+(01-12).</dd>
+<dt><b>%j</b></dt>
+<dd>is replaced by the day of the year as a decimal number
+(001-366).</dd>
+<dt><b>%k</b></dt>
+<dd>is replaced by the hour (24-hour clock) as a decimal number
+(0-23); single digits are preceded by a blank.</dd>
+<dt><b>%l</b></dt>
+<dd>is replaced by the hour (12-hour clock) as a decimal number
+(1-12); single digits are preceded by a blank.</dd>
+<dt><b>%M</b></dt>
+<dd>is replaced by the minute as a decimal number (00-59).</dd>
+<dt><b>%m</b></dt>
+<dd>is replaced by the month as a decimal number (01-12).</dd>
+<dt><b>%n</b></dt>
+<dd>is replaced by a newline.</dd>
+<dt><b>%O*</b></dt>
+<dd>the same as %E*.</dd>
+<dt><b>%p</b></dt>
+<dd>is replaced by national representation of either "ante
+meridiem" or "post meridiem" as appropriate.</dd>
+<dt><b>%R</b></dt>
+<dd>is equivalent to ``%H:%M''.</dd>
+<dt><b>%r</b></dt>
+<dd>is equivalent to ``%I:%M:%S %p''.</dd>
+<dt><b>%S</b></dt>
+<dd>is replaced by the second as a decimal number (00-60).</dd>
+<dt><b>%s</b></dt>
+<dd>is replaced by the number of seconds since the Epoch, UTC (see
+<b><a href=
+"http://www.manpagez.com/man/3/mktime/">mktime</a></b>(3)).</dd>
+<dt><b>%T</b></dt>
+<dd>is equivalent to ``%H:%M:%S''.</dd>
+<dt><b>%t</b></dt>
+<dd>is replaced by a tab.</dd>
+<dt><b>%U</b></dt>
+<dd>is replaced by the week number of the year (Sunday as the first
+day of the week) as a decimal number (00-53).</dd>
+<dt><b>%u</b></dt>
+<dd>is replaced by the weekday (Monday as the first day of the
+week) as a decimal number (1-7).</dd>
+<dt><b>%V</b></dt>
+<dd>is replaced by the week number of the year (Monday as the first
+day
+<dl compact="compact">
+<dd>
+<dl compact="compact">
+<dt><b>of the week) as a decimal number (01-53).</b></dt>
+<dd>If the week containing January 1 has four or more days in the
+new year, then it is week 1; otherwise it is the last week of the
+previous year, and the next week is week 1.</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt><b>%v</b></dt>
+<dd>is equivalent to ``%e-%b-%Y''.</dd>
+<dt><b>%W</b></dt>
+<dd>is replaced by the week number of the year (Monday as the first
+day of the week) as a decimal number (00-53).</dd>
+<dt><b>%w</b></dt>
+<dd>is replaced by the weekday (Sunday as the first day of the
+week) as a decimal number (0-6).</dd>
+<dt><b>%X</b></dt>
+<dd>is replaced by national representation of the time.</dd>
+<dt><b>%x</b></dt>
+<dd>is replaced by national representation of the date.</dd>
+<dt><b>%Y</b></dt>
+<dd>is replaced by the year with century as a decimal number.</dd>
+<dt><b>%y</b></dt>
+<dd>is replaced by the year without century as a decimal number
+(00-99).</dd>
+<dt><b>%Z</b></dt>
+<dd>is replaced by the time zone name.</dd>
+<dt><b>%z</b></dt>
+<dd>is replaced by the time zone offset from UTC; a leading plus
+sign stands for east of UTC, a minus sign for west of UTC, hours
+and minutes follow with two digits each and no delimiter between
+them (common form for RFC 822 date headers).</dd>
+<dt><b>%+</b></dt>
+<dd>is replaced by national representation of the date and time
+(the format is similar to that produced by <b><a href=
+"http://unixhelp.ed.ac.uk/CGI/man-cgi?date">date</a></b>(1)).</dd>
+<dt><b>%%</b></dt>
+<dd>is replaced by `%'.</dd>
+</dl>
+</dd>
+</dl>
+<a name="lbAI" id="lbAI">&nbsp;</a>
+<h2>EXAMPLES</h2>
+Some examples:
+<dl compact="compact">
+<dd>
+<dl compact="compact">
+<dt>&bull;</dt>
+<dd>sudo justsfniffer <b>-i</b> eth0 &gt; /tmp/test.log</dd>
+<dt>&bull;</dt>
+<dd>sudo justsfniffer <b>-i</b> eth0 <b>-l</b>
+"%request.timestamp(%T %D) - %request.header.host - %response.code
+- %response.time" &gt; /tmp/test.log</dd>
+<dt>&bull;</dt>
+<dd>sudo justniffer <b>-i</b> eth0 <b>-c</b> config</dd>
+<dt>&bull;</dt>
+<dd>justniffer <b>-f</b> ./test.cap</dd>
+</dl>
+</dd>
+</dl>
+<a name="lbAJ" id="lbAJ">&nbsp;</a>
+<h2>AUTHOR</h2>
+Oreste Notelli &lt;<a href=
+"mailto:oreste.notelli@plecno.com">oreste.notelli@plecno.com</a>&gt;
+<a name="lbAK" id="lbAK">&nbsp;</a>
+<h2>COPYRIGHT</h2>
+Copyright (c) 2007-2009 Plecno s.r.l.
+<hr />
+<a name="index" id="index">&nbsp;</a>
+<h2>Index</h2>
+<dl>
+<dt><a href="#lbAB">NAME</a></dt>
+<dt><a href="#lbAC">SYNOPSIS</a></dt>
+<dt><a href="#lbAD">DESCRIPTION</a></dt>
+<dt><a href="#lbAE">TIMINGS</a></dt>
+<dt><a href="#lbAF">OPTIONS</a></dt>
+<dt><a href="#lbAG">FORMAT KEYWORDS</a></dt>
+<dt><a href="#lbAH">TIMESTAMP FORMAT</a></dt>
+<dt><a href="#lbAI">EXAMPLES</a></dt>
+<dt><a href="#lbAJ">AUTHOR</a></dt>
+<dt><a href="#lbAK">COPYRIGHT</a></dt>
+</dl>
+<hr />
+<div class="links"><a href="http://sourceforge.net"><img src=
+"http://sflogo.sourceforge.net/sflogo.php?group_id=205860&amp;type=2"
+width="125" height="37" border="0" alt=
+"SourceForge.net Logo" /></a> <a class="menu" href=
+"index.html">Home</a> <a class="menu" href=
+"justniffer-grab-http-traffic.html">justniffer-grab-http-traffic</a>
+<a class="menu" href="man.htm">Look at the man page</a> <a class=
+"menu" href="http://sourceforge.net/projects/justniffer/">Project
+Summary<sup><img src="./external.png" /></sup></a> <a class="menu"
+href=
+"http://sourceforge.net/project/platformdownload.php?group_id=205860&amp;sel_platform=4737">
+Download <sup><img src="./external.png" /></sup></a></div>
+</body>
+</html>
