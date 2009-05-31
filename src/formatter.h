@@ -563,6 +563,14 @@ public:
 	virtual void onRequest(tcp_stream* pstream, const timeval* t){time=*t;}
 };
 
+
+class connection_timestamp_handler : public timestamp_handler
+{
+public:
+	connection_timestamp_handler(const string& format):timestamp_handler(format){}
+	virtual void onOpening(tcp_stream* pstream, const timeval* t){time=*t;}
+};
+
 class response_timestamp_handler : public timestamp_handler
 {
 public:
@@ -614,7 +622,7 @@ class idle_time_1 : public basic_handler
 public:
 	idle_time_1(){open = false; request = false; t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0;}
 	virtual void onOpen(tcp_stream* pstream, const timeval* t){t1=*t;open=true;}
-	virtual void append(std::basic_ostream<char>& out,const timeval* t) {if (open && request) out <<to_double(t2-t1); else out << int(0);}
+	virtual void append(std::basic_ostream<char>& out,const timeval* t) {if (open && request) out <<to_double(t2-t1); else out << double(0.0);}
 	virtual void onRequest(tcp_stream* pstream, const timeval* t){if (!request) t2=*t;request= true;}
 private:
 	timeval t1, t2;

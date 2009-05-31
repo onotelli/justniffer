@@ -199,24 +199,16 @@ elapsed time from last response and when the connection is closed
 elapsed time for the estabilishind the tcp connection
 .TP
 .B
+%connection.timestamp
+is replaced by the connection timestamp. You can use optional format specification (see \fBTIMESTAMP FORMAT\fP) 
+.TP
+.B
 %idle.time.0
 elapsed time form when the connection is established and the request is started
 .TP
 .B
 %idle.time.1
 elapsed time form when the last response and the next request (or the connection closing)
-.TP
-.B
-%response.time.begin
-elapsed time form when the request and the response start
-.TP
-.B
-%response.time.end
-elapsed time form the response start and the response end
-.TP
-.B
-%response.timestamp
-elapsed time for the whole response
 .TP
 .B
 %dest.ip
@@ -323,16 +315,24 @@ is replaced by the result of the specified regular expression applied on the req
 is replaced by the while response (it is multiline and may contain unprintable characters)
 .TP
 .B
-%response.timestamp
-is replaced by the response timestamp. You can use optional format specification (see \fBTIMESTAMP FORMAT\fP)
-.TP
-.B
 %response.size
 is replaced by the response size (including response the header size)
 .TP
 .B
+%response.timestamp
+is replaced by the response timestamp. You can use optional format specification (see \fBTIMESTAMP FORMAT\fP)
+.TP
+.B
 %response.time
 is replaced by the response time (difference from the request time and the time the response finish)
+.TP
+.B
+%response.time.begin
+elapsed time form when the request and the response start
+.TP
+.B
+%response.time.end
+elapsed time form the response start and the response end
 .TP
 .B
 %response.line

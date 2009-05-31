@@ -123,6 +123,7 @@ void parser::init_parse_elements()
 
 	elements["connection"] = parse_element::ptr(new keyword<handler_factory_t<connection_handler> >());
 	elements["connection.time"] = parse_element::ptr(new keyword<handler_factory_t<connection_time_handler> >());
+	elements["connection.timestamp"] = parse_element::ptr(new keyword_optional_params<handler_factory_t_arg<string, connection_timestamp_handler> > ("%D %T"));
 	elements["close.time"] = parse_element::ptr(new keyword<handler_factory_t<close_time> >());
 	elements["close.originator"] = parse_element::ptr(new keyword<handler_factory_t<close_originator> >());
 	elements["request"] = parse_element::ptr(new keyword_arg<string, regex_handler_factory_t<regex_handler_all_request> >(string(".*")));
