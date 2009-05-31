@@ -1,3 +1,9 @@
+2009-05-31  Oreste Notelli
+
+      * added connection.timestamp
+      * fixed idle.time.0 formatting
+      * fixed documentation
+
 2009-05-27  Oreste Notelli
 
       * added new extension scripts for saving http captured contents
