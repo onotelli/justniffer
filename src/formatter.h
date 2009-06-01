@@ -287,7 +287,7 @@ public:
 	virtual ~parser(){theOnlyParser = NULL;};
 	void set_printer(printer* printer){_printer=printer;}
 private:
-	const char* parse_element(const char* format);
+	const char* _parse_element(const char* format);
 	void init_parse_elements();
 	void process_opening_connection(tcp_stream *ts, struct timeval* t, unsigned char* packet);
 	void process_open_connection(tcp_stream *ts, struct timeval* t, unsigned char* packet);

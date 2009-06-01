@@ -58,7 +58,7 @@ void parser::nids_handler(struct tcp_stream *ts, void **yoda, struct timeval* t,
 }
 
 
-const char* parser::parse_element(const char* input)
+const char* parser::_parse_element(const char* input)
 {
 	const char* new_pos = input;
 	for (parse_elements::iterator it = elements.begin(); it!= elements.end(); it++)
@@ -97,7 +97,7 @@ void parser::parse(const char* input)
 					factories.push_back(handler_factory::ptr(new string_handler_factory(w)));
 					w = "";
 				}
-				cursor = parse_element(cursor);
+				cursor = _parse_element(cursor);
 				if ((*cursor) == 0) break;
 				continue;
 			default:
