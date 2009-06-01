@@ -1,8 +1,10 @@
-2009-05-31  Oreste Notelli
+2009-06-01  Oreste Notelli
 
+      * fixed compilation issues with gcc 3.3.3
       * added connection.timestamp
       * fixed idle.time.0 formatting
       * fixed documentation
+      * more adherence to RFC 2616: looking for headers in case insesitive mode
 
 2009-05-27  Oreste Notelli
 

@@ -139,13 +139,21 @@ void parser::init_parse_elements()
 	elements["request.header.host"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Host")));
 	elements["request.header.user-agent"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("User-Agent")));
 	elements["request.header.accept"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Accept")));
-	elements["request.header.accept-language"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Accept-Language")));
 	elements["request.header.accept-charset"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Accept-Charset")));
 	elements["request.header.accept-encoding"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Accept-Encoding")));
+	elements["request.header.accept-language"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Accept-Language")));
+	elements["request.header.authorization"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Authorization")));
 	elements["request.header.keep-alive"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Keep-Alive")));
 	elements["request.header.referer"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Referer")));
+	elements["request.header.range"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Range")));
 	elements["request.header.cookie"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Cookie")));
 	elements["request.header.connection"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Connection")));
+	elements["request.header.content-encoding"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Content-Encoding")));
+	elements["request.header.content-language"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Content-Language")));
+	elements["request.header.transfer-encoding"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Transfer-Encoding")));
+	elements["request.header.content-length"] = parse_element::ptr(new keyword_arg2<string, string, regex_handler_factory_t_arg<regex_handler_request> >(string("^Content-Length:\\s*([^\\r]*)"), string("0")));
+	elements["request.header.content-md5"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Content-MD5")));
+	elements["request.header.via"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Via")));
 	elements["request.header.value"] = parse_element::ptr(new keyword_params<header_handler_factory_t<regex_handler_request> >());
 	elements["request.header.grep"] = parse_element::ptr(new keyword_params<regex_handler_factory_t<regex_handler_request> >());
 
@@ -161,6 +169,7 @@ void parser::init_parse_elements()
 	elements["response.message"] = parse_element::ptr(new keyword_arg<string, regex_handler_factory_t<regex_handler_response_line> >(string("^[^\\s]*\\s*[^\\s]*\\s*([^\\r]*)")));	
 	elements["response.grep"] = parse_element::ptr(new keyword_params<regex_handler_factory_t<regex_handler_all_response> >());
 	elements["response.header"] = parse_element::ptr(new keyword_arg<string, regex_handler_factory_t<regex_handler_response> >(string(".*")));
+	elements["response.header.allow"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Allow")));
 	elements["response.header.server"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Server")));
 	elements["response.header.date"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Date")));
 	elements["response.header.cache-control"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Cache-Control")));
@@ -168,6 +177,10 @@ void parser::init_parse_elements()
 	elements["response.header.connection"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Connection")));
 	elements["response.header.expires"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Expires")));
 	elements["response.header.content-encoding"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Content-Encoding")));
+	elements["response.header.content-language"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Content-Laguage")));
+	elements["response.header.content-length"] = parse_element::ptr(new keyword_arg2<string, string, regex_handler_factory_t_arg<regex_handler_response> >(string("^Content-Length:\\s*([^\\r]*)"), string("0")));
+	elements["response.header.content-md5"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Content-MD5")));
+	elements["response.header.content-range"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Content-Range")));
 	elements["response.header.content-type"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Content-Type")));
 	elements["response.header.last-modified"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Last-Modified")));
 	elements["response.header.transfer-encoding"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Transfer-Encoding")));
@@ -175,12 +188,12 @@ void parser::init_parse_elements()
 	elements["response.header.via"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Via")));
 	elements["response.header.vary"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Vary")));
 	elements["response.header.pragma"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Pragma")));
-	elements["response.header.content-language"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Content-Language")));
 	elements["response.header.age"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Age")));
 	elements["response.header.accept-ranges"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Accept-Ranges")));
 	elements["response.header.set-cookie"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Set-Cookie")));
+	elements["response.header.via"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Via")));
+	elements["response.header.www-authenticate"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("WWW-Authenticate")));
 	
-	elements["response.header.content_length"] = parse_element::ptr(new keyword_arg2<string, string, regex_handler_factory_t_arg<regex_handler_response> >(string("^Content-Length:\\s*([^\\r]*)"), string("0")));
 	elements["response.header.value"] = parse_element::ptr(new keyword_params<header_handler_factory_t<regex_handler_response> >());
 	elements["response.header.grep"] = parse_element::ptr(new keyword_params<regex_handler_factory_t<regex_handler_response> >());
 
