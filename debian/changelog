@@ -4,9 +4,9 @@ justniffer (0.5.1) unstable; urgency=low
   * fixed documentation
   * fixed compilation issues with gcc 3.3.3
   * more adherence to RFC 2616: looking for headers in case insesitive mode
-  * new HTTP headers addes
+  * new HTTP headers added
 
- -- Oreste Notelli <oreste.notelli@plecno.com>  Sun, 31 May 2009 19:48:00 +0100
+ -- Oreste Notelli <oreste.notelli@plecno.com>  Mon, 1 June 2009 15:00:00 +0100
 
 justniffer (0.5) unstable; urgency=low
   * added new extension scripts for saving http captured contents
