@@ -1,3 +1,8 @@
+justniffer (0.5.2) unstable; urgency=high
+  * fixed default log format
+
+ -- Oreste Notelli <oreste.notelli@plecno.com>  Mon, 1 June 2009 16:30:00 +0100
+
 justniffer (0.5.1) unstable; urgency=low
   * added connection.timestamp
   * fixed idle.time.0 formatting

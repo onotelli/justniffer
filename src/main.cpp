@@ -60,7 +60,7 @@ const char* uprintable_cmd= "unprintable";
 const char* raw_cmd= "raw";
 const char* execute_cmd="execute";
 const char* default_packet_filter ="";
-const char* default_format= "%source.ip - - [%request.timestamp(%d/%b/%Y:%T %z)] \"%request.line\" %response.code %response.header.content_length \"%request.header.referer\" \"%request.header.user-agent)\"";
+const char* default_format= "%source.ip - - [%request.timestamp(%d/%b/%Y:%T %z)] \"%request.line\" %response.code %response.header.content-length \"%request.header.referer\" \"%request.header.user-agent)\"";
 const char* raw_format= "%request%response";
 
 typedef vector<string>::const_iterator args_type;

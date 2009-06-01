@@ -1,4 +1,7 @@
 2009-06-01  Oreste Notelli
+  * fixed default log format
+
+2009-06-01  Oreste Notelli
 
       * fixed compilation issues with gcc 3.3.3
       * added connection.timestamp
