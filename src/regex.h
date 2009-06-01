@@ -18,7 +18,7 @@ template <class handler_t>
 class regex_handler_factory_t :public handler_factory
 {
 public:
-	regex_handler_factory_t(const std::string& arg):_re(arg){}
+	regex_handler_factory_t(const std::string& arg,  boost::regex_constants::syntax_option_type options = boost::regex::icase):_re(arg, options){}
 	virtual handler::ptr create_handler()
 	{
 		return handler::ptr(new handler_t(_re));
@@ -30,7 +30,7 @@ template <class handler_t>
 class regex_handler_factory_t_arg :public handler_factory
 {
 public:
-	regex_handler_factory_t_arg(const std::string& expr,const std::string& not_found):_re(expr), _not_found(not_found){}
+	regex_handler_factory_t_arg(const std::string& expr,const std::string& not_found, boost::regex_constants::syntax_option_type options = boost::regex::icase ):_re(expr, options), _not_found(not_found){}
 	virtual handler::ptr create_handler()
 	{
 		return handler::ptr(new handler_t(_re, _not_found));
