@@ -5,6 +5,7 @@
       * fixed idle.time.0 formatting
       * fixed documentation
       * more adherence to RFC 2616: looking for headers in case insesitive mode
+      * new HTTP headers added
 
 2009-05-27  Oreste Notelli
 
