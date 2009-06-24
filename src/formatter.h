@@ -461,13 +461,45 @@ public:
 	{
 		ip = pstream->addr.saddr;
 	}
+	virtual void onOpening(tcp_stream* pstream, const timeval* t)
+	{
+		ip = pstream->addr.saddr;
+	}
+	virtual void onOpen(tcp_stream* pstream, const timeval* t)
+	{
+		ip = pstream->addr.saddr;
+	}
+	virtual void onResponse(tcp_stream* pstream,const  timeval* t)
+	{
+		ip = pstream->addr.saddr;
+	}
+	virtual void onClose(tcp_stream* pstream, const timeval* ,unsigned char* packet) 
+	{
+		ip = pstream->addr.saddr;
+	}
 };
 
 class dest_ip : public ip_base
 {
 public:
 	 dest_ip(){}
+	virtual void onRequest(tcp_stream* pstream, const timeval* t)
+	{
+		ip = pstream->addr.daddr;
+	}
+	virtual void onOpening(tcp_stream* pstream, const timeval* t)
+	{
+		ip = pstream->addr.daddr;
+	}
+	virtual void onOpen(tcp_stream* pstream, const timeval* t)
+	{
+		ip = pstream->addr.daddr;
+	}
 	virtual void onResponse(tcp_stream* pstream,const  timeval* t)
+	{
+		ip = pstream->addr.daddr;
+	}
+	virtual void onClose(tcp_stream* pstream, const timeval* ,unsigned char* packet) 
 	{
 		ip = pstream->addr.daddr;
 	}
@@ -481,13 +513,45 @@ public:
 	{
 		port = pstream->addr.source;
 	}
+	virtual void onOpening(tcp_stream* pstream, const timeval* t)
+	{
+		port = pstream->addr.source;
+	}
+	virtual void onOpen(tcp_stream* pstream, const timeval* t)
+	{
+		port = pstream->addr.source;
+	}
+	virtual void onResponse(tcp_stream* pstream,const  timeval* t)
+	{
+		port = pstream->addr.source;
+	}
+	virtual void onClose(tcp_stream* pstream, const timeval* ,unsigned char* packet) 
+	{
+		port = pstream->addr.source;
+	}
 };
 
 class dest_port : public port_base
 {
 public:
 	dest_port(){}
-	virtual void onResponse(tcp_stream* pstream, const timeval* t)
+	virtual void onRequest(tcp_stream* pstream, const timeval* t)
+	{
+		port = pstream->addr.dest;
+	}
+	virtual void onOpening(tcp_stream* pstream, const timeval* t)
+	{
+		port = pstream->addr.dest;
+	}
+	virtual void onOpen(tcp_stream* pstream, const timeval* t)
+	{
+		port = pstream->addr.dest;
+	}
+	virtual void onResponse(tcp_stream* pstream,const  timeval* t)
+	{
+		port = pstream->addr.dest;
+	}
+	virtual void onClose(tcp_stream* pstream, const timeval* ,unsigned char* packet) 
 	{
 		port = pstream->addr.dest;
 	}
@@ -609,7 +673,7 @@ class idle_time_2 : public basic_handler
 {
 public:
 	idle_time_2(){response=false; t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0;}
-	virtual void append(std::basic_ostream<char>& out,const timeval* t) {t2=*t; if(response) out <<to_double(t2-t1);else out << int(0);}
+	virtual void append(std::basic_ostream<char>& out,const timeval* t) {t2=*t; if(response) out <<to_double(t2-t1);else out << double(0.0);}
 	virtual void onResponse(tcp_stream* pstream, const timeval* t){t1=*t; response = true;}
 
 private:
@@ -656,7 +720,7 @@ class close_time : public basic_handler
 {
 public:
 	close_time (){response = false; closed=false; t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0;}
-	virtual void append(std::basic_ostream<char>& out, const timeval* ) {if (response && closed) out <<to_double(t2-t1); else out << int(0);}
+	virtual void append(std::basic_ostream<char>& out, const timeval* ) {if (response && closed) out <<to_double(t2-t1); else out << double(0.0);}
  	virtual void onOpen(tcp_stream* pstream, const timeval* t){response = true; t1=*t;}
  	virtual void onRequest(tcp_stream* pstream, const timeval* t){response = true; t1=*t;}
  	virtual void onResponse(tcp_stream* pstream, const timeval* t){response = true; t1=*t;}
