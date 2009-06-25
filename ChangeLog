@@ -1,5 +1,13 @@
+2009-06-25  Oreste Notelli
+      * fixed %source.ip , %dest.ip , %source.port, %dest.port
+      * fixed %idle.time.0 formatting
+      * fixed %close.time formatting
+      * added -n option
+      * added -x encoding for unprintable chars
+      * added "not found string" for request.header.* and response.header.* keywords
+
 2009-06-01  Oreste Notelli
-  * fixed default log format
+      * fixed default log format
 
 2009-06-01  Oreste Notelli
 

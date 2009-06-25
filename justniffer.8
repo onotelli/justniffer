@@ -1,11 +1,11 @@
-.TH JUSTNIFFER 8 "April 21, 2009" "" ""
+.TH JUSTNIFFER 8 "June 25, 2009" "" ""
 .SH NAME
 \fBjustniffer \fP- tcp flow sniffer
 \fB
 .SH SYNOPSIS
 .nf
 .fam C
-\fBjustniffer\fP [ [\fB-i\fP \fBinterface\fP] or [\fB-f\fP <tcpdump file>] ] [\fB-p\fP <packet filter>] [\fB-u\fP] [ [\fB-r\fP] or [\fB-l\fP <log format>] or [\fB-a\fP <log format>]  ] [\fB-c\fP <config file>]  [\fB-e\fP <external program>]  [\fB-U\fP <user> ] 
+\fBjustniffer\fP [ [\fB-i\fP \fBinterface\fP] or [\fB-f\fP <tcpdump file>] ] [\fB-p\fP <packet filter>] [\fB-u\fP or \fB-x\fP] [ \fB-r\fP or \fB-l\fP <log format> or \fB-a\fP <log format>] [\fB-c\fP <config file>]  [\fB-e\fP <external program>]  [\fB-U\fP <user> ]  [\fB-n\fP <not_found_string> ] 
 .fam T
 
 \fBExamples:\fP 
@@ -121,6 +121,7 @@ Examples:
 \fB-l\fP or \fB--log-format\fP=<format>
 log format. You can specify the output string format containing reserved keyword that will be replaced with the proper value (see \fBFORMAT KEYWORDS\fP). If missing, the CLF (Common Log Format, used by 
 almost all web servers) is used as default.
+"%source.ip - - [%request.timestamp(%d/%b/%Y:%T %z)] \"%request.line\" %response.code %response.header.content-length \"%request.header.referer\" \"%request.header.user-agent)\""
 .TP
 Example: justniffer -i eth0 -l "\\"%request.line\\"%tab%response.time"
 
@@ -134,10 +135,26 @@ Example: justniffer -i eth0 -l "\\"%request.line\\"%tab%response.time"
 
 .TP
 .B
+\fB-a\fP or \fB--append-log-format\fP=<format>
+append log format. append the specified format to the default common log format (apache access_log)
+.TP
+Example: justniffer -i eth0 -a " %response.time"
+
+192.168.10.102 - - [25/Jun/2009:12:02:18 +0200] "GET /nwshp?hl=en&client=firefox-a&rls=com.ubuntu:en-US:unofficial&hs=Ap6&tab=wn HTTP/1.1" 200 94077 "http://www.google.it/webhp?hl=en&safe=off&client=firefox-a&rls=com.ubuntu:en-US:unofficial&hs=Ap6&btnG=Search" "Mozilla/5.0 (X11; U; Linux i686; en-US;rv:1.9.0.11) Gecko/2009060308 Ubuntu/9.04 (jaunty) Firefox/3.0.10)" 0.712165
+
+.TP
+.B
 \fB-r\fP or \fB--raw\fP
 show raw stream. it is a shortcut for  -l %request%response
 .TP
 Example: justniffer -i eth0 -r
+.TP
+.B
+\fB-x\fP or \fB--hex-encode\fP
+encode unprintable characters in [<char hexcode>] format
+.TP
+Example: 
+  justniffer -i eth0 -rx
 .TP
 .B
 \fB-u\fP or \fB--unprintable\fP
@@ -154,6 +171,35 @@ You can write shell script for handling, for example, HTTP traffic
 .TP
 Example: 
   justniffer -i eth0 -l "%request%newline%response" -e "tail -2 "
+
+.TP
+.B
+\fB-n\fP or \fB--not-found\fP=<not found string>
+Not found string. It is used to replace a specified keyword when it cannot be valued because it is not found.
+All request.header.* and response.header.* keywords can override the "not found string" passing it as parameter.
+For example: 
+ %request.header.host() will be replaced by the Host header value, or an empty string if Host header not found
+ %request.header.host(UNKNOWN) will be replaced by the Host header value, or the UNKNOWN string if Host header not found
+ %request.header.host will be replaced by the Host header value, or , if Host header not found, with the string specified by the \fB-n\fP option 
+.TP
+Examples: 
+  justniffer -i eth0 -l "%request.header.connection" -n N/A  
+
+  will produce such logs:
+    N/A
+    N/A
+    keep-alive
+    close
+
+Note: each keyword can override the "not found string" value:
+
+  justniffer -i eth0 -l "%request.header.connection(None) %request.header.connection(-) %request.header.connection() %request.header.connection" -n N/A  
+
+  will produce such logs:
+    None -  N/A
+    None -  N/A
+    keep-alive keep-alive keep-alive keep-alive
+    close close close close
 .TP
 .B
 \fB-U\fP or \fB--user\fP=<user>

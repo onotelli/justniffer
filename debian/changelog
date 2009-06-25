@@ -1,3 +1,13 @@
+justniffer (0.5.3) unstable; urgency=low
+  * fixed %source.ip , %dest.ip , %source.port, %dest.port
+  * fixed %idle.time.0 formatting
+  * fixed %close.time formatting
+  * added -n option
+  * added -x encoding for unprintable chars
+  * added "not found string" for request.header.* and response.header.* keywords
+
+ -- Oreste Notelli <oreste.notelli@plecno.com>  Mon, 1 June 2009 16:30:00 +0100
+
 justniffer (0.5.2) unstable; urgency=high
   * fixed default log format
 

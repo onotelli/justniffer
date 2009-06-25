@@ -51,7 +51,7 @@
                     justniffer -i eth0
                 </div>
                 <div class="description">
-                    produce apache like access_log (default):
+                    capture traffic from the network and produce apache like access_log (default):
                 </div>
                 <div class="logs">
                     <div>
@@ -95,7 +95,7 @@
                     justniffer -i eth0 -a " %response.time"
                 </div>
                 <div class="description">
-                    produce apache like access_log, appending http response
+                    capture traffic from the network and produce apache like access_log, appending http response 
                     time:
                 </div>
                 <div class="logs">
@@ -134,8 +134,8 @@
                 <div class="command_line">
                     sudo justniffer -i ath0 -l '%source.ip - -
                     [%request.timestamp(%d/%b/%Y:%T %z)] "%request.line"
-                    %response.code %response.header.content-length
-                    "%request.header.referer" "%request.header.user-agent)"'
+                    %response.code %response.header.content-length(0)
+                    "%request.header.referer()" "%request.header.user-agent()"'
                 </div>
                 <div class="description">
                     explicit form of the default log format that mimic the 
@@ -175,13 +175,24 @@
                     print something like this:"www.plecno.com - /index.html -
                     200 - 0.23345"
                 </div>
+                <div class="command_line">
+                    justniffer -i eth0 -l "%request.header.host - %request.url
+                    - %response.code - %response.time" -n N/A
+                </div>
+                <div class="description">
+                    the <b>-n</b> can set the string to print when some value cannot be found. In our case it will print: <br/>
+                    <span class="highlight">www.plecno.com</span> - /index.html - 200 - 0.23345
+		      <br/> if no header Host was found, it will print:<br/>
+		    <span class="highlight">N/A</span> - /index.html - 200 - 0.23345
+
+                </div>
             </div>
             <div class="example">
                 <div class="command_line">
                     justniffer -i eth0 -r
                 </div>
                 <div class="description">
-                    capture all tcp traffic :
+                    capture all tcp traffic (add <b>-u</b> or <b>-x</b> options to encode unprintable characters): 
                 </div>
                 <div class="logs">
                     <div>

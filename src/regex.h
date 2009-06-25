@@ -23,6 +23,7 @@ public:
 	{
 		return handler::ptr(new handler_t(_re));
 	}
+protected:
 	boost::regex _re;
 };
 
@@ -42,6 +43,7 @@ public:
 class regex_handler_base: public basic_handler
 {
 public:
+	regex_handler_base():_not_found("-") {}
 	virtual void append(std::basic_ostream<char>& out, const timeval* );
 
 protected:
@@ -91,6 +93,15 @@ class header_handler_factory_t :public regex_handler_factory_t<handler_t>
 {
 public:
 	header_handler_factory_t(const std::string& arg):regex_handler_factory_t<handler_t>(string(arg).append(":\\s*([^\\r]*)")){}
+	header_handler_factory_t(const std::string& not_found, const std::string& arg):regex_handler_factory_t<handler_t>(string(arg).append(":\\s*([^\\r]*)")), _not_found(not_found){}
+
+	virtual handler::ptr create_handler()
+	{
+		return handler::ptr(new handler_t( this->_re, _not_found));
+	}
+
+private:
+	std::string _not_found;
 };
 
 class regex_handler_request_line: public collect_first_line_request<regex_handler_base>

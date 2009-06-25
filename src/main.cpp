@@ -57,11 +57,14 @@ const char* packet_filter_cmd = "packet-filter";
 const char* tcp_timeout_cmd = "tcp-timeout";
 const char* version_cmd = "version";
 const char* uprintable_cmd= "unprintable";
+const char* uprintable_cmd_ext= "hex-encode";
 const char* raw_cmd= "raw";
+const char* not_found_string="not-found";
 const char* execute_cmd="execute";
 const char* default_packet_filter ="";
-const char* default_format= "%source.ip - - [%request.timestamp(%d/%b/%Y:%T %z)] \"%request.line\" %response.code %response.header.content-length \"%request.header.referer\" \"%request.header.user-agent)\"";
+const char* default_format= "%source.ip - - [%request.timestamp(%d/%b/%Y:%T %z)] \"%request.line\" %response.code %response.header.content-length(0) \"%request.header.referer()\" \"%request.header.user-agent()\"";
 const char* raw_format= "%request%response";
+const char* default_not_found="-";
 
 typedef vector<string>::const_iterator args_type;
 bool check_conflicts( const po::variables_map &vm, const vector<string>& arguments)
@@ -102,14 +105,16 @@ int main(int argc, char*argv [])
 			(string(version_cmd).append(",V").c_str(), "version")
 			(string(filecap_cmd).append(",f").c_str(), po::value<string>(), "input file in 'tcpdump capture file format' (e.g. produced by tshark or tcpdump)")
 			(string(interface_cmd).append(",i").c_str(), po::value<string>(), "network interface to listen on (e.g. eth0, en1, etc.)")
-			(string(logformat_cmd).append(",l").c_str(), po::value<string>(), "log format (see FORMAT KEYWORDS). If missing the CommonLog (apache access log) format will ne used. See man page for further infos")
+			(string(logformat_cmd).append(",l").c_str(), po::value<string>(), string("log format (see FORMAT KEYWORDS). If missing the CommonLog (apache access log) format will ne used. See man page for further infos\nIt is equivalent to \n").append(default_format).c_str())
 			(string(append_logformat_cmd).append(",a").c_str(), po::value<string>(), "append log format (see FORMAT KEYWORDS) to the default apache log format.")
 			(string(config_cmd).append(",c").c_str(), po::value<string>(), "configuration file")
 			(string(user_cmd).append(",U").c_str(), po::value<string>(), string("user to impersonate when executing the command specified by the \"").append(execute_cmd ).append("\" option").c_str())
 			(string(execute_cmd).append(",e").c_str(), po::value<string>(), "execute the specified command every request/response phase")
 			(string(packet_filter_cmd).append(",p").c_str(), po::value<string>(), "packet filter (tcpdump filter syntax)")
 			(string(uprintable_cmd).append(",u").c_str(), "encode as dots (.) unprintable characters")
+			(string(uprintable_cmd_ext).append(",x").c_str(), "encode unprintable characters as [<char hexadecimal code>] ")
 			(string(raw_cmd).append(",r").c_str(), "show raw stream. it is a shortcat for  -l %request%response")
+			(string(not_found_string).append(",n").c_str(), po::value<string>()->default_value(default_not_found), string("default \"not found\" value, default is ").append(default_not_found).c_str())
 		;
 
 		po::variables_map vm;        
@@ -127,9 +132,19 @@ int main(int argc, char*argv [])
 		}
 
 		pos::filtering_stream<pos::output> out;
+		if (vm.count(uprintable_cmd_ext) && vm.count(uprintable_cmd))
+		{
+			print_error("you cannot simultaneously specify ")<< uprintable_cmd << " and " << uprintable_cmd_ext << " options\n" ;
+			return -1;
+		}
+
 		if (vm.count(uprintable_cmd))
 		{
 			out.push(ascii_filter());
+		}
+		if (vm.count(uprintable_cmd_ext))
+		{
+			out.push(ascii_filter_ext());
 		}
 		out.push(std::cout);
 
@@ -207,7 +222,8 @@ int main(int argc, char*argv [])
 				_printer = printer::ptr(new cmd_execute_printer(execute_cmd_arg.as<string>()));
 		}
 		p.set_printer(_printer.get());
-
+		
+		p.set_default_not_found(vm[not_found_string].as<string>());
 		// parse output format specifications
 		po::variable_value raw_arg = vm[raw_cmd];
 		po::variable_value logformat_arg = vm[logformat_cmd];

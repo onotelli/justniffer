@@ -60,6 +60,7 @@ void parser::nids_handler(struct tcp_stream *ts, void **yoda, struct timeval* t,
 
 const char* parser::_parse_element(const char* input)
 {
+	init_parse_elements();
 	const char* new_pos = input;
 	for (parse_elements::iterator it = elements.begin(); it!= elements.end(); it++)
 	{
@@ -114,97 +115,107 @@ void parser::parse(const char* input)
 	}
 }
 
+typedef keyword_arg_and_optional_params<header_handler_factory_t<regex_handler_request> > req_header;
+typedef keyword_arg_and_optional_params<header_handler_factory_t<regex_handler_response> > resp_header;
+typedef parse_element::ptr pelem;
+
+#define REQUEST_HEADER(key,head) elements[key]=pelem(new req_header(string(head),_default_not_found))
+#define RESPONSE_HEADER(key,head) elements[key]=pelem(new resp_header(string(head),_default_not_found))
+   
 void parser::init_parse_elements()
 {
-	elements["dest.ip"] = parse_element::ptr(new keyword<handler_factory_t<dest_ip> >());
-	elements["source.ip"] = parse_element::ptr(new keyword<handler_factory_t<source_ip> >());
-	elements["dest.port"] = parse_element::ptr(new keyword<handler_factory_t<dest_port> >());
-	elements["source.port"] = parse_element::ptr(new keyword<handler_factory_t<source_port> >());
+    if (_already_init) return;
+    elements["dest.ip"] = pelem(new keyword<handler_factory_t<dest_ip> >());
+    elements["source.ip"] = pelem(new keyword<handler_factory_t<source_ip> >());
+    elements["dest.port"] = pelem(new keyword<handler_factory_t<dest_port> >());
+    elements["source.port"] = pelem(new keyword<handler_factory_t<source_port> >());
 
-	elements["connection"] = parse_element::ptr(new keyword<handler_factory_t<connection_handler> >());
-	elements["connection.time"] = parse_element::ptr(new keyword<handler_factory_t<connection_time_handler> >());
-	elements["connection.timestamp"] = parse_element::ptr(new keyword_optional_params<handler_factory_t_arg<string, connection_timestamp_handler> > ("%D %T"));
-	elements["close.time"] = parse_element::ptr(new keyword<handler_factory_t<close_time> >());
-	elements["close.originator"] = parse_element::ptr(new keyword<handler_factory_t<close_originator> >());
-	elements["request"] = parse_element::ptr(new keyword_arg<string, regex_handler_factory_t<regex_handler_all_request> >(string(".*")));
-	elements["request.timestamp"] = parse_element::ptr(new keyword_optional_params<handler_factory_t_arg<string, request_timestamp_handler> > ("%D %T"));
-	elements["request.time"] = parse_element::ptr(new keyword<handler_factory_t<request_time_handler> >());
-	elements["request.size"] = parse_element::ptr(new keyword<handler_factory_t<request_size_handler> > ());
-	elements["request.line"] = parse_element::ptr(new keyword<handler_factory_t<request_first_line> >());
-	elements["request.method"] = parse_element::ptr(new keyword_arg<string, regex_handler_factory_t<regex_handler_request_line> >(string("(^[^\\s]*)")));
-	elements["request.url"] = parse_element::ptr(new keyword_arg<string, regex_handler_factory_t<regex_handler_request_line> >(string("^[^\\s]*\\s*([^\\s]*)")));
-	elements["request.protocol"] = parse_element::ptr(new keyword_arg<string, regex_handler_factory_t<regex_handler_request_line> >(string("^[^\\s]*\\s*[^\\s]*\\s*([^\\s]*)")));
-	elements["request.grep"] = parse_element::ptr(new keyword_params<regex_handler_factory_t<regex_handler_all_request> >());
-	elements["request.header"] = parse_element::ptr(new keyword_arg<string, regex_handler_factory_t<regex_handler_request> >(string(".*")));
-	elements["request.header.host"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Host")));
-	elements["request.header.user-agent"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("User-Agent")));
-	elements["request.header.accept"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Accept")));
-	elements["request.header.accept-charset"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Accept-Charset")));
-	elements["request.header.accept-encoding"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Accept-Encoding")));
-	elements["request.header.accept-language"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Accept-Language")));
-	elements["request.header.authorization"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Authorization")));
-	elements["request.header.keep-alive"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Keep-Alive")));
-	elements["request.header.referer"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Referer")));
-	elements["request.header.range"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Range")));
-	elements["request.header.cookie"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Cookie")));
-	elements["request.header.connection"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Connection")));
-	elements["request.header.content-encoding"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Content-Encoding")));
-	elements["request.header.content-language"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Content-Language")));
-	elements["request.header.transfer-encoding"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Transfer-Encoding")));
-	elements["request.header.content-length"] = parse_element::ptr(new keyword_arg2<string, string, regex_handler_factory_t_arg<regex_handler_request> >(string("^Content-Length:\\s*([^\\r]*)"), string("0")));
-	elements["request.header.content-md5"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Content-MD5")));
-	elements["request.header.via"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_request> >(string("Via")));
-	elements["request.header.value"] = parse_element::ptr(new keyword_params<header_handler_factory_t<regex_handler_request> >());
-	elements["request.header.grep"] = parse_element::ptr(new keyword_params<regex_handler_factory_t<regex_handler_request> >());
+    elements["connection"] = pelem(new keyword<handler_factory_t<connection_handler> >());
+    elements["connection.time"] = pelem(new keyword<handler_factory_t<connection_time_handler> >());
+    elements["connection.timestamp"] = pelem(new keyword_arg_and_optional_params<handler_factory_t_arg2<string, string, connection_timestamp_handler> > (string("%D %T"), string( _default_not_found)));
+    elements["close.time"] = pelem(new keyword<handler_factory_t<close_time> >());
+    elements["close.originator"] = pelem(new keyword<handler_factory_t<close_originator> >());
+    elements["request"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_all_request> >(string(".*")));
+    elements["request.timestamp"] = pelem(new keyword_arg_and_optional_params<handler_factory_t_arg2<string, string, request_timestamp_handler> > ("%D %T", _default_not_found));
+    elements["request.time"] = pelem(new keyword<handler_factory_t<request_time_handler> >());
+    elements["request.size"] = pelem(new keyword<handler_factory_t<request_size_handler> > ());
+    elements["request.line"] = pelem(new keyword<handler_factory_t<request_first_line> >());
+    elements["request.method"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_request_line> >(string("(^[^\\s]*)")));
+    elements["request.url"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_request_line> >(string("^[^\\s]*\\s*([^\\s]*)")));
+    elements["request.protocol"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_request_line> >(string("^[^\\s]*\\s*[^\\s]*\\s*([^\\s]*)")));
+    elements["request.grep"] = pelem(new keyword_params<regex_handler_factory_t<regex_handler_all_request> >());
+    elements["request.header"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_request> >(string(".*")));
 
-	elements["response"] = parse_element::ptr(new keyword_arg<string, regex_handler_factory_t<regex_handler_all_response> >(string(".*")));
-	elements["response.timestamp"] = parse_element::ptr(new keyword_optional_params<handler_factory_t_arg<string, response_timestamp_handler> > ("%D %T"));
-	elements["response.size"] = parse_element::ptr(new keyword<handler_factory_t<response_size_handler> > ());
-	elements["response.time"] = parse_element::ptr(new keyword<handler_factory_t<response_time_handler> >());
-	elements["response.time.begin"] = parse_element::ptr(new keyword<handler_factory_t<response_time_1> >());
-	elements["response.time.end"] = parse_element::ptr(new keyword<handler_factory_t<response_time_2> >());
-	elements["response.line"] = parse_element::ptr(new keyword<handler_factory_t<response_first_line> >());
-	elements["response.protocol"] = parse_element::ptr(new keyword_arg<string, regex_handler_factory_t<regex_handler_response_line> >(string("(^[^\\s]*)")));
-	elements["response.code"] = parse_element::ptr(new keyword_arg<string, regex_handler_factory_t<regex_handler_response_line> >(string("^[^\\s]*\\s*([^\\s]*)")));
-	elements["response.message"] = parse_element::ptr(new keyword_arg<string, regex_handler_factory_t<regex_handler_response_line> >(string("^[^\\s]*\\s*[^\\s]*\\s*([^\\r]*)")));	
-	elements["response.grep"] = parse_element::ptr(new keyword_params<regex_handler_factory_t<regex_handler_all_response> >());
-	elements["response.header"] = parse_element::ptr(new keyword_arg<string, regex_handler_factory_t<regex_handler_response> >(string(".*")));
-	elements["response.header.allow"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Allow")));
-	elements["response.header.server"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Server")));
-	elements["response.header.date"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Date")));
-	elements["response.header.cache-control"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Cache-Control")));
-	elements["response.header.keep-alive"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Keep-Alive")));
-	elements["response.header.connection"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Connection")));
-	elements["response.header.expires"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Expires")));
-	elements["response.header.content-encoding"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Content-Encoding")));
-	elements["response.header.content-language"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Content-Laguage")));
-	elements["response.header.content-length"] = parse_element::ptr(new keyword_arg2<string, string, regex_handler_factory_t_arg<regex_handler_response> >(string("^Content-Length:\\s*([^\\r]*)"), string("0")));
-	elements["response.header.content-md5"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Content-MD5")));
-	elements["response.header.content-range"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Content-Range")));
-	elements["response.header.content-type"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Content-Type")));
-	elements["response.header.last-modified"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Last-Modified")));
-	elements["response.header.transfer-encoding"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Transfer-Encoding")));
-	elements["response.header.etag"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("ETag")));
-	elements["response.header.via"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Via")));
-	elements["response.header.vary"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Vary")));
-	elements["response.header.pragma"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Pragma")));
-	elements["response.header.age"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Age")));
-	elements["response.header.accept-ranges"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Accept-Ranges")));
-	elements["response.header.set-cookie"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Set-Cookie")));
-	elements["response.header.via"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("Via")));
-	elements["response.header.www-authenticate"] = parse_element::ptr(new keyword_arg<string, header_handler_factory_t<regex_handler_response> >(string("WWW-Authenticate")));
-	
-	elements["response.header.value"] = parse_element::ptr(new keyword_params<header_handler_factory_t<regex_handler_response> >());
-	elements["response.header.grep"] = parse_element::ptr(new keyword_params<regex_handler_factory_t<regex_handler_response> >());
+    REQUEST_HEADER("request.header.host","Host");
+    REQUEST_HEADER("request.header.user-agent","User-Agent");
+    REQUEST_HEADER("request.header.accept","Accept");
+    REQUEST_HEADER("request.header.accept-charset","Accept-Charset");
+    REQUEST_HEADER("request.header.accept-encoding","Accept-Encoding");
+    REQUEST_HEADER("request.header.accept-language","Accept-Language");
+    REQUEST_HEADER("request.header.authorization","Authorization");
+    REQUEST_HEADER("request.header.keep-alive","Keep-Alive");
+    REQUEST_HEADER("request.header.referer","Referer");
+    REQUEST_HEADER("request.header.range","Range");
+    REQUEST_HEADER("request.header.cookie","Cookie");
+    REQUEST_HEADER("request.header.connection","Connection");
+    REQUEST_HEADER("request.header.content-encoding","Content-Encoding");
+    REQUEST_HEADER("request.header.content-language","Content-Language");
+    REQUEST_HEADER("request.header.transfer-encoding","Transfer-Encoding");
+    REQUEST_HEADER("request.header.content-length","Content-Length");
+    REQUEST_HEADER("request.header.content-md5","Content-MD5");
+    REQUEST_HEADER("request.header.via","Via");
+    elements["request.header.value"] = pelem(new keyword_params<header_handler_factory_t<regex_handler_request> >());
+    elements["request.header.grep"] = pelem(new keyword_params<regex_handler_factory_t<regex_handler_request> >());
 
-	elements["idle.time.0"] = parse_element::ptr(new keyword<handler_factory_t<idle_time_1> >());
-	elements["idle.time.1"] = parse_element::ptr(new keyword<handler_factory_t<idle_time_2> >());
-	//elements["session.time"] = parse_element::ptr(new keyword<handler_factory_t<session_time_handler> >());
+    elements["response"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_all_response> >(string(".*")));
+    elements["response.timestamp"] = pelem(new keyword_arg_and_optional_params<handler_factory_t_arg2<string, string, response_timestamp_handler> > ("%D %T", _default_not_found));
+    elements["response.size"] = pelem(new keyword<handler_factory_t<response_size_handler> > ());
+    elements["response.time"] = pelem(new keyword<handler_factory_t<response_time_handler> >());
+    elements["response.time.begin"] = pelem(new keyword<handler_factory_t<response_time_1> >());
+    elements["response.time.end"] = pelem(new keyword<handler_factory_t<response_time_2> >());
+    elements["response.line"] = pelem(new keyword<handler_factory_t<response_first_line> >());
+    elements["response.protocol"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_response_line> >(string("(^[^\\s]*)")));
+    elements["response.code"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_response_line> >(string("^[^\\s]*\\s*([^\\s]*)")));
+    elements["response.message"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_response_line> >(string("^[^\\s]*\\s*[^\\s]*\\s*([^\\r]*)")));	
+    elements["response.grep"] = pelem(new keyword_params<regex_handler_factory_t<regex_handler_all_response> >());
+    elements["response.header"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_response> >(string(".*")));
+    RESPONSE_HEADER("response.header.allow","Allow");
+    RESPONSE_HEADER("response.header.server","Server");
+    RESPONSE_HEADER("response.header.date","Date");
+    RESPONSE_HEADER("response.header.cache-control","Cache-Control");
+    RESPONSE_HEADER("response.header.keep-alive","Keep-Alive");
+    RESPONSE_HEADER("response.header.connection","Connection");
+    RESPONSE_HEADER("response.header.expires","Expires");
+    RESPONSE_HEADER("response.header.content-encoding","Content-Encoding");
+    RESPONSE_HEADER("response.header.content-language","Content-Laguage");
+    RESPONSE_HEADER("response.header.content-length", "Content-Length");
+    RESPONSE_HEADER("response.header.content-md5","Content-MD5");
+    RESPONSE_HEADER("response.header.content-range","Content-Range");
+    RESPONSE_HEADER("response.header.content-type","Content-Type");
+    RESPONSE_HEADER("response.header.last-modified","Last-Modified");
+    RESPONSE_HEADER("response.header.transfer-encoding","Transfer-Encoding");
+    RESPONSE_HEADER("response.header.etag","ETag");
+    RESPONSE_HEADER("response.header.via","Via");
+    RESPONSE_HEADER("response.header.vary","Vary");
+    RESPONSE_HEADER("response.header.pragma","Pragma");
+    RESPONSE_HEADER("response.header.age","Age");
+    RESPONSE_HEADER("response.header.accept-ranges","Accept-Ranges");
+    RESPONSE_HEADER("response.header.set-cookie","Set-Cookie");
+    RESPONSE_HEADER("response.header.via","Via");
+    RESPONSE_HEADER("response.header.www-authenticate","WWW-Authenticate");
 
-	elements["tab"] = parse_element::ptr(new keyword_arg<string, handler_factory_t_arg<string, constant> >(string("\t")));
-	elements["-"] = parse_element::ptr(new break_keyword< handler_factory_t<basic_handler> >());
-	elements["%"] = parse_element::ptr(new keyword_arg<string, handler_factory_t_arg<string, constant> >(string("%")));
-	elements["newline"] = parse_element::ptr(new keyword_arg<string, handler_factory_t_arg<string, constant> >(string("\n")));
+    elements["response.header.value"] = pelem(new keyword_params<header_handler_factory_t<regex_handler_response> >());
+    elements["response.header.grep"] = pelem(new keyword_params<regex_handler_factory_t<regex_handler_response> >());
+
+    elements["idle.time.0"] = pelem(new keyword<handler_factory_t<idle_time_1> >());
+    elements["idle.time.1"] = pelem(new keyword<handler_factory_t<idle_time_2> >());
+    //elements["session.time"] = pelem(new keyword<handler_factory_t<session_time_handler> >());
+
+    elements["tab"] = pelem(new keyword_arg<string, handler_factory_t_arg<string, constant> >(string("\t")));
+    elements["-"] = pelem(new break_keyword< handler_factory_t<basic_handler> >());
+    elements["%"] = pelem(new keyword_arg<string, handler_factory_t_arg<string, constant> >(string("%")));
+    elements["newline"] = pelem(new keyword_arg<string, handler_factory_t_arg<string, constant> >(string("\n")));
+    _already_init = true;
 }
 
 void parser::process_open_connection(tcp_stream *ts, struct timeval* t, unsigned char* packet)

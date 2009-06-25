@@ -14,6 +14,7 @@
 #include <map>
 #include <ostream>
 #include <iostream>
+#include <sstream>
 #include <nids2.h>
 #include <boost/shared_ptr.hpp>
 #include <boost/iostreams/categories.hpp> 
@@ -32,6 +33,29 @@ public:
 	{ 
             return boost::iostreams::put(snk, (std::isprint(c) || (c=='\n' || c=='\t'))? c: '.'); 
 	}
+};
+
+class ascii_filter_ext :public boost::iostreams::output_filter 
+{
+public:
+	typedef char                   char_type;
+    typedef boost::iostreams::output_filter_tag  category;
+
+    template<typename Sink>
+	bool put(Sink& snk, char c) 
+	{ 
+	    if (std::isprint(c) || (c=='\n' || c=='\t'))
+	      return boost::iostreams::put(snk, c); 
+	    else
+	    {
+		std::stringstream ss;
+		ss <<"[0x"<< hex << (unsigned int) (unsigned char)c <<"]";
+		std::string str =  ss.str();
+		boost::iostreams::write(snk, str.c_str(), str.size());
+		return true;
+	    }
+	}
+      
 };
 
 class handler: public shared_obj<handler>
@@ -85,6 +109,20 @@ public:
 		return handler::ptr(new handler_t(_arg));
 	}
 	arg_t _arg;
+};
+
+template <class arg_t, class arg2_t, class handler_t>
+class handler_factory_t_arg2 :public handler_factory
+{
+public:
+	handler_factory_t_arg2(arg_t arg):_arg(arg){}
+	handler_factory_t_arg2(arg_t arg, arg2_t arg2):_arg(arg), _arg2 (arg2){}
+	virtual handler::ptr create_handler()
+	{
+		return handler::ptr(new handler_t(_arg, _arg2));
+	}
+	arg_t _arg;
+	arg2_t _arg2;
 };
 
 typedef std::vector<handler_factory::ptr> handler_factories;
@@ -206,6 +244,21 @@ public:
 	}	
 };
 
+template <class handler_factory_t>
+class keyword_arg_and_optional_params: public keyword_optional_params<handler_factory_t>
+{
+public:
+	keyword_arg_and_optional_params(const string& arg , const string& default_param):
+	keyword_optional_params<handler_factory_t> ( arg), _arg(default_param){}
+	virtual handler_factory::ptr create_new_factory(const string& params) 
+	{
+		return handler_factory::ptr(new handler_factory_t( params, _arg));
+	}	
+private:
+	string _arg;
+};
+
+
 class printer : public shared_obj<printer>
 {
 public:
@@ -269,16 +322,16 @@ public:
 
 	parser()
 	{
+		_already_init = false;
 		check(theOnlyParser==NULL, common_exception("parser::parser(): I am not the only parser"));
 		theOnlyParser=this;
-		init_parse_elements();
 	}
 	
 	parser(printer* printer):_printer(printer)
 	{
+		_already_init = false;
 		check(theOnlyParser==NULL, common_exception("parser::parser(): I am not the only parser"));
 		theOnlyParser=this;
-		init_parse_elements();
 	}
 	parse_elements::iterator keywords_begin() {return elements.begin();}
 	parse_elements::iterator keywords_end() {return elements.end();}
@@ -286,6 +339,8 @@ public:
 	void parse(const char* format);
 	virtual ~parser(){theOnlyParser = NULL;};
 	void set_printer(printer* printer){_printer=printer;}
+	void set_default_not_found( const std::string& default_not_found) {_default_not_found = default_not_found;}
+	bool _already_init;
 private:
 	const char* _parse_element(const char* format);
 	void init_parse_elements();
@@ -299,6 +354,7 @@ private:
 	streams connections;
 	handler_factories factories;
 	printer* _printer;
+	std::string _default_not_found;
 public:
 	
 	static const char _key_word_id;
@@ -613,17 +669,25 @@ class response_first_line: public collect_first_line_response<basic_handler>
 class timestamp_handler : public basic_handler
 {
 public:
-	timestamp_handler(const string& format):fmt(format){time.tv_sec = 0; time.tv_usec= 0;}
-	virtual void append(std::basic_ostream<char>& out,const timeval* ) {out <<timestamp(&time, fmt);};
+	timestamp_handler(const string& format):fmt(format) {time.tv_sec = 0; time.tv_usec= 0;}
+	timestamp_handler(const string& format, const string& not_found):fmt(format), _not_found(not_found) {time.tv_sec = 0; time.tv_usec= 0;}
+	virtual void append(std::basic_ostream<char>& out,const timeval* ) 
+	{
+		if ((time.tv_sec == 0)&& (time.tv_usec== 0))
+		  out <<_not_found;
+		else
+		  out <<timestamp(&time, fmt);
+	};
 protected:
 	string fmt;
+	string _not_found;
 	timeval time;
 };
 
 class request_timestamp_handler : public timestamp_handler
 {
 public:
-	request_timestamp_handler(const string& format):timestamp_handler(format){}
+	request_timestamp_handler(const string& format, const string& not_found):timestamp_handler(format, not_found){}
 	virtual void onRequest(tcp_stream* pstream, const timeval* t){time=*t;}
 };
 
@@ -632,13 +696,14 @@ class connection_timestamp_handler : public timestamp_handler
 {
 public:
 	connection_timestamp_handler(const string& format):timestamp_handler(format){}
+	connection_timestamp_handler(const string& format, const string& default_not_found):timestamp_handler(format, default_not_found){}
 	virtual void onOpening(tcp_stream* pstream, const timeval* t){time=*t;}
 };
 
 class response_timestamp_handler : public timestamp_handler
 {
 public:
-	response_timestamp_handler(const string& format):timestamp_handler(format){}
+	response_timestamp_handler(const string& format, const string& default_not_found):timestamp_handler(format, default_not_found){}
 	virtual void onResponse(tcp_stream* pstream, const timeval* t){time=*t;}
 };
 
