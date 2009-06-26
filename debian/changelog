@@ -1,3 +1,10 @@
+justniffer (0.5.4) unstable; urgency=high
+  * fixed request.header.* and response.header.* keywords bug
+  * fixed help options
+  * added connection.timestamp2 request.timestamp2 response.timestamp2 keywords
+
+ -- Oreste Notelli <oreste.notelli@plecno.com>  Mon, 26 June 2009 13:30:00 +0100
+
 justniffer (0.5.3) unstable; urgency=low
   * fixed %source.ip , %dest.ip , %source.port, %dest.port
   * fixed %idle.time.0 formatting
@@ -6,7 +13,7 @@ justniffer (0.5.3) unstable; urgency=low
   * added -x encoding for unprintable chars
   * added "not found string" for request.header.* and response.header.* keywords
 
- -- Oreste Notelli <oreste.notelli@plecno.com>  Mon, 1 June 2009 16:30:00 +0100
+ -- Oreste Notelli <oreste.notelli@plecno.com>  Mon, 25 June 2009 16:30:00 +0100
 
 justniffer (0.5.2) unstable; urgency=high
   * fixed default log format

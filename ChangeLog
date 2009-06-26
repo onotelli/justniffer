@@ -1,3 +1,8 @@
+2009-06-26  Oreste Notelli
+  * fixed request.header.* and response.header.* keywords bug
+  * fixed help options
+  * added connection.timestamp2 request.timestamp2 response.timestamp2 keywords
+
 2009-06-25  Oreste Notelli
       * fixed %source.ip , %dest.ip , %source.port, %dest.port
       * fixed %idle.time.0 formatting

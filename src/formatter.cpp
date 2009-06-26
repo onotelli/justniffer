@@ -133,10 +133,12 @@ void parser::init_parse_elements()
     elements["connection"] = pelem(new keyword<handler_factory_t<connection_handler> >());
     elements["connection.time"] = pelem(new keyword<handler_factory_t<connection_time_handler> >());
     elements["connection.timestamp"] = pelem(new keyword_arg_and_optional_params<handler_factory_t_arg2<string, string, connection_timestamp_handler> > (string("%D %T"), string( _default_not_found)));
+    elements["connection.timestamp2"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, connection_timestamp_handler2> > (_default_not_found));
     elements["close.time"] = pelem(new keyword<handler_factory_t<close_time> >());
     elements["close.originator"] = pelem(new keyword<handler_factory_t<close_originator> >());
     elements["request"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_all_request> >(string(".*")));
     elements["request.timestamp"] = pelem(new keyword_arg_and_optional_params<handler_factory_t_arg2<string, string, request_timestamp_handler> > ("%D %T", _default_not_found));
+    elements["request.timestamp2"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, request_timestamp_handler2> > (_default_not_found));
     elements["request.time"] = pelem(new keyword<handler_factory_t<request_time_handler> >());
     elements["request.size"] = pelem(new keyword<handler_factory_t<request_size_handler> > ());
     elements["request.line"] = pelem(new keyword<handler_factory_t<request_first_line> >());
@@ -169,6 +171,7 @@ void parser::init_parse_elements()
 
     elements["response"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_all_response> >(string(".*")));
     elements["response.timestamp"] = pelem(new keyword_arg_and_optional_params<handler_factory_t_arg2<string, string, response_timestamp_handler> > ("%D %T", _default_not_found));
+    elements["response.timestamp2"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, response_timestamp_handler2> > ( _default_not_found));
     elements["response.size"] = pelem(new keyword<handler_factory_t<response_size_handler> > ());
     elements["response.time"] = pelem(new keyword<handler_factory_t<response_time_handler> >());
     elements["response.time.begin"] = pelem(new keyword<handler_factory_t<response_time_1> >());

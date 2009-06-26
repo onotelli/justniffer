@@ -249,10 +249,10 @@ class keyword_arg_and_optional_params: public keyword_optional_params<handler_fa
 {
 public:
 	keyword_arg_and_optional_params(const string& arg , const string& default_param):
-	keyword_optional_params<handler_factory_t> ( arg), _arg(default_param){}
+	keyword_optional_params<handler_factory_t> ( default_param), _arg(arg){}
 	virtual handler_factory::ptr create_new_factory(const string& params) 
 	{
-		return handler_factory::ptr(new handler_factory_t( params, _arg));
+		return handler_factory::ptr(new handler_factory_t(  _arg, params));
 	}	
 private:
 	string _arg;
@@ -333,8 +333,8 @@ public:
 		check(theOnlyParser==NULL, common_exception("parser::parser(): I am not the only parser"));
 		theOnlyParser=this;
 	}
-	parse_elements::iterator keywords_begin() {return elements.begin();}
-	parse_elements::iterator keywords_end() {return elements.end();}
+	parse_elements::iterator keywords_begin() {init_parse_elements();return elements.begin();}
+	parse_elements::iterator keywords_end() {init_parse_elements();return elements.end();}
 	static void nids_handler(struct tcp_stream *ts, void **yoda, struct timeval* t, unsigned char* packet);
 	void parse(const char* format);
 	virtual ~parser(){theOnlyParser = NULL;};
@@ -666,46 +666,112 @@ class response_first_line: public collect_first_line_response<basic_handler>
 	virtual void append(std::basic_ostream<char>& out,const timeval* ) {out <<text;}
 };
 
-class timestamp_handler : public basic_handler
+class timestamp_handler_base : public basic_handler
 {
+protected:
+	typedef std::basic_ostream<char>& out_type;
+	timestamp_handler_base(const string& not_found):_not_found(not_found){time.tv_sec = 0; time.tv_usec= 0;}
+	timestamp_handler_base(){time.tv_sec = 0; time.tv_usec= 0;}
+
 public:
-	timestamp_handler(const string& format):fmt(format) {time.tv_sec = 0; time.tv_usec= 0;}
-	timestamp_handler(const string& format, const string& not_found):fmt(format), _not_found(not_found) {time.tv_sec = 0; time.tv_usec= 0;}
-	virtual void append(std::basic_ostream<char>& out,const timeval* ) 
+	virtual void append(out_type out,const timeval* ) 
 	{
 		if ((time.tv_sec == 0)&& (time.tv_usec== 0))
 		  out <<_not_found;
 		else
-		  out <<timestamp(&time, fmt);
+		  print_out_time_stamp(out);
 	};
 protected:
-	string fmt;
+	virtual void print_out_time_stamp(out_type out) = 0;
 	string _not_found;
 	timeval time;
 };
 
-class request_timestamp_handler : public timestamp_handler
+class timestamp_handler : public timestamp_handler_base
 {
 public:
-	request_timestamp_handler(const string& format, const string& not_found):timestamp_handler(format, not_found){}
-	virtual void onRequest(tcp_stream* pstream, const timeval* t){time=*t;}
+	timestamp_handler(){}
+	timestamp_handler(const string& format):fmt(format) {}
+	timestamp_handler(const string& format, const string& not_found):timestamp_handler_base(not_found), fmt(format){}
+protected:
+	virtual void print_out_time_stamp(out_type out)
+	{
+	  out <<timestamp(&time, fmt);
+	}
+	string fmt;
+};
+
+class timestamp_handler2 : public timestamp_handler_base
+{
+public:
+	timestamp_handler2(){}
+	timestamp_handler2(const string& not_found):timestamp_handler_base(not_found){}
+
+protected:
+	virtual void print_out_time_stamp(out_type out)
+	{
+	  out <<time.tv_sec << "." << time.tv_usec;
+	}
+};
+
+template <class base>
+class request_timestamp_handler_base : public base
+{
+public:
+	virtual void onRequest(tcp_stream* pstream, const timeval* t){this->time=*t;}
+};
+
+template <class base>
+class connection_timestamp_handler_base : public base
+{
+public:
+	virtual void onOpening(tcp_stream* pstream, const timeval* t){this->time=*t;}
+};
+
+template <class base>
+class response_timestamp_handler_base : public base
+{
+public:
+	virtual void onResponse(tcp_stream* pstream, const timeval* t){this->time=*t;}
+};
+
+class request_timestamp_handler : public request_timestamp_handler_base<timestamp_handler>
+{
+public:
+	request_timestamp_handler(const string& format, const string& not_found){fmt = format; _not_found= not_found;}
+};
+
+class connection_timestamp_handler : public connection_timestamp_handler_base<timestamp_handler>
+{
+public:
+	connection_timestamp_handler(const string& format, const string& not_found){fmt = format; _not_found= not_found;}
+};
+
+class response_timestamp_handler : public response_timestamp_handler_base<timestamp_handler>
+{
+public:
+	response_timestamp_handler(const string& format, const string& not_found){fmt = format; _not_found= not_found;}
 };
 
 
-class connection_timestamp_handler : public timestamp_handler
+class request_timestamp_handler2 : public request_timestamp_handler_base<timestamp_handler2>
 {
 public:
-	connection_timestamp_handler(const string& format):timestamp_handler(format){}
-	connection_timestamp_handler(const string& format, const string& default_not_found):timestamp_handler(format, default_not_found){}
-	virtual void onOpening(tcp_stream* pstream, const timeval* t){time=*t;}
+	request_timestamp_handler2(const string& not_found){_not_found= not_found;}
 };
 
-class response_timestamp_handler : public timestamp_handler
+class connection_timestamp_handler2 : public connection_timestamp_handler_base<timestamp_handler2>
 {
 public:
-	response_timestamp_handler(const string& format, const string& default_not_found):timestamp_handler(format, default_not_found){}
-	virtual void onResponse(tcp_stream* pstream, const timeval* t){time=*t;}
+	connection_timestamp_handler2( const string& not_found){_not_found= not_found;}
 };
+
+class response_timestamp_handler2 : public response_timestamp_handler_base<timestamp_handler2>
+{
+public:
+	response_timestamp_handler2(const string& not_found){ _not_found= not_found;}
+};
+
 
 class response_time_handler : public basic_handler
 {

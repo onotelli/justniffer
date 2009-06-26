@@ -93,7 +93,7 @@ class header_handler_factory_t :public regex_handler_factory_t<handler_t>
 {
 public:
 	header_handler_factory_t(const std::string& arg):regex_handler_factory_t<handler_t>(string(arg).append(":\\s*([^\\r]*)")){}
-	header_handler_factory_t(const std::string& not_found, const std::string& arg):regex_handler_factory_t<handler_t>(string(arg).append(":\\s*([^\\r]*)")), _not_found(not_found){}
+	header_handler_factory_t( const std::string& arg ,const std::string& not_found):regex_handler_factory_t<handler_t>(string(arg).append(":\\s*([^\\r]*)")), _not_found(not_found){}
 
 	virtual handler::ptr create_handler()
 	{

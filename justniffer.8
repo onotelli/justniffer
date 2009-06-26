@@ -245,8 +245,12 @@ elapsed time from last response and when the connection is closed
 elapsed time for the estabilishind the tcp connection
 .TP
 .B
-%connection.timestamp
+%connection.timestamp([format])
 is replaced by the connection timestamp. You can use optional format specification (see \fBTIMESTAMP FORMAT\fP) 
+.TP
+.B
+%connection.timestamp2
+is replaced by the connection timestamp using format "seconds.microseconds"
 .TP
 .B
 %idle.time.0
@@ -277,8 +281,12 @@ is replaced by the source tcp port
 is replaced by the  the whole request ( (it is multiline and may contain unprintable characters)
 .TP
 .B
-%request.timestamp(<format>)
+%request.timestamp([format])
 is replaced by the request timestamp. You can use optional format specification (see \fBTIMESTAMP FORMAT\fP)
+.TP
+.B
+%request.timestamp2
+is replaced by the request timestamp using format "seconds.microseconds"
 .TP
 .B
 %request.size
@@ -393,8 +401,12 @@ is replaced by the while response (it is multiline and may contain unprintable c
 is replaced by the response size (including response the header size)
 .TP
 .B
-%response.timestamp
+%response.timestamp([format])
 is replaced by the response timestamp. You can use optional format specification (see \fBTIMESTAMP FORMAT\fP)
+.TP
+.B
+%response.timestamp2
+is replaced by the response timestamp using format "seconds.microseconds"
 .TP
 .B
 %response.time

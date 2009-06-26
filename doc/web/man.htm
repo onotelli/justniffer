@@ -360,6 +360,10 @@
         optional format specification (see <a href=
         "#TIMESTAMPFORMAT"><b>TIMESTAMP FORMAT</b></a>)</dd>
 
+        <dt><b>%connection.timestamp2</b></dt>
+
+        <dd>is replaced by the connection timestamp using format "seconds.microseconds"</dd>
+
         <dt><b>%idle.time.0</b></dt>
 
         <dd>elapsed time form when the connection is established
@@ -410,6 +414,10 @@
         <dd>is replaced by the request timestamp. You can use
         optional format specification (see <a href=
         "#TIMESTAMPFORMAT"><b>TIMESTAMP FORMAT</b></a>)</dd>
+
+        <dt><b>%request.timestamp2</b></dt>
+
+        <dd>is replaced by the request timestamp using format "seconds.microseconds"</dd>
 
         <dt><b>%request.size</b></dt>
 
@@ -518,6 +526,8 @@
         <dd>is replaced by the request Keep-Alive header value</dd>
 
         <dt><b>%request.header.value(&lt;header-name&gt;</b></dt>
+        <dd>is replaced by the request header value (e.g.
+        "%request.header.value(Cookie)")</dd>
 
         <dt><b>%request.header.transfer-encoding</b></dt>
 
@@ -528,8 +538,6 @@
 
         <dd>is replaced by the request Via header value</dd>
 
-        <dd>is replaced by the request header value (e.g.
-        "%request.header.value(Cookie)")</dd>
 
         <dt>
         <b>%request.header.grep(&lt;regular-expression&gt;)</b></dt>
@@ -555,7 +563,11 @@
         optional format specification (see <a href=
         "#TIMESTAMPFORMAT"><b>TIMESTAMP FORMAT</b></a>)</dd>
 
-        <dt><b>%response.size</b></dt>
+        <dt><b>%request.timestamp2</b></dt>
+
+        <dd>is replaced by the response timestamp using format "seconds.microseconds"</dd>
+	
+	<dt><b>%response.size</b></dt>
 
         <dd>is replaced by the response size (including response
         the header size)</dd>
@@ -703,6 +715,7 @@
         <dd>is replaced by the response Set-Cookie header
         value</dd>
 
+        <dt><b>%request.header.value(&lt;header-name&gt;</b></dt>
         <dd>%response.header.value(&lt;header-name&gt;) is replaced
         by the response header value (e.g.
         "%request.header.value(Set-Cookie)")</dd>
