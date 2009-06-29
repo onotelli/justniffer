@@ -115,8 +115,8 @@ void parser::parse(const char* input)
 	}
 }
 
-typedef keyword_arg_and_optional_params<header_handler_factory_t<regex_handler_request> > req_header;
-typedef keyword_arg_and_optional_params<header_handler_factory_t<regex_handler_response> > resp_header;
+typedef keyword_arg_and_optional_not_found<header_handler_factory_t<regex_handler_request> > req_header;
+typedef keyword_arg_and_optional_not_found<header_handler_factory_t<regex_handler_response> > resp_header;
 typedef parse_element::ptr pelem;
 
 #define REQUEST_HEADER(key,head) elements[key]=pelem(new req_header(string(head),_default_not_found))
@@ -131,21 +131,23 @@ void parser::init_parse_elements()
     elements["source.port"] = pelem(new keyword<handler_factory_t<source_port> >());
 
     elements["connection"] = pelem(new keyword<handler_factory_t<connection_handler> >());
-    elements["connection.time"] = pelem(new keyword<handler_factory_t<connection_time_handler> >());
+    elements["connection.time"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, connection_time_handler> >(_default_not_found));
     elements["connection.timestamp"] = pelem(new keyword_arg_and_optional_params<handler_factory_t_arg2<string, string, connection_timestamp_handler> > (string("%D %T"), string( _default_not_found)));
     elements["connection.timestamp2"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, connection_timestamp_handler2> > (_default_not_found));
-    elements["close.time"] = pelem(new keyword<handler_factory_t<close_time> >());
-    elements["close.originator"] = pelem(new keyword<handler_factory_t<close_originator> >());
+    elements["close.time"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, close_time> >(_default_not_found));
+    elements["close.originator"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, close_originator> >(_default_not_found));
+    elements["close.timestamp"] = pelem(new keyword_arg_and_optional_params<handler_factory_t_arg2<string, string, close_timestamp_handler> > ("%D %T", _default_not_found));
+    elements["close.timestamp2"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, close_timestamp_handler2> > (_default_not_found));
     elements["request"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_all_request> >(string(".*")));
     elements["request.timestamp"] = pelem(new keyword_arg_and_optional_params<handler_factory_t_arg2<string, string, request_timestamp_handler> > ("%D %T", _default_not_found));
     elements["request.timestamp2"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, request_timestamp_handler2> > (_default_not_found));
-    elements["request.time"] = pelem(new keyword<handler_factory_t<request_time_handler> >());
+    elements["request.time"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, request_time_handler> >(_default_not_found));
     elements["request.size"] = pelem(new keyword<handler_factory_t<request_size_handler> > ());
     elements["request.line"] = pelem(new keyword<handler_factory_t<request_first_line> >());
     elements["request.method"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_request_line> >(string("(^[^\\s]*)")));
     elements["request.url"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_request_line> >(string("^[^\\s]*\\s*([^\\s]*)")));
     elements["request.protocol"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_request_line> >(string("^[^\\s]*\\s*[^\\s]*\\s*([^\\s]*)")));
-    elements["request.grep"] = pelem(new keyword_params<regex_handler_factory_t<regex_handler_all_request> >());
+    elements["request.grep"] = pelem(new keyword_params_and_arg<regex_handler_factory_t<regex_handler_all_request> >(_default_not_found));
     elements["request.header"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_request> >(string(".*")));
 
     REQUEST_HEADER("request.header.host","Host");
@@ -167,20 +169,20 @@ void parser::init_parse_elements()
     REQUEST_HEADER("request.header.content-md5","Content-MD5");
     REQUEST_HEADER("request.header.via","Via");
     elements["request.header.value"] = pelem(new keyword_params<header_handler_factory_t<regex_handler_request> >());
-    elements["request.header.grep"] = pelem(new keyword_params<regex_handler_factory_t<regex_handler_request> >());
+    elements["request.header.grep"] = pelem(new keyword_params_and_arg<regex_handler_factory_t<regex_handler_request> >(_default_not_found));
 
     elements["response"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_all_response> >(string(".*")));
     elements["response.timestamp"] = pelem(new keyword_arg_and_optional_params<handler_factory_t_arg2<string, string, response_timestamp_handler> > ("%D %T", _default_not_found));
     elements["response.timestamp2"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, response_timestamp_handler2> > ( _default_not_found));
     elements["response.size"] = pelem(new keyword<handler_factory_t<response_size_handler> > ());
-    elements["response.time"] = pelem(new keyword<handler_factory_t<response_time_handler> >());
-    elements["response.time.begin"] = pelem(new keyword<handler_factory_t<response_time_1> >());
-    elements["response.time.end"] = pelem(new keyword<handler_factory_t<response_time_2> >());
+    elements["response.time"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, response_time_handler> >(_default_not_found));
+    elements["response.time.begin"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, response_time_1> >(_default_not_found));
+    elements["response.time.end"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, response_time_2> >(_default_not_found));
     elements["response.line"] = pelem(new keyword<handler_factory_t<response_first_line> >());
-    elements["response.protocol"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_response_line> >(string("(^[^\\s]*)")));
+    elements["response.protocol"] = pelem(new keyword_arg_and_optional_params<regex_handler_factory_t<regex_handler_response_line> >(string("(^[^\\s]*)"),_default_not_found ));
     elements["response.code"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_response_line> >(string("^[^\\s]*\\s*([^\\s]*)")));
     elements["response.message"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_response_line> >(string("^[^\\s]*\\s*[^\\s]*\\s*([^\\r]*)")));	
-    elements["response.grep"] = pelem(new keyword_params<regex_handler_factory_t<regex_handler_all_response> >());
+    elements["response.grep"] = pelem(new keyword_params_and_arg<regex_handler_factory_t<regex_handler_all_response> >(_default_not_found));
     elements["response.header"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_response> >(string(".*")));
     RESPONSE_HEADER("response.header.allow","Allow");
     RESPONSE_HEADER("response.header.server","Server");
@@ -210,9 +212,8 @@ void parser::init_parse_elements()
     elements["response.header.value"] = pelem(new keyword_params<header_handler_factory_t<regex_handler_response> >());
     elements["response.header.grep"] = pelem(new keyword_params<regex_handler_factory_t<regex_handler_response> >());
 
-    elements["idle.time.0"] = pelem(new keyword<handler_factory_t<idle_time_1> >());
-    elements["idle.time.1"] = pelem(new keyword<handler_factory_t<idle_time_2> >());
-    //elements["session.time"] = pelem(new keyword<handler_factory_t<session_time_handler> >());
+    elements["idle.time.0"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, idle_time_1> >(_default_not_found));
+    elements["idle.time.1"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, idle_time_2> >(_default_not_found));
 
     elements["tab"] = pelem(new keyword_arg<string, handler_factory_t_arg<string, constant> >(string("\t")));
     elements["-"] = pelem(new break_keyword< handler_factory_t<basic_handler> >());
@@ -540,10 +541,18 @@ void stream::print(const timeval* t)
 void close_originator::append(std::basic_ostream<char>& out, const timeval* t)
 {
 	if (closed)
-	if (ip_originator == sip)
-		out <<"client";
-	if (ip_originator == dip)
-		out <<"server";
+	{
+	  if (ip_originator == sip)
+		  out <<"client";
+	  else if (ip_originator == dip)
+		  out <<"server";
+	  else 
+		out <<"impossible";
+	  
+	}
+	else
+		out <<_not_found;
+	
 }
 
 void close_originator::onClose(tcp_stream* pstream, const timeval* t, unsigned char* packet)

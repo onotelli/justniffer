@@ -29,13 +29,13 @@
 .SH DESCRIPTION
  \fBjustniffer\fP captures reassembles and reorders TCP packets, performs IP packet defragmentation and displays the tcp flow or part of it.
  It is useful for logging network traffic in a 'standard' (web server like) or in a customized way.
- It can log timings (e.g. response time), useful for tracking network services performances (e.g. web server, application server, etc.).
+ It can log network services performances (e.g. web server response time , application server keep alive behaviour, etc.) .
  Output format can be customized using the log format option \fB-l\fP (see \fBFORMAT KEYWORDS\fP). 
  Most of them can be used for retrieving HTTP protocol informations. See \fBEXAMPLES\fP
 
-.SH TIMINGS
+.SH TRACKING PERFORMANCES
 
- The main feature of \fBjustniffer\fP is to analize network traffic to monitor performances. The timing keywords are:
+ The main feature of \fBjustniffer\fP is to analize network traffic to monitor performances. The perfomance related keywords are:
   %connection.time
   %idle.time.0
   %request.time
@@ -233,6 +233,16 @@ List of all recognized keywords:
 elapsed time from last response and when the connection is closed
 .TP
 .B
+%close.timestamp([format])
+is replaced by the close timestamp. You can use optional format specification (see \fBTIMESTAMP FORMAT\fP) 
+.TP
+.B
+%connection.timestamp2([not applicable string])
+is replaced by the close timestamp using format "seconds.microseconds". 
+the  "not applicable" string is replaced in case the keyword value cannot be applicable. 
+if not provided the -n value or the default value "-" is used 
+.TP
+.B
 %connection
  connection persistence indicator:
     unique: the request/response is the unique in the tcp connection
@@ -241,24 +251,32 @@ elapsed time from last response and when the connection is closed
     continue : the request/response is the middle in the tcp connection
 .TP
 .B
-%connection.time
+%connection.time([not applicable string])
 elapsed time for the estabilishind the tcp connection
+the  "not applicable" string is replaced in case the keyword value cannot be applicable. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
 %connection.timestamp([format])
 is replaced by the connection timestamp. You can use optional format specification (see \fBTIMESTAMP FORMAT\fP) 
 .TP
 .B
-%connection.timestamp2
+%connection.timestamp2([not applicable string])
 is replaced by the connection timestamp using format "seconds.microseconds"
+the  "not applicable" string is replaced in case the keyword value cannot be applicable. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%idle.time.0
+%idle.time.0([not applicable string])
 elapsed time form when the connection is established and the request is started
+the  "not applicable" string is replaced in case the keyword value cannot be applicable. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%idle.time.1
+%idle.time.1([not applicable string])
 elapsed time form when the last response and the next request (or the connection closing)
+the  "not applicable" string is replaced in case the keyword value cannot be applicable. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
 %dest.ip
@@ -285,8 +303,10 @@ is replaced by the  the whole request ( (it is multiline and may contain unprint
 is replaced by the request timestamp. You can use optional format specification (see \fBTIMESTAMP FORMAT\fP)
 .TP
 .B
-%request.timestamp2
+%request.timestamp2([not applicable string])
 is replaced by the request timestamp using format "seconds.microseconds"
+the  "not applicable" string is replaced in case the keyword value cannot be applicable. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
 %request.size
@@ -317,75 +337,109 @@ is replaced by the result of the specified regular expression applied on the who
 is replaced by the request header (it is multiline)
 .TP
 .B
-%request.header.authorization
+%request.header.authorization([not found string])
 is replaced by the request Authorization header value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%request.header.host
+%request.header.host([not found string])
 is replaced by the request Host header  value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%request.header.user-agent
+%request.header.user-agent([not found string])
 is replaced by the request User-Agent header  value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%request.header.accept
+%request.header.accept([not found string])
 is replaced by the request Accept header  value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%request.header.accept-language
+%request.header.accept-language([not found string])
 is replaced by the request Accept-Language header  value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%request.header.accept-charset
+%request.header.accept-charset([not found string])
 is replaced by the request Accept-Charset header  value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%request.header.accept-encoding
+%request.header.accept-encoding([not found string])
 is replaced by the request Accept-Encoding header  value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%request.header.connection
+%request.header.connection([not found string])
 is replaced by the request Connection header  value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%request.header.content-encoding
+%request.header.content-encoding([not found string])
 is replaced by the request Content-Encoding header  value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%request.header.content-language
+%request.header.content-language([not found string])
 is replaced by the request Content-Language header  value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%request.header.content-length
+%request.header.content-length([not found string])
 is replaced by the request Content-Length header  value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%request.header.content-md5
+%request.header.content-md5([not found string])
 is replaced by the request Content-MD5 header  value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%request.header.cookie
+%request.header.cookie([not found string])
 is replaced by the request Cookie header  value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%request.header.range
+%request.header.range([not found string])
 is replaced by the request Range header  value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%request.header.referer
+%request.header.referer([not found string])
 is replaced by the request Referer header  value
+The optional "" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%request.header.keep-alive
+%request.header.keep-alive([not found string])
 is replaced by the request Keep-Alive header  value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%request.header.via
+%request.header.via([not found string])
 is replaced by the request Via header  value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%request.header.value(<header-name>
+%request.header.value(<header-name>)
 is replaced by the request header value (e.g. "%request.header.value(Cookie)")
 .TP
 .B
@@ -405,20 +459,28 @@ is replaced by the response size (including response the header size)
 is replaced by the response timestamp. You can use optional format specification (see \fBTIMESTAMP FORMAT\fP)
 .TP
 .B
-%response.timestamp2
+%response.timestamp2([not applicable string])
 is replaced by the response timestamp using format "seconds.microseconds"
+the  "not applicable" string is replaced in case the keyword value cannot be applicable. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%response.time
+%response.time([not applicable string])
 is replaced by the response time (difference from the request time and the time the response finish)
+the  "not applicable" string is replaced in case the keyword value cannot be applicable. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%response.time.begin
+%response.time.begin([not applicable string])
 elapsed time form when the request and the response start
+the  "not applicable" string is replaced in case the keyword value cannot be applicable. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%response.time.end
+%response.time.end([not applicable string])
 elapsed time form the response start and the response end
+the  "not applicable" string is replaced in case the keyword value cannot be applicable. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
 %response.line
@@ -445,97 +507,143 @@ is replaced by the result of the specified regular expression applied on the who
 is replaced by the response header (it is multiline)
 .TP
 .B
-%response.header.accept-ranges
+%response.header.accept-ranges([not found string])
 is replaced by the response Accept-Ranges header value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%response.header.allow
+%response.header.allow([not found string])
 is replaced by the response Allow header value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%response.header.server
+%response.header.server([not found string])
 is replaced by the response Server header value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%response.header.date
+%response.header.date([not found string])
 is replaced by the response Date header value 
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%response.header.content-language
+%response.header.content-language([not found string])
 is replaced by the respone Content-Language header value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
-.B
-%response.header.content-length
+.B([not applicable string])
+%response.header.content-length([not found string])
 is replaced by the respone Content-Lenght header value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%response.header.content-md5
+%response.header.content-md5([not found string])
 is replaced by the respone Content-MD5 header value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%response.header.content-type
+%response.header.content-type([not found string])
 is replaced by the response Content-Type header value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%response.header.content-encoding
+%response.header.content-encoding([not found string])
 is replaced by the response Content-Encoding header value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%response.header.content-language
+%response.header.content-language([not found string])
 is replaced by the response Content-Language header value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%response.header.transfer-encoding
+%response.header.transfer-encoding([not found string])
 is replaced by the response Transfer-Encoding header value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
 
-%response.header.expires
+%response.header.expires([not found string])
 is replaced by the response Expires header value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%response.header.etag
+%response.header.etag([not found string])
 is replaced by the response ETag header value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%response.header.cache-control
+%response.header.cache-control([not found string])
 is replaced by the response Cache-Control header value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%response.header.last-modified
+%response.header.last-modified([not found string])
 is replaced by the response Last-Modified header value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%response.header.pragma
+%response.header.pragma([not found string])
 is replaced by the response Pragma header value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%response.header.age
+%response.header.age([not found string])
 is replaced by the response Age header value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%response.header.connection
+%response.header.connection([not found string])
 is replaced by the response Connection header value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%response.header.keep-alive
+%response.header.keep-alive([not found string])
 is replaced by the response Keep-Alive header value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%response.header.via
+%response.header.via([not found string])
 is replaced by the response Via header value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%response.header.vary
+%response.header.vary([not found string])
 is replaced by the response Vary header value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%response.header.www-authenticate
+%response.header.www-authenticate([not found string])
 is replaced by the response WWW-Authenticate header value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
-%response.header.set-cookie
+%response.header.set-cookie([not found string])
 is replaced by the response Set-Cookie header value
+The optional "not found" string is replaced in case the keyword value was not found. 
+if not provided the -n value or the default value "-" is used 
 .TP
 .B
 %response.header.value(<header-name>)

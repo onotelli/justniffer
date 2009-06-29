@@ -224,6 +224,19 @@ public:
 	}	
 };
 
+template <class handler_factory_t>
+class keyword_params_and_arg: public keyword_params_base
+{
+public:
+	keyword_params_and_arg(const string& arg): _arg(arg){}
+	virtual handler_factory::ptr create_new_factory(const string& params) 
+	{
+		return handler_factory::ptr(new handler_factory_t(params, _arg));
+	}	
+private:
+	string _arg;
+};
+
 class keyword_optional_params_base: public keyword_params_base
 {
 public:
@@ -249,10 +262,24 @@ class keyword_arg_and_optional_params: public keyword_optional_params<handler_fa
 {
 public:
 	keyword_arg_and_optional_params(const string& arg , const string& default_param):
+	keyword_optional_params<handler_factory_t> ( arg), _arg(default_param){}
+	virtual handler_factory::ptr create_new_factory(const string& params) 
+	{
+		return handler_factory::ptr(new handler_factory_t(  params, _arg));
+	}	
+private:
+	string _arg;
+};
+
+template <class handler_factory_t>
+class keyword_arg_and_optional_not_found: public keyword_optional_params<handler_factory_t>
+{
+public:
+	keyword_arg_and_optional_not_found(const string& arg , const string& default_param):
 	keyword_optional_params<handler_factory_t> ( default_param), _arg(arg){}
 	virtual handler_factory::ptr create_new_factory(const string& params) 
 	{
-		return handler_factory::ptr(new handler_factory_t(  _arg, params));
+		return handler_factory::ptr(new handler_factory_t( _arg, params));
 	}	
 private:
 	string _arg;
@@ -687,7 +714,7 @@ protected:
 	timeval time;
 };
 
-class timestamp_handler : public timestamp_handler_base
+class  timestamp_handler: public timestamp_handler_base
 {
 public:
 	timestamp_handler(){}
@@ -735,10 +762,17 @@ public:
 	virtual void onResponse(tcp_stream* pstream, const timeval* t){this->time=*t;}
 };
 
+template <class base>
+class close_timestamp_handler_base : public base
+{
+public:
+	virtual void onClose(tcp_stream* pstream, const timeval*t ,unsigned char* packet){this->time=*t;}
+};
+
 class request_timestamp_handler : public request_timestamp_handler_base<timestamp_handler>
 {
 public:
-	request_timestamp_handler(const string& format, const string& not_found){fmt = format; _not_found= not_found;}
+	request_timestamp_handler(const string& format, const string& not_found){ fmt = format; _not_found= not_found;}
 };
 
 class connection_timestamp_handler : public connection_timestamp_handler_base<timestamp_handler>
@@ -751,6 +785,12 @@ class response_timestamp_handler : public response_timestamp_handler_base<timest
 {
 public:
 	response_timestamp_handler(const string& format, const string& not_found){fmt = format; _not_found= not_found;}
+};
+
+class close_timestamp_handler : public close_timestamp_handler_base<timestamp_handler>
+{
+public:
+	close_timestamp_handler(const string& format, const string& not_found){fmt = format; _not_found= not_found;}
 };
 
 
@@ -772,12 +812,18 @@ public:
 	response_timestamp_handler2(const string& not_found){ _not_found= not_found;}
 };
 
+class close_timestamp_handler2 : public close_timestamp_handler_base<timestamp_handler2>
+{
+public:
+	close_timestamp_handler2(const string& not_found){ _not_found= not_found;}
+};
+
 
 class response_time_handler : public basic_handler
 {
 public:
-	response_time_handler(){response = false;t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0;}
-	virtual void append(std::basic_ostream<char>& out,const timeval* ) {if (response) out <<to_double(t2-t1);else out<<0.0;}
+	response_time_handler(const string& not_found){response = false;t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0; _not_found=not_found; }
+	virtual void append(std::basic_ostream<char>& out,const timeval* ) {if (response) out <<to_double(t2-t1);else out<<_not_found;}
 	virtual void onOpen(tcp_stream* pstream, const timeval* t){t1=*t;}
 	virtual void onResponse(tcp_stream* pstream, const timeval* t){response = true;t2=*t;}
 	virtual void onRequest(tcp_stream* pstream, const timeval* t){t1=*t;}
@@ -786,72 +832,78 @@ public:
 private:
 	bool response;
 	timeval t1, t2;
+	string _not_found;
 };
 
 class request_time_handler : public basic_handler
 {
 public:
-	request_time_handler(){requested_started = false;t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0;}
-	virtual void append(std::basic_ostream<char>& out,const timeval* ) {out <<to_double(t2-t1);}
+	request_time_handler(const string& not_found){requested_started = false;t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0;_not_found = not_found;}
+	virtual void append(std::basic_ostream<char>& out,const timeval* ) {if (requested_started) out <<to_double(t2-t1);else out <<_not_found;}
 	virtual void onRequest(tcp_stream* pstream, const timeval* t){if (!requested_started) t1=*t; t2=*t;requested_started= true;}
 
 private:
 	bool requested_started;
 	timeval t1, t2;
+	string _not_found;
 };
 
 class idle_time_2 : public basic_handler
 {
 public:
-	idle_time_2(){response=false; t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0;}
-	virtual void append(std::basic_ostream<char>& out,const timeval* t) {t2=*t; if(response) out <<to_double(t2-t1);else out << double(0.0);}
+	idle_time_2(const string& not_found){response=false; t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0;_not_found = not_found;}
+	virtual void append(std::basic_ostream<char>& out,const timeval* t) {t2=*t; if(response) out <<to_double(t2-t1);else out << _not_found;}
 	virtual void onResponse(tcp_stream* pstream, const timeval* t){t1=*t; response = true;}
 
 private:
 	timeval t1, t2;
 	bool response;
+	string _not_found;
 };
 
 class idle_time_1 : public basic_handler
 {
 public:
-	idle_time_1(){open = false; request = false; t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0;}
+	idle_time_1(const string& not_found){open = false; request = false; t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0;_not_found=not_found;}
 	virtual void onOpen(tcp_stream* pstream, const timeval* t){t1=*t;open=true;}
-	virtual void append(std::basic_ostream<char>& out,const timeval* t) {if (open && request) out <<to_double(t2-t1); else out << double(0.0);}
+	virtual void append(std::basic_ostream<char>& out,const timeval* t) {if (open && request) out <<to_double(t2-t1); else out << _not_found;}
 	virtual void onRequest(tcp_stream* pstream, const timeval* t){if (!request) t2=*t;request= true;}
 private:
 	timeval t1, t2;
 	bool request, open;
+	string _not_found;
 };
 
 class response_time_1 : public basic_handler
 {
 public:
-	response_time_1(){response = false;t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0;}
-	virtual void append(std::basic_ostream<char>& out,const timeval* ) {if (response)out <<to_double(t2-t1); else out <<0.0;}
+	response_time_1(const string& not_found){response = false;t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0; _not_found=not_found;}
+	virtual void append(std::basic_ostream<char>& out,const timeval* ) {if (response)out <<to_double(t2-t1); else out <<_not_found;}
 	virtual void onRequest(tcp_stream* pstream, const timeval* t){t1=*t;}
 	virtual void onResponse(tcp_stream* pstream, const timeval* t){if (!response)t2=*t;response = true;}
 private:
 	timeval t1, t2;
 	bool response;
+	string _not_found;
 };
 
 class response_time_2 : public basic_handler
 {
 public:
-	response_time_2(){response = false;t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0;}
-	virtual void append(std::basic_ostream<char>& out,const timeval* ) {if (response)out <<to_double(t2-t1);else out <<0.0;}
+	response_time_2(const string& not_found){response = false;t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0;_not_found=not_found;}
+	virtual void append(std::basic_ostream<char>& out,const timeval* ) {if (response)out <<to_double(t2-t1);else out <<_not_found;}
 	virtual void onResponse(tcp_stream* pstream, const timeval* t){if (!response)t1=*t;t2=*t;response = true;}
 private:
 	bool response;
 	timeval t1, t2;
+	string _not_found;
 };
 
 class close_time : public basic_handler
 {
 public:
-	close_time (){response = false; closed=false; t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0;}
-	virtual void append(std::basic_ostream<char>& out, const timeval* ) {if (response && closed) out <<to_double(t2-t1); else out << double(0.0);}
+	close_time (const string& not_found){response = false; closed=false; t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0; _not_found= not_found;}
+	virtual void append(std::basic_ostream<char>& out, const timeval* ) {if (response && closed) out <<to_double(t2-t1); else out << _not_found;}
  	virtual void onOpen(tcp_stream* pstream, const timeval* t){response = true; t1=*t;}
  	virtual void onRequest(tcp_stream* pstream, const timeval* t){response = true; t1=*t;}
  	virtual void onResponse(tcp_stream* pstream, const timeval* t){response = true; t1=*t;}
@@ -859,12 +911,13 @@ public:
 private:
 	bool closed, response ;
 	timeval t1, t2;
+	string _not_found;
 };
 
 class close_originator : public basic_handler
 {
 public:
-	close_originator (){closed=false, ip_originator=0, sip=0, dip=0;}
+	close_originator (const string& not_found){closed=false, ip_originator=0, sip=0, dip=0; _not_found= not_found;}
 	virtual void append(std::basic_ostream<char>& out, const timeval* );
 	virtual void onClose(tcp_stream* pstream, const timeval* t, unsigned char* packet);
 	virtual void onRequest(tcp_stream* pstream, const timeval* t);
@@ -872,19 +925,21 @@ public:
 private:
 	bool closed;
 	u_int32_t ip_originator, sip, dip;
+	string _not_found;
 };
 
 class connection_time_handler : public basic_handler
 {
 public:
-	connection_time_handler(){connection_started = false;t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0;}
-	virtual void append(std::basic_ostream<char>& out, const timeval* ) {out <<to_double(t2-t1);}
+	connection_time_handler(const string& not_found){connection_started = false;t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0; _not_found = not_found;}
+	virtual void append(std::basic_ostream<char>& out, const timeval* ) {if (t1.tv_sec &  t2.tv_sec) out <<to_double(t2-t1); else out << _not_found;}
 	virtual void onOpening(tcp_stream* pstream, const timeval* t){if (!connection_started) t1=*t; ;connection_started= true;}
 	virtual void onOpen(tcp_stream* pstream, const timeval* t){t2=*t;}
 
 private:
 	bool connection_started;
 	timeval t1, t2;
+	string _not_found;
 };
 
 /*

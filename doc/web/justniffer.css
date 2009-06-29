@@ -20,7 +20,40 @@ iframe
      left:10px;
      position:fixed;
      */
-}
+}	
+			table.comparison 
+			{
+				border-spacing:0px;
+				border-top:solid 1px;
+				border-right:solid 1px;
+				border-color: blue;
+			}
+			table.comparison caption
+			{
+				background-color: #dcdcff;
+				font-weight:bold;
+				padding:6px;
+				border-top:solid 1px blue;
+				border-left:solid 1px blue;
+				border-right:solid 1px blue;
+			}
+			
+			table.comparison td, th
+			{
+				padding:6px;
+				text-align:left;
+				border-left:solid 1px;
+				border-bottom:solid 1px;
+				border-color:blue;
+			}
+			.featurename
+			{
+				font-weight:bold;
+				background-color: #dcdcff;
+			}	
+			.featurevalue
+			{
+			}	
 			sup img
 			{
 				border:none;
@@ -35,6 +68,14 @@ iframe
             {
                     color:blue;
             }
+			h2
+			{
+				margin-top:60px;
+			}
+			h3
+			{
+				margin-top:40px;
+			}
             .home br
             {
                     margin-bottom:20px;
@@ -45,6 +86,10 @@ iframe
                     font-size:14px;
                     font-weight:bold;
             }
+			div.content
+			{
+				
+			}
             div.logs, div.help
             {
                     margin-top:10px;
@@ -71,22 +116,25 @@ iframe
                     background-color:#eaf1f6;
                     border:solid 1px #b3b3b3;
             }
-            div.example
+            div.example, div.example1
             {
                     border-top:solid 1px #0069ff;
-                    margin-top:60px;
                     margin-bottom:30px;
                     
             }
+			div.example
+            {
+                    margin-top:60px;
+            	
+            }
 			div.description
 			{
-			       margin-bottom:30px;
-            }
-            div.example div.command_line
-            {
                     margin-top:10px;
+			       margin-bottom:20px;
+            }
+            div.example div.command_line, div.example1 div.command_line
+            {
                     font-weight:bold;
-                    margin-bottom:10px;
             }
             #copyright 
             {
@@ -102,7 +150,7 @@ iframe
 				padding-left:4px;
 				padding-right:4px;
 				background-color:#ffffbf;
-				border:solid 1px;
+				border:solid 1px lightgrey;
 			}
 			span.new
 			{
@@ -126,4 +174,20 @@ iframe
 				background-color:white;
 				margin-left:auto;
 				margin-right:auto;
+			}
+			div.index
+			{
+				margin-top:30px;
+			}
+			div.index div.l1
+			{	
+				margin-left:10px;
+			}
+			div.index div.l2
+			{	
+				margin-left:30px;
+			}
+			div.index div.l3
+			{	
+				margin-left:60px;
 			}

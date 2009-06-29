@@ -1,3 +1,9 @@
+justniffer (0.5.5) unstable; urgency=low
+  * improved performances keywords adding a "not applicable string" settable by optional parameter
+  * documentation updated for enhancement provided from version (0.5.3)
+
+ -- Oreste Notelli <oreste.notelli@plecno.com>  Mon, 29 June 2009 13:30:00 +0100
+
 justniffer (0.5.4) unstable; urgency=high
   * fixed request.header.* and response.header.* keywords bug
   * fixed help options
