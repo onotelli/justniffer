@@ -34,9 +34,9 @@
 	</COMPANY_INFO>
 	<Program_Info>
 		<Program_Name>Justniffer</Program_Name>
-		<Program_Version>0.5.4</Program_Version>
+		<Program_Version>0.5.5</Program_Version>
 		<Program_Release_Month>06</Program_Release_Month>
-		<Program_Release_Day>26</Program_Release_Day>
+		<Program_Release_Day>29</Program_Release_Day>
 		<Program_Release_Year>2009</Program_Release_Year>
 		<Program_Cost_Dollars />
 		<Program_Cost_Other_Code />
@@ -79,8 +79,8 @@
 			<Char_Desc_45>tcp sniffer for logging network traffic</Char_Desc_45>
 			<Char_Desc_80>sniffer for logging, capturing, and tracing response time of network services</Char_Desc_80>
 			<Char_Desc_250>Promiscuous packet sniffer that: Rebuilds tcp stream  Logs network traffic in a customizeable way. Logs response times. Can be extended by scripts. An example that saves files sniffed from HTTP traffic in the specified directory is provided</Char_Desc_250>
-			<Char_Desc_450>justniffer is a TCP packet sniffer. It captures TCP packets, reassembles and reorders them, performs IP packet defragmentation and displays the TCP flow in the standard output. It is useful for logging HTTP network traffic in a "standard" (Web server like) or in a customized way. It can log timings, which is useful for tracking network service performance. It can be extended by scripts. One is provided for storing all captured HTTP content (images, JavaScript, CSS, HTML, etc) into files</Char_Desc_450>
-			<Char_Desc_2000>justniffer is a tcp packet sniffer. It captures reassembles and reorders TCP packets, performs IP packet defragmentation and displays the tcp flow and trace timings. It is useful for logging network traffic in a 'standard' (web server like) or in a customized way. It can log http response time, useful for tracking network services performances (e.g. web server, application server, etc.) . Main differences from other sniffers: - it captures tcp/ip traffic and handle all tcp/ip stuff (reordering, retrasmissions, defragmentation). The tcp stream adjustment is very reliabe since is performed using linux kernel code included in a slightly modified version of the nids library. - it reports timing informations. So it can be useful for tracking network system performances: for example http response time, connection time, etc. - it can generate logs in a highly customizable way. For example it can mimic the apache access_log You can extend traffic analisys with scripts that are executed to each captured request/response sequence.  justniffer-grab-http-traffic is a provided example that captures network traffic, identifies http contents (images, text, html pages, javascript, flash, video, etc) and saves them into files</Char_Desc_2000>
+			<Char_Desc_450>justniffer is a TCP packet sniffer. It captures TCP packets, reassembles and reorders them, performs IP packet defragmentation and displays the TCP flow in the standard output. It is useful for logging HTTP network traffic in a "standard" (Web server like) or in a customized way. It can log network service performance. It can be extended by scripts. One is provided for storing all captured HTTP content (images, JavaScript, CSS, HTML, etc) into files</Char_Desc_450>
+			<Char_Desc_2000>justniffer is a tcp packet sniffer. It captures reassembles and reorders TCP packets, performs IP packet defragmentation and displays the tcp flow and trace performances. It is useful for logging network traffic in a 'standard' (web server like) or in a customized way. It can log http response time, useful for tracking network services performances (e.g. web server, application server, etc.) . Main differences from other sniffers: - it captures tcp/ip traffic and handle all tcp/ip stuff (reordering, retrasmissions, defragmentation). The tcp stream adjustment is very reliabe since is performed using linux kernel code included in a slightly modified version of the nids library. - it reports network services performance informations: for example http response time, connection time, etc. - it can generate logs in a highly customizable way. For example it can mimic the apache access_log You can extend traffic analisys with scripts that are executed to each captured request/response sequence.  justniffer-grab-http-traffic is a provided example that captures network traffic, identifies http contents (images, text, html pages, javascript, flash, video, etc) and saves them into files</Char_Desc_2000>
 		</English>
 	</Program_Descriptions>
 	<Web_Info>
