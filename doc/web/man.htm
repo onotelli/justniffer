@@ -497,7 +497,7 @@
 						if not provided the -n value or the default value "-" is used 
                     </dd>
                     <dt>
-                        <b>%response.timestamp</b>
+                        <b>%response.timestamp([format])</b>
                     </dt>
                     <dd>
                         elapsed time for the whole response
@@ -543,7 +543,7 @@
                         optional format specification (see <a href= "#TIMESTAMPFORMAT"><b>TIMESTAMP FORMAT</b></a>)
                     </dd>
                     <dt>
-                        <b>%request.timestamp2</b>
+                        <b>%request.timestamp2([not applicable string])</b>
                     </dt>
                     <dd>
                         is replaced by the request timestamp using format "seconds.microseconds"
@@ -772,17 +772,19 @@
                         may contain unprintable characters)
                     </dd>
                     <dt>
-                        <b>%response.timestamp</b>
+                        <b>%response.timestamp([format])</b>
                     </dt>
                     <dd>
                         is replaced by the response timestamp. You can use 
                         optional format specification (see <a href= "#TIMESTAMPFORMAT"><b>TIMESTAMP FORMAT</b></a>)
                     </dd>
                     <dt>
-                        <b>%request.timestamp2</b>
+                        <b>%request.timestamp2([not applicable string]))</b>
                     </dt>
                     <dd>
                         is replaced by the response timestamp using format "seconds.microseconds"
+			the  "not applicable" string is replaced in case the keyword value cannot be applicable. 
+			if not provided the -n value or the default value "-" is used 
                     </dd>
                     <dt>
                         <b>%response.size</b>

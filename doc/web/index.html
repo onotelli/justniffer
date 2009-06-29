@@ -345,8 +345,37 @@ Cache-Control: max-age=86400
                     justniffer -i eth0 -r -p "port 80 or port 8080"
                 </div>
             </div>
-            <div id="example8"  class="example">
+            <div id="example8" class="example">
             	<h3>Example 8</h3>
+                <div class="description">
+                    the <b>-e</b>
+                    option let you to specify an external executable (usually a script) to which , <b>for every log</b>,  the output will be redirect to.
+		    If you want to perform complex extraction operations, you can write your own script that will receive from the standard input all content specified by the 
+		    <b>-l</b> option. A complete ad useful example is provided with <a href="justniffer-grab-http-traffic.html">justniffer-grab-http-traffic</a>
+                
+                </div>
+                <div class="command_line">
+                     ./justniffer  -l "%response" -e ./myscript.sh -i ath0
+                </div>
+		 <div class="logs"><div>
+<pre>
+#!/bin/bash
+# myscript.sh 
+# example script (print all lines containing "href" string)
+
+while read inputline
+do 
+ anchors=`echo "$inputline" | grep href`
+ if [ "$anchors" != "" ]; then
+    echo $anchors;
+ fi;
+done
+</pre>
+</div></div>
+
+            </div>
+            <div id="example9"  class="example">
+            	<h3>Example 9</h3>
                 <div class="command_line">
                     justniffer -i eth0 -r -p "port 25"
                 </div>
