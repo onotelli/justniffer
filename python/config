@@ -1,0 +1,1 @@
+log-format="%request.timestamp %request.timestamp2 %request.header.host %source.ip:%source.port %dest.ip:%dest.port %request.method %request.url %request.size %response.code %response.size %connection %close.originator %connection.time %request.time %idle.time.0 %response.time %idle.time.1 %close.time %response.header.grep(^\s*Content-Type:\s*([^\s]*))"
