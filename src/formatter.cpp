@@ -420,13 +420,6 @@ const char* break_keyword_base::parse(const char* cursor, const string& _keyword
 
 ///// outstream_printer/////
 
-void outstream_printer::doit(handlers::iterator start, handlers::iterator end,const timeval*t)
-{
-	for (handlers::iterator i= start; i!= end; i++)
-		(*i)->append(_out, t);
-	_out<<std::endl;
-	_out.flush();
-}
 
 ///// cmd_execute_printer //////
 void cmd_execute_printer::_execute(handlers::iterator start, handlers::iterator end,const timeval*t)
@@ -463,6 +456,15 @@ void cmd_execute_printer::doit(handlers::iterator start, handlers::iterator end,
 	}
 	else
 		_execute(start, end , t);
+}
+
+void outstream_printer::doit(handlers::iterator start, handlers::iterator end,const timeval*t)
+{
+	for (handlers::iterator i= start; i!= end; i++)
+		(*i)->append(_out, t);
+	_out<<std::endl<<std::flush;
+	//_out.sync();
+	fflush(stdout);
 }
 
 ///// stream /////
@@ -566,12 +568,26 @@ void close_originator::onClose(tcp_stream* pstream, const timeval* t, unsigned c
 	}
 }
 
+void close_originator::onOpen(tcp_stream* pstream, const timeval* t)
+{
+	sip = pstream->addr.saddr;
+	dip = pstream->addr.daddr;
+}
+
+void close_originator::onOpening(tcp_stream* pstream, const timeval* t)
+{
+	sip = pstream->addr.saddr;
+	dip = pstream->addr.daddr;
+}
+
 void close_originator::onRequest(tcp_stream* pstream, const timeval* t)
 {
 	sip = pstream->addr.saddr;
+	dip = pstream->addr.daddr;
 }
 void close_originator::onResponse(tcp_stream* pstream,const  timeval* t)
 {
+	sip = pstream->addr.saddr;
 	dip = pstream->addr.daddr;
 }
 

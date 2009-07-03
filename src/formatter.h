@@ -297,11 +297,13 @@ class outstream_printer : public printer
 {
 public:
 	typedef std::basic_ostream<char>& Out;
+	//typedef T& Out;
 	outstream_printer(Out out): _out(out){_out.setf(ios_base::fixed);}
 	void doit(handlers::iterator start, handlers::iterator end,const timeval*t);
 private :
 	Out _out;
 };
+
 
 class cmd_execute_printer : public printer
 {
@@ -919,6 +921,8 @@ class close_originator : public basic_handler
 public:
 	close_originator (const string& not_found){closed=false, ip_originator=0, sip=0, dip=0; _not_found= not_found;}
 	virtual void append(std::basic_ostream<char>& out, const timeval* );
+	virtual void onOpening(tcp_stream* pstream, const timeval* t);
+	virtual void onOpen(tcp_stream* pstream, const timeval* t);
 	virtual void onClose(tcp_stream* pstream, const timeval* t, unsigned char* packet);
 	virtual void onRequest(tcp_stream* pstream, const timeval* t);
 	virtual void onResponse(tcp_stream* pstream,const  timeval* t);
