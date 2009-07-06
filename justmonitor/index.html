@@ -1,0 +1,565 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta name="generator" content= "HTML Tidy, see www.w3.org" />
+        <meta http-equiv="Content-Type" content= "text/html; charset=utf-8" />
+        <link rel="stylesheet" href="justmonitor.css" type= "text/css" media="screen" charset="utf-8" />
+        <script type="text/javascript" src="./extensions/parse_logs">
+        </script>
+        <script type="text/javascript">
+            function create_query_string(values, prefix, postfix)
+            {
+                var first = true;
+                var params = "";
+				var p = "";
+				if (prefix)
+					p = prefix;
+				var p2= "";
+				if (postfix)
+					p2 = postfix;
+                for (e in values) 
+                {
+					
+                    var k = encodeURIComponent(p+values[e][1][0].toFixed(2)+"% "+ values[e][0]+p2);
+                    var v = values[e][1][1];
+                    param = k + "=" + v
+                    if (first) 
+                        params += "?";
+                    else 
+                        params += "&";
+                    first = false;
+                    params += param
+                }
+                return params
+            }
+            
+            function formatNumber(n)
+            {
+                var s = n.toFixed(0);
+                return s;
+            }
+            
+            function create_query_string_for_percentile(values)
+            {
+                var first = true;
+                var params = ""
+                l = values.length
+                var step = 10;
+                var counter = step;
+                index = 0;
+                for (e in values) 
+                {
+                    var v = values[e];
+                    var k = encodeURIComponent(formatNumber(counter) + "% (" + v + ")");
+                    counter += step;
+                    param = k + "=" + v;
+                    param += "&" + index + "=" + k;
+                    if (first) 
+                        params += "?";
+                    else 
+                        params += "&";
+                    first = false;
+                    params += param
+                    
+                    index += 1;
+                }
+                
+                return params
+            }
+            
+            function default_writer(id)
+            {
+                this.id = id;
+                this.write = function(val)
+                {
+                    var elem = document.getElementById(this.id);
+                    elem.innerHTML = val;
+                }
+            }
+            function bytes_writer(id)
+            {
+                this.id = id;
+                this.write = function(val)
+                {
+					var v = (val/1024/1024).toFixed(2) +" MB " 
+                    var elem = document.getElementById(this.id);
+                    elem.innerHTML = v;
+                }
+            }
+			
+            function tableWriter(id)
+            {
+                this.id = id;
+                this.write = function(val)
+                {
+                    var table = document.getElementById(this.id);
+                    var len = table.rows.length;
+                    for (var i = 0; i < len; i++) 
+                    {
+                        table.deleteRow(0);
+                    }
+                    for (e in val) 
+                    {
+                        //var table = new HTMLTableElement();
+                        var row = table.insertRow(table.rows.length);
+                        r = val[e]
+                        for (c in r) 
+                        {
+                            if (c == 0) 
+                            {
+                                var cell = row.insertCell(row.cells.length);
+                                cell.innerHTML = r[c];
+                            }
+                            else 
+                            {
+                                v = r[c];
+                                for (elc in v) 
+                                {
+                                    var cell = row.insertCell(row.cells.length);
+                                    cell.innerHTML = v[elc];
+                                    
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            function tableAndImgWriter(id)
+            {
+                this.base = new tableWriter(id);
+                this.write = function(val)
+                {
+                    this.base.write(val);
+                    var id = this.base.id + "_chart";
+                    var chartDiv = document.getElementById(id);
+                    var params = create_query_string(val);
+                    chartDiv.innerHTML = "<img src=\"/extensions/make_pie" + params + "\" />";
+                }
+            }
+			
+            function tableAndImgWriterRespCodes(id)
+            {
+                this.base = new tableWriter(id);
+                this.write = function(val)
+                {
+                    this.base.write(val);
+                    var id = this.base.id + "_chart";
+                    var chartDiv = document.getElementById(id);
+                    var params = create_query_string(val, "code ")
+                    chartDiv.innerHTML = "<img src=\"/extensions/make_pie" + params + "\" />";
+                }
+            }
+            
+            function percentileWriter(id)
+            {
+                this.id = id;
+                this.write = function(val)
+                {
+                    var values = val
+                    /*                  var td = document.getElementById(this.id);
+                     var row = td.parentNode
+                     for (e in values)
+                     {
+                     var cell = row.insertCell(row.cells.length);
+                     cell.innerHTML = values[e];
+                     }
+                     */
+                    graph_id = this.id + "_graph";
+                    var div = document.getElementById(graph_id);
+                    var params = create_query_string_for_percentile(values);
+                    div.innerHTML = "<img src=\"/extensions/make_bar" + params + "\" />";
+                    
+                    
+                };
+                
+            };
+            function nullWriter(id)
+            {
+                this.id = id;
+                this.write = function(val)
+                {
+                    //console.log ("nullWriter",this.id, val);
+                }
+                
+            }
+            
+            var html_registry = 
+            {
+                types: 
+                {
+                    "TABLE": tableWriter
+                },
+                getType: function(tagName)
+                {
+                    return this.types[tagName];
+                }
+            }
+            
+            function get_writer(id)
+            {
+                var elem = document.getElementById(id);
+                if (elem) 
+                {
+                    var just_type = elem.getAttribute("just_type");
+                    if (just_type) 
+                    {
+                        f = eval(just_type);
+                        obj = new f(id);
+                        return obj
+                    }
+                    type = html_registry.getType(elem.tagName);
+                    if (type) 
+                        return new type(id);
+                    return new default_writer(id);
+                }
+                return new nullWriter(id)
+            }
+            
+            function update()
+            {
+                for (val in result) 
+                {
+                    try 
+                    {
+                        var id = val;
+                        var writer = get_writer(id);
+                        writer.write(result[val]);
+                    } 
+                    catch (e) 
+                    {
+                        alert(e);
+                    }
+                }
+            }
+            
+            window.onload = update;
+        </script>
+        <title>Just HTTP Report</title>
+    </head>
+    <body>
+        <div id="mainPage">
+            <h1>Just HTTP Report</h1>
+            <!--<button onclick="update();">update</button>-->
+            <table class="summary global">
+                <caption>
+                    Global Info
+                </caption>
+                <tr>
+                    <td>
+                        start time
+                    </td>
+                    <td id="start_time">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        end time
+                    </td>
+                    <td id="end_time">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        elapsed time
+                    </td>
+                    <td id="elapsed">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        total hits
+                    </td>
+                    <td id="hits">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        hits per second
+                    </td>
+                    <td id="requests_per_sec">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        bytes transferred
+                    </td>
+                    <td id="sum__req_size_resp_size" just_type="bytes_writer">
+                    </td>
+                </tr>
+            </table>
+            <table class="summary">
+                <caption>
+                    Hits Summary
+                </caption>
+                <tr>
+                    <td>
+                        <table>
+                            <caption>
+                                Top 10 Hosts
+                            </caption>
+                            <tr>
+                                <td>
+                                    <table class="inner" id="count_host" just_type="tableAndImgWriter">
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div id="count_host_chart">
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td>
+                        <table>
+                            <caption>
+                                Client Hosts
+                            </caption>
+                            <tr>
+                                <td>
+                                    <table class="inner" id="count_source_ip_source" just_type="tableAndImgWriter">
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div id="count_source_ip_source_chart">
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <table>
+                            <caption>
+                                Methods
+                            </caption>
+                            <tr>
+                                <td>
+                                    <table class="inner" id="count_method" just_type="tableAndImgWriter">
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div id="count_method_chart">
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td>
+                        <table>
+                            <caption>
+                                Content Types
+                            </caption>
+                            <tr>
+                                <td>
+                                    <table class="inner" id="count_content_type" just_type="tableAndImgWriter">
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div id="count_content_type_chart">
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <table>
+                            <caption>
+                                Main Content Types
+                            </caption>
+                            <tr>
+                                <td>
+                                    <table class="inner" id="count_content_type_content_type" just_type="tableAndImgWriter">
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div id="count_content_type_content_type_chart">
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td>
+                        <table>
+                            <caption>
+                                Response Codes
+                            </caption>
+                            <tr>
+                                <td>
+                                    <table class="inner" id="count_resp_code" just_type="tableAndImgWriterRespCodes">
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div id="count_resp_code_chart">
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <table id="count_host_url" just_type="tableWriter">
+                            <caption>
+                                Top 20 Requested Urls
+                            </caption>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+<!--            <table id="count_connection_type" just_type= "tableAndImgWriter">
+                <caption>
+                    requests in connection
+                </caption>
+            <div id="count_connection_type_chart">
+            </div>
+            </table>
+-->
+            <table class="summary">
+                <caption>
+                    Performance Summary Percentiles
+                </caption>
+                <tr>
+                    <td>
+                        <div just_type="percentileWriter" id= "percentiles_connection_time_max" class= "percentile">
+                            <div>
+                                Connection Time
+                            </div>
+                            <div id= "percentiles_connection_time_max_graph">
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div just_type="percentileWriter" id= "percentiles_idle0_time_max" class= "percentile">
+                            <div>
+                                Idle Time After connection
+                            </div>
+                            <div id="percentiles_idle0_time_max_graph">
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div just_type="percentileWriter" id= "percentiles_request_time_max" class= "percentile">
+                            <div>
+                                Request Time
+                            </div>
+                            <div id= "percentiles_request_time_max_graph">
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div just_type="percentileWriter" id= "percentiles_response_time_max" class= "percentile">
+                            <div>
+                                Response Time
+                            </div>
+                            <div id= "percentiles_response_time_max_graph">
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div just_type="percentileWriter" id= "percentiles_idle1_time_max" class= "percentile">
+                            <div>
+                                Idle Time After Response
+                            </div>
+                            <div id="percentiles_idle1_time_max_graph">
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div just_type="percentileWriter" id= "percentiles_close_time_max" class= "percentile">
+                            <div>
+                                Close Time
+                            </div>
+                            <div id="percentiles_close_time_max_graph">
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <table class="summary">
+                <caption>
+                    Performance Summary up to 90th Percentile
+                </caption>
+                <tr>
+                    <td>
+                        <div just_type="percentileWriter" id= "percentiles_connection_time" class= "percentile">
+                            <div>
+                                Connection Time
+                            </div>
+                            <div id= "percentiles_connection_time_graph">
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div just_type="percentileWriter" id= "percentiles_idle0_time" class="percentile">
+                            <div>
+                                Idle Time After Connection
+                            </div>
+                            <div id="percentiles_idle0_time_graph">
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div just_type="percentileWriter" id= "percentiles_request_time" class="percentile">
+                            <div>
+                                Request Time
+                            </div>
+                            <div id="percentiles_request_time_graph">
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div just_type="percentileWriter" id= "percentiles_response_time" class="percentile">
+                            <div>
+                                Response Time
+                            </div>
+                            <div id="percentiles_response_time_graph">
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div just_type="percentileWriter" id= "percentiles_idle1_time" class="percentile">
+                            <div>
+                                Idle Time After Response
+                            </div>
+                            <div id="percentiles_idle1_time_graph">
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div just_type="percentileWriter" id= "percentiles_close_time" class="percentile">
+                            <div>
+                                Close Time
+                            </div>
+                            <div id="percentiles_close_time_graph">
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </body>
+</html>

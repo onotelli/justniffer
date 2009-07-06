@@ -1,5 +1,13 @@
+justniffer (0.5.6) unstable; urgency=low
+  * forced flush on standard output whenever an new line is written 
+  * close_originator handler fixed
+  * lintian errors fixed
+
+ -- Oreste Notelli <oreste.notelli@plecno.com>  Mon, 03 July 2009 10:30:00 +0100
+
 justniffer (0.5.5) unstable; urgency=low
-  * improved performances keywords adding a "not applicable string" settable by optional parameter
+  * improved performances keywords adding a "not applicable string" settable by
+    optional parameter
   * documentation updated for enhancement provided from version (0.5.3)
 
  -- Oreste Notelli <oreste.notelli@plecno.com>  Mon, 29 June 2009 13:30:00 +0100
@@ -27,7 +35,7 @@ justniffer (0.5.2) unstable; urgency=high
  -- Oreste Notelli <oreste.notelli@plecno.com>  Mon, 1 June 2009 16:30:00 +0100
 
 justniffer (0.5.1) unstable; urgency=low
-  * added connection.timestamp
+  * added connection.timestampdebian-rules-ignores-make-clean-error
   * fixed idle.time.0 formatting
   * fixed documentation
   * fixed compilation issues with gcc 3.3.3

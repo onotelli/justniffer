@@ -2,7 +2,7 @@ Source: justniffer
 Section: net
 Priority: optional
 Maintainer: Oreste Notelli <oreste.notelli@plecno.com>
-Build-Depends: patch, tar, debhelper (>= 5), autotools-dev, make, g++, libboost-iostreams-dev,  libboost-program-options-dev , libboost-regex-dev , libc6-dev , gcc (>= 4.1), libpcap0.8-dev 
+Build-Depends: patch, tar (>=1), debhelper (>= 5), autotools-dev, make(>=2), g++(>=3.3), libboost-iostreams-dev,  libboost-program-options-dev , libboost-regex-dev , libc6-dev (>=2), gcc (>= 3.3), libpcap0.8-dev 
 Standards-Version: 3.7.2
 
 Package: justniffer
