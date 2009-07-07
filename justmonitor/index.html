@@ -1,25 +1,31 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
 <html xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-        <meta name="generator" content= "HTML Tidy, see www.w3.org" />
-        <meta http-equiv="Content-Type" content= "text/html; charset=utf-8" />
-        <link rel="stylesheet" href="justmonitor.css" type= "text/css" media="screen" charset="utf-8" />
-        <script type="text/javascript" src="./extensions/parse_logs">
-        </script>
-        <script type="text/javascript">
+<head>
+  <meta name="generator" content=
+  "HTML Tidy for Linux/x86 (vers 7 December 2008), see www.w3.org" />
+  <meta http-equiv="Content-Type" content=
+  "text/html; charset=us-ascii" />
+  <link rel="stylesheet" href="justmonitor.css" type="text/css"
+  media="screen" charset="utf-8" />
+  <script type="text/javascript" src="./extensions/parse_logs">
+</script>
+  <script type="text/javascript">
+//<![CDATA[
             function create_query_string(values, prefix, postfix)
             {
                 var first = true;
                 var params = "";
-				var p = "";
-				if (prefix)
-					p = prefix;
-				var p2= "";
-				if (postfix)
-					p2 = postfix;
+                                var p = "";
+                                if (prefix)
+                                        p = prefix;
+                                var p2= "";
+                                if (postfix)
+                                        p2 = postfix;
                 for (e in values) 
                 {
-					
+                                        
                     var k = encodeURIComponent(p+values[e][1][0].toFixed(2)+"% "+ values[e][0]+p2);
                     var v = values[e][1][1];
                     param = k + "=" + v
@@ -81,12 +87,12 @@
                 this.id = id;
                 this.write = function(val)
                 {
-					var v = (val/1024/1024).toFixed(2) +" MB " 
+                                        var v = (val/1024/1024).toFixed(2) +" MB " 
                     var elem = document.getElementById(this.id);
                     elem.innerHTML = v;
                 }
             }
-			
+                        
             function tableWriter(id)
             {
                 this.id = id;
@@ -137,7 +143,7 @@
                     chartDiv.innerHTML = "<img src=\"/extensions/make_pie" + params + "\" />";
                 }
             }
-			
+                        
             function tableAndImgWriterRespCodes(id)
             {
                 this.base = new tableWriter(id);
@@ -234,195 +240,254 @@
             }
             
             window.onload = update;
-        </script>
-        <title>Just HTTP Report</title>
-    </head>
-    <body>
-        <div id="mainPage">
-            <h1>Just HTTP Report</h1>
-            <!--<button onclick="update();">update</button>-->
-            <table class="summary global">
-                <caption>
-                    Global Info
-                </caption>
-                <tr>
-                    <td>
-                        start time
-                    </td>
-                    <td id="start_time">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        end time
-                    </td>
-                    <td id="end_time">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        elapsed time
-                    </td>
-                    <td id="elapsed">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        total hits
-                    </td>
-                    <td id="hits">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        hits per second
-                    </td>
-                    <td id="requests_per_sec">
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        bytes transferred
-                    </td>
-                    <td id="sum__req_size_resp_size" just_type="bytes_writer">
-                    </td>
-                </tr>
-            </table>
-            <table class="summary">
-                <caption>
-                    Hits Summary
-                </caption>
-                <tr>
-                    <td>
-                        <table>
-                            <caption>
-                                Top 10 Hosts
-                            </caption>
-                            <tr>
-                                <td>
-                                    <table class="inner" id="count_host" just_type="tableAndImgWriter">
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div id="count_host_chart">
-                                    </div>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                    <td>
-                        <table>
-                            <caption>
-                                Client Hosts
-                            </caption>
-                            <tr>
-                                <td>
-                                    <table class="inner" id="count_source_ip_source" just_type="tableAndImgWriter">
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div id="count_source_ip_source_chart">
-                                    </div>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <table>
-                            <caption>
-                                Methods
-                            </caption>
-                            <tr>
-                                <td>
-                                    <table class="inner" id="count_method" just_type="tableAndImgWriter">
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div id="count_method_chart">
-                                    </div>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                    <td>
-                        <table>
-                            <caption>
-                                Content Types
-                            </caption>
-                            <tr>
-                                <td>
-                                    <table class="inner" id="count_content_type" just_type="tableAndImgWriter">
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div id="count_content_type_chart">
-                                    </div>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <table>
-                            <caption>
-                                Main Content Types
-                            </caption>
-                            <tr>
-                                <td>
-                                    <table class="inner" id="count_content_type_content_type" just_type="tableAndImgWriter">
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div id="count_content_type_content_type_chart">
-                                    </div>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                    <td>
-                        <table>
-                            <caption>
-                                Response Codes
-                            </caption>
-                            <tr>
-                                <td>
-                                    <table class="inner" id="count_resp_code" just_type="tableAndImgWriterRespCodes">
-                                    </table>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div id="count_resp_code_chart">
-                                    </div>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                        <table id="count_host_url" just_type="tableWriter">
-                            <caption>
-                                Top 20 Requested Urls
-                            </caption>
-                        </table>
-                    </td>
-                </tr>
-            </table>
-<!--            <table id="count_connection_type" just_type= "tableAndImgWriter">
+  //]]>
+  </script>
+
+  <title>Just HTTP Report</title>
+</head>
+
+<body>
+  <div id="mainPage">
+    <h1>Just HTTP Report</h1>
+    <!--<button onclick="update();">update</button>-->
+
+    <table class="summary global">
+      <caption>
+        Global Info
+      </caption>
+
+      <tr>
+        <td>start time</td>
+
+        <td id="start_time"></td>
+      </tr>
+
+      <tr>
+        <td>end time</td>
+
+        <td id="end_time"></td>
+      </tr>
+
+      <tr>
+        <td>elapsed time</td>
+
+        <td id="elapsed"></td>
+      </tr>
+
+      <tr>
+        <td>total hits</td>
+
+        <td id="hits"></td>
+      </tr>
+
+      <tr>
+        <td>hits per second</td>
+
+        <td id="requests_per_sec"></td>
+      </tr>
+
+      <tr>
+        <td>bytes transferred</td>
+
+        <td id="sum__req_size_resp_size" just_type="bytes_writer">
+        </td>
+      </tr>
+    </table>
+
+    <table class="summary">
+      <caption>
+        Hits Summary
+      </caption>
+
+      <tr>
+        <td>
+          <table>
+            <caption>
+              Top 10 Hosts
+            </caption>
+
+            <tr>
+              <td>
+                <table class="inner" id="count_host" just_type=
+                "tableAndImgWriter"></table>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div id="count_host_chart"></div>
+              </td>
+            </tr>
+          </table>
+        </td>
+
+        <td>
+          <table>
+            <caption>
+              Domains
+            </caption>
+
+            <tr>
+              <td>
+                <table class="inner" id="count_domain_host"
+                just_type="tableAndImgWriter"></table>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div id="count_domain_host_chart"></div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <table>
+            <caption>
+              Top 10 HTTP services
+            </caption>
+
+            <tr>
+              <td>
+                <table class="inner" id="count_dest" just_type=
+                "tableAndImgWriter"></table>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div id="count_dest_chart"></div>
+              </td>
+            </tr>
+          </table>
+        </td>
+
+        <td>
+          <table>
+            <caption>
+              Client Hosts
+            </caption>
+
+            <tr>
+              <td>
+                <table class="inner" id="count_source_ip_source"
+                just_type="tableAndImgWriter"></table>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div id="count_source_ip_source_chart"></div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <table>
+            <caption>
+              Methods
+            </caption>
+
+            <tr>
+              <td>
+                <table class="inner" id="count_method" just_type=
+                "tableAndImgWriter"></table>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div id="count_method_chart"></div>
+              </td>
+            </tr>
+          </table>
+        </td>
+
+        <td>
+          <table>
+            <caption>
+              Content Types
+            </caption>
+
+            <tr>
+              <td>
+                <table class="inner" id="count_content_type"
+                just_type="tableAndImgWriter"></table>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div id="count_content_type_chart"></div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <table>
+            <caption>
+              Main Content Types
+            </caption>
+
+            <tr>
+              <td>
+                <table class="inner" id=
+                "count_content_type_content_type" just_type=
+                "tableAndImgWriter"></table>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div id="count_content_type_content_type_chart">
+                </div>
+              </td>
+            </tr>
+          </table>
+        </td>
+
+        <td>
+          <table>
+            <caption>
+              Response Codes
+            </caption>
+
+            <tr>
+              <td>
+                <table class="inner" id="count_resp_code"
+                just_type="tableAndImgWriterRespCodes"></table>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div id="count_resp_code_chart"></div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <tr>
+        <td colspan="2">
+          <table id="count_host_url" just_type="tableWriter">
+            <caption>
+              Top 20 Requested Urls
+            </caption>
+          </table>
+        </td>
+      </tr>
+    </table>
+    <!--            <table id="count_connection_type" just_type= "tableAndImgWriter">
                 <caption>
                     requests in connection
                 </caption>
@@ -430,136 +495,556 @@
             </div>
             </table>
 -->
-            <table class="summary">
-                <caption>
-                    Performance Summary Percentiles
-                </caption>
-                <tr>
-                    <td>
-                        <div just_type="percentileWriter" id= "percentiles_connection_time_max" class= "percentile">
-                            <div>
-                                Connection Time
-                            </div>
-                            <div id= "percentiles_connection_time_max_graph">
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div just_type="percentileWriter" id= "percentiles_idle0_time_max" class= "percentile">
-                            <div>
-                                Idle Time After connection
-                            </div>
-                            <div id="percentiles_idle0_time_max_graph">
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div just_type="percentileWriter" id= "percentiles_request_time_max" class= "percentile">
-                            <div>
-                                Request Time
-                            </div>
-                            <div id= "percentiles_request_time_max_graph">
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div just_type="percentileWriter" id= "percentiles_response_time_max" class= "percentile">
-                            <div>
-                                Response Time
-                            </div>
-                            <div id= "percentiles_response_time_max_graph">
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div just_type="percentileWriter" id= "percentiles_idle1_time_max" class= "percentile">
-                            <div>
-                                Idle Time After Response
-                            </div>
-                            <div id="percentiles_idle1_time_max_graph">
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div just_type="percentileWriter" id= "percentiles_close_time_max" class= "percentile">
-                            <div>
-                                Close Time
-                            </div>
-                            <div id="percentiles_close_time_max_graph">
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-            </table>
-            <table class="summary">
-                <caption>
-                    Performance Summary up to 90th Percentile
-                </caption>
-                <tr>
-                    <td>
-                        <div just_type="percentileWriter" id= "percentiles_connection_time" class= "percentile">
-                            <div>
-                                Connection Time
-                            </div>
-                            <div id= "percentiles_connection_time_graph">
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div just_type="percentileWriter" id= "percentiles_idle0_time" class="percentile">
-                            <div>
-                                Idle Time After Connection
-                            </div>
-                            <div id="percentiles_idle0_time_graph">
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div just_type="percentileWriter" id= "percentiles_request_time" class="percentile">
-                            <div>
-                                Request Time
-                            </div>
-                            <div id="percentiles_request_time_graph">
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div just_type="percentileWriter" id= "percentiles_response_time" class="percentile">
-                            <div>
-                                Response Time
-                            </div>
-                            <div id="percentiles_response_time_graph">
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <div just_type="percentileWriter" id= "percentiles_idle1_time" class="percentile">
-                            <div>
-                                Idle Time After Response
-                            </div>
-                            <div id="percentiles_idle1_time_graph">
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div just_type="percentileWriter" id= "percentiles_close_time" class="percentile">
-                            <div>
-                                Close Time
-                            </div>
-                            <div id="percentiles_close_time_graph">
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-            </table>
-        </div>
-    </body>
+
+    <table class="summary">
+      <caption>
+        Connection Behavior Summary
+      </caption>
+
+      <tr>
+        <td>
+          <table>
+            <caption>
+              Keep-alive
+            </caption>
+
+            <tr>
+              <td>
+                <table class="inner" id=
+                "keep_alive_count_connection_type" just_type=
+                "tableAndImgWriter"></table>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div id="keep_alive_count_connection_type_chart">
+                </div>
+              </td>
+            </tr>
+          </table>
+        </td>
+
+        <td>
+          <table>
+            <caption>
+              who close connection
+            </caption>
+
+            <tr>
+              <td>
+                <table class="inner" id=
+                "count_close_originator_close_orig" just_type=
+                "tableAndImgWriter"></table>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div id="count_close_originator_close_orig_chart">
+                </div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div just_type="percentileWriter" id=
+          "percentiles_close_time_server_close_time_close_orig_max"
+          class="percentile">
+            <div>
+              Sever Close time
+            </div>
+
+            <div id=
+            "percentiles_close_time_server_close_time_close_orig_max_graph">
+            </div>
+          </div>
+        </td>
+
+        <td>
+          <div just_type="percentileWriter" id=
+          "percentiles_close_time_client_close_time_close_orig_max"
+          class="percentile">
+            <div>
+              Client Close time
+            </div>
+
+            <div id=
+            "percentiles_close_time_client_close_time_close_orig_max_graph">
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div just_type="percentileWriter" id=
+          "percentiles_close_time_server_close_time_close_orig"
+          class="percentile">
+            <div>
+              Sever Close time 90th percentile
+            </div>
+
+            <div id=
+            "percentiles_close_time_server_close_time_close_orig_graph">
+            </div>
+          </div>
+        </td>
+
+        <td>
+          <div just_type="percentileWriter" id=
+          "percentiles_close_time_client_close_time_close_orig"
+          class="percentile">
+            <div>
+              Client Close time 90th percentile
+            </div>
+
+            <div id=
+            "percentiles_close_time_client_close_time_close_orig_graph">
+            </div>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+<!--
+    <table class="summary">
+      <caption>
+        Performance Summary
+      </caption>
+
+      <tr>
+        <td>
+          <table>
+            <caption>
+              Max connection time per host
+            </caption>
+
+            <tr>
+              <td>
+                <table class="inner" id=
+                "max__connection_time_host" just_type=
+                "tableAndImgWriter"></table>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div id="max__connection_time_host_chart">
+                </div>
+              </td>
+            </tr>
+          </table>
+        </td>
+
+        <td>
+          <table>
+            <caption>
+              Max connection time per client source
+            </caption>
+
+            <tr>
+              <td>
+                <table class="inner" id=
+                "max_source_ip_connection_time_source" just_type=
+                "tableAndImgWriter"></table>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div id="max_source_ip_connection_time_source_chart">
+                </div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <table>
+            <caption>
+              Max request time per host
+            </caption>
+
+            <tr>
+              <td>
+                <table class="inner" id=
+                "max__request_time_host" just_type=
+                "tableAndImgWriter"></table>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div id="max__request_time_host_chart">
+                </div>
+              </td>
+            </tr>
+          </table>
+        </td>
+
+        <td>
+          <table>
+            <caption>
+              Max request time per url
+            </caption>
+
+            <tr>
+              <td>
+                <table class="inner" id=
+                "max__request_time_host_url" just_type=
+                "tableAndImgWriter"></table>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div id="max__request_time_host_url_chart">
+                </div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+    </table>
+-->
+
+    <table class="summary">
+      <caption>
+        Bandwith occupation summary
+      </caption>
+
+      <tr>
+        <td>
+          <table>
+            <caption>
+              Traffic per host
+            </caption>
+
+            <tr>
+              <td>
+                <table class="inner" id=
+                "sum__req_size_resp_size_host" just_type=
+                "tableAndImgWriter"></table>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div id="sum__req_size_resp_size_host_chart"></div>
+              </td>
+            </tr>
+          </table>
+        </td>
+
+        <td>
+          <table>
+            <caption>
+              Traffic per content type
+            </caption>
+
+            <tr>
+              <td>
+                <table class="inner" id=
+                "sum__req_size_resp_size_content_type" just_type=
+                "tableAndImgWriter"></table>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div id=
+                "sum__req_size_resp_size_content_type_chart"></div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <table>
+            <caption>
+              Traffic per method
+            </caption>
+
+            <tr>
+              <td>
+                <table class="inner" id=
+                "sum__req_size_resp_size_method" just_type=
+                "tableAndImgWriter"></table>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div id=
+                "sum__req_size_resp_size_method_chart"></div>
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td>
+          <table>
+            <caption>
+              Traffic per client host
+            </caption>
+
+            <tr>
+              <td>
+                <table class="inner" id=
+                "sum_source_ip_req_size_resp_size_source" just_type=
+                "tableAndImgWriter"></table>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div id=
+                "sum_source_ip_req_size_resp_size_source_chart"></div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    <tr>
+        <td>
+          <table>
+            <caption>
+              Traffic per main content type
+            </caption>
+
+            <tr>
+              <td>
+                <table class="inner" id=
+                "sum_content_type_req_size_resp_size_content_type" just_type=
+                "tableAndImgWriter"></table>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div id=
+                "sum_content_type_req_size_resp_size_content_type_chart"></div>
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td>
+          <table>
+            <caption>
+              Domains
+            </caption>
+
+            <tr>
+              <td>
+                <table class="inner" id=
+                "sum_domain_req_size_resp_size_host" just_type=
+                "tableAndImgWriter"></table>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div id=
+                "sum_domain_req_size_resp_size_host_chart"></div>
+              </td>
+            </tr>
+          </table>
+        </td>
+
+    </tr>
+    <tr>
+        <td>
+          <table>
+            <caption>
+              Traffic per service
+            </caption>
+
+            <tr>
+              <td>
+                <table class="inner" id=
+                "sum__req_size_resp_size_dest" just_type=
+                "tableAndImgWriter"></table>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <div id=
+                "sum__req_size_resp_size_dest_chart"></div>
+              </td>
+            </tr>
+          </table>
+        </td>
+	<td>
+	</td>
+      </tr>
+
+    </table>
+
+
+    <table class="summary">
+      <caption>
+        Performance Summary Percentiles
+      </caption>
+
+      <tr>
+        <td>
+          <div just_type="percentileWriter" id=
+          "percentiles_connection_time_max" class="percentile">
+            <div>
+              Connection Time
+            </div>
+
+            <div id="percentiles_connection_time_max_graph"></div>
+          </div>
+        </td>
+
+        <td>
+          <div just_type="percentileWriter" id=
+          "percentiles_idle0_time_max" class="percentile">
+            <div>
+              Idle Time After connection
+            </div>
+
+            <div id="percentiles_idle0_time_max_graph"></div>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div just_type="percentileWriter" id=
+          "percentiles_request_time_max" class="percentile">
+            <div>
+              Request Time
+            </div>
+
+            <div id="percentiles_request_time_max_graph"></div>
+          </div>
+        </td>
+
+        <td>
+          <div just_type="percentileWriter" id=
+          "percentiles_response_time_max" class="percentile">
+            <div>
+              Response Time
+            </div>
+
+            <div id="percentiles_response_time_max_graph"></div>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div just_type="percentileWriter" id=
+          "percentiles_idle1_time_max" class="percentile">
+            <div>
+              Idle Time After Response
+            </div>
+
+            <div id="percentiles_idle1_time_max_graph"></div>
+          </div>
+        </td>
+
+        <td>
+          <div just_type="percentileWriter" id=
+          "percentiles_close_time_max" class="percentile">
+            <div>
+              Close Time
+            </div>
+
+            <div id="percentiles_close_time_max_graph"></div>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <table class="summary">
+      <caption>
+        Performance Summary up to 90th Percentile
+      </caption>
+
+      <tr>
+        <td>
+          <div just_type="percentileWriter" id=
+          "percentiles_connection_time" class="percentile">
+            <div>
+              Connection Time
+            </div>
+
+            <div id="percentiles_connection_time_graph"></div>
+          </div>
+        </td>
+
+        <td>
+          <div just_type="percentileWriter" id=
+          "percentiles_idle0_time" class="percentile">
+            <div>
+              Idle Time After Connection
+            </div>
+
+            <div id="percentiles_idle0_time_graph"></div>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div just_type="percentileWriter" id=
+          "percentiles_request_time" class="percentile">
+            <div>
+              Request Time
+            </div>
+
+            <div id="percentiles_request_time_graph"></div>
+          </div>
+        </td>
+
+        <td>
+          <div just_type="percentileWriter" id=
+          "percentiles_response_time" class="percentile">
+            <div>
+              Response Time
+            </div>
+
+            <div id="percentiles_response_time_graph"></div>
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div just_type="percentileWriter" id=
+          "percentiles_idle1_time" class="percentile">
+            <div>
+              Idle Time After Response
+            </div>
+
+            <div id="percentiles_idle1_time_graph"></div>
+          </div>
+        </td>
+
+        <td>
+          <div just_type="percentileWriter" id=
+          "percentiles_close_time" class="percentile">
+            <div>
+              Close Time
+            </div>
+
+            <div id="percentiles_close_time_graph"></div>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
+</body>
 </html>

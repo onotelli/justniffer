@@ -194,9 +194,9 @@ class base_collector(collector):
   def __init__(self, columns, groupby = None, max_ = 10):
     self.__orig_columns = columns
     if (groupby == None):
-      self.__orig_groupby  = []
+      self._orig_groupby  = []
     else:
-      self.__orig_groupby = groupby
+      self._orig_groupby = groupby
     if (type(columns) == types.ListType):
       self._columns = collector.get_column_numbers(columns)
     else:
@@ -247,7 +247,7 @@ class base_collector(collector):
   def get_title(self):
     res = [self.__class__.__name__]
     res.extend (self.__orig_columns)
-    res.extend (self.__orig_groupby)
+    res.extend (self._orig_groupby)
     return create_str( res , " ")
 
   def print_result(self, printer):
@@ -315,19 +315,32 @@ class count(percentable):
 
   def get_percent(self, value):
     return float(value)/self.tot*100
+
 class count_source_ip(count):
   def __init__(self, groupby = None, max_ = 10):
     count.__init__(self, ["source"], max_=max_)
 
   def get_key(self, fields):
-    return fields[4].split(":")[0]
+    return fields[self._groupby[0]].split(":")[0]
+
+class count_domain(count):
+  def __init__(self, groupby = None, max_ = 10):
+    count.__init__(self, ["host"], max_=max_)
+
+  def get_key(self, fields):
+    field = fields[self._groupby[0]]
+    try:
+      dn_parts = field.split(".")
+      return dn_parts[-2] + "."+dn_parts[-1]
+    except:
+      return field
 
 class count_content_type(count):
   def __init__(self, groupby = None, max_ = 10):
     count.__init__(self, ["content_type"], max_=max_)
 
   def get_key(self, fields):
-    return fields[19].split("/")[0]
+    return fields[self._groupby[0]].split("/")[0]
 
 class sum_(percentable):
   def __init__(self, columns, groupby = None, max_ = 10):
@@ -346,7 +359,7 @@ class sum_(percentable):
 
 class calc_base(base_collector):
   def __init__(self, columns, groupby = None, max_ = 10):
-    base_collector.__init__(self, columns, groupby , max_)
+    base_collector.__init__(self, columns, groupby = groupby, max_ = max_)
     self.others = []
 
   def update_others(self, key, value):
@@ -387,6 +400,27 @@ class average(calc_base):
       if count > self._max: break
     p.end()
 
+class keep_alive_count(count):
+  def __init__(self, max_=10):
+    count.__init__(self, ["connection_type"], max_ = max_)
+
+  def get_key(self, fields):
+    key = count.get_key(self, fields)
+    if (key in ["start", "last", "continue"]):
+      return "keepalive"
+    if (key in ["unique"]):
+      return "no-keepalive"
+    else:
+      return "unkown"
+    
+class count_close_originator(count):
+  def __init__(self, max_=10):
+    count.__init__(self, ["close_orig"], max_ = max_)
+
+  def is_to_include(self, fields):
+    return fields[self._groupby[0]] != "-"
+
+
 class percentiles(median_):
   base = median_
   def __init__(self, columns, includeMax =True, groupby = None, max_ = 10):
@@ -421,6 +455,8 @@ class percentiles(median_):
     printer.row ("others", self.get_percentiles(v))
 
 class max_(calc_base):
+  def __init__(self, columns, groupby = None, max = 10):
+    calc_base.__init__(self, columns, groupby = groupby, max_ = max)
 
   def update_values(self, key, value):
     if not (self._values.has_key(key)):
@@ -429,10 +465,84 @@ class max_(calc_base):
       val = self._values[key]
       self._values[key] = max (val, value)
 
+  def print_others(self, printer):
+    pass
+    #printer.row ("others", max (self.others))
+
+class max_source_ip(max_):
+  def __init__(self, columns, groupby = None, max=10):
+    g = ["source"]
+    if (groupby  != None):
+      if type(groupby) == types.ListType:
+	g.extend(groupby)
+      else:
+	g.append(groupby)
+    max_.__init__(self,columns, groupby = g, max = max)    
+
+  def get_key(self, fields):
+    key = fields[self._groupby[0]]
+    key = max_.get_key(self, fields)
+    try:
+      key = key.split(":")[0]
+    except:
+      pass
+    
+    if (len(self._groupby) > 1):
+      for e in self._groupby[1:]:
+	key += " " + str(fields[e])
+    return key
+
+
+class percentiles_close_time_server(percentiles):
+  def __init__(self ,includeMax = True):
+    percentiles.__init__(self, ["close_time"],groupby=["close_orig"], includeMax = includeMax)
+  def is_to_include(self, fields):
+    return fields[self._groupby[0]] == "server"
+
+class percentiles_close_time_client(percentiles):
+  def __init__(self, includeMax = True):
+    percentiles.__init__(self, ["close_time"],groupby=["close_orig"], includeMax = includeMax)
+  def is_to_include(self, fields):
+    return fields[self._groupby[0]] == "client"
+
+class sum_source_ip(sum_):
+  def __init__(self, columns, max_ = 10):
+    sum_.__init__(self, columns, ["source"] , max_= max_)
+
+  def get_key(self, fields):
+    key = sum_.get_key(self, fields)
+    try:
+      key = key.split(":")[0]
+    except:
+      pass
+    return key
+
+
+class sum_domain(sum_):
+  def __init__(self, columns, max_ = 10):
+    sum_.__init__(self, columns, ["host"] , max_= max_)
+
+  def get_key(self, fields):
+    field = fields[self._groupby[0]]
+    try:
+      dn_parts = field.split(".")
+      return dn_parts[-2] + "."+dn_parts[-1]
+    except:
+      return field
+
+class sum_content_type(sum_):
+  def __init__(self, columns, max_ = 10):
+    sum_.__init__(self, columns, ["content_type"] , max_= max_)
+
+  def get_key(self, fields):
+    return fields[self._groupby[0]].split("/")[0]
+
  
 def get_all_lines(filename):
   f = open (filename)
   return f
+  def is_to_include(self, fields):
+    return fields[self._groupby[0]] != "-"
 
 
   #fieldmap =     {
@@ -469,6 +579,7 @@ except:
 def create_javascript(out):
   l = [	
 	count(["host"]),
+	count(["dest"]),
 	count(["method"]),
 	hits(),
 	percentiles(["connection_time"]),
@@ -483,31 +594,50 @@ def create_javascript(out):
 	percentiles(["response_time"], includeMax=False),
 	percentiles(["idle1_time"], includeMax=False),
 	percentiles(["close_time"], includeMax=False),
-	max_(["connection_time"]),
-	max_(["request_time"]),
-	max_(["idle0_time"]),
-	max_(["response_time"]),
-	max_(["idle1_time"]),
-	max_(["close_time"]),
 	elapsed(),
 	start_time(),
 	end_time(),
 	requests_per_sec(),
-	count(["connection_type"]),
+	keep_alive_count(),
 	count(["resp_code"]),
 	count(["content_type"]),
 	count(["host","url"], max_ = 20), 
 	count_source_ip(),
+	count_domain(),
 	count_content_type(),
-	sum_(["req_size","resp_size"])
+	count_close_originator(),
+	percentiles_close_time_server(),
+	percentiles_close_time_client(),
+	percentiles_close_time_server(includeMax= False),
+	percentiles_close_time_client(includeMax=False),
+	sum_(["req_size","resp_size"]),
+	sum_source_ip(["req_size","resp_size"]),
+	sum_domain(["req_size","resp_size"]),
+	sum_content_type(["req_size","resp_size"]),
+	sum_(["req_size","resp_size"], ["dest"]),
+	sum_(["req_size","resp_size"], ["host"]),
+	sum_(["req_size","resp_size"], ["method"]),
+	sum_(["req_size","resp_size"], ["content_type"]),
+	max_(["req_size","resp_size"], ["host"]) ,
+	max_(["req_size","resp_size"], ["host", "url"]),
+	max_(["response_time"], ["host"]),
+	max_(["response_time"], ["host", "url"]),
+	max_(["close_time"], ["host"]),
+	max_(["close_time"], ["host", "url"]),
+	max_(["request_time"], ["host"]),
+	max_(["request_time"], ["host", "url"]),
+	max_(["connection_time"],["host"]),
+	max_source_ip(["connection_time"]),
+	max_source_ip(["idle0_time"]),
+	max_source_ip(["idle1_time"], ["url"])
       ]
   print "create_javascript"
   counter=0
   for line in get_all_lines(filename):
-    print line
+    #print line
     fields = line.split()
     if (len (fields)!= 20): 
-      #print_ line, len (fields), counter
+      print line, len (fields), counter
       pass
     else:
       for c in l:
