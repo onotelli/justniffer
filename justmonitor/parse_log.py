@@ -11,6 +11,50 @@ import types
 import datetime
 #import graph
 
+import math
+
+def get_list (elem):
+  if type (elem) ==list:
+    return elem
+  else:
+    if elem == None:
+      return []
+    else:
+      return [elem]
+
+def exclude_port(val):
+  try:
+    return val.split(":")[0]
+  except:
+    pass
+  return val
+
+def is_ip_address(val):
+  res = False
+  try:
+    v = val.split(".")
+    count = 0
+    for e in range(4):
+      u = int (v[e])
+      if (u > 255) or (u < 0):
+	break
+      count +=1
+    return count == len(v)
+  except:
+    return res
+
+def format_number(number, symbols, base = 1000, count = 1 ):
+  l = len(symbols)
+  res = float(number) / (base** count)
+  if res < 1:
+    e = min (count,  l)
+    return number, "%.2f %s"%(float (number)/(base**(e-1)), symbols[e-1])
+  else:
+    return format_number(number, symbols,base, count +1 )
+
+def _format(value):
+  return format_number(value, ["bytes", "KB", "MB", "GB", "TB"],1024)
+
 def percentile (numbers, perc):
   copy = sorted (numbers)
   return copy[int(0.5+(perc*len(numbers)/100))]
@@ -154,7 +198,11 @@ def simple_print(printer, key, value):
   printer.end()
 
 class requests_per_sec(collector):
-  def __init__(self):
+  def __init__(self, formatter = None):
+    if (formatter != None):
+      self.formatter = formatter
+    else:
+      self.formatter = lambda x :x
     self._min = None
     self._max = None
     self._count = 0
@@ -170,7 +218,7 @@ class requests_per_sec(collector):
     self._count += 1
 
   def print_result(self, printer):
-    simple_print(printer, self.get_title(), float(self._count)/(self._max -self._min))
+    simple_print(printer, self.get_title(), self.formatter(float(self._count)/(self._max -self._min)))
 
 class elapsed(requests_per_sec):
    def print_result(self, printer):
@@ -280,12 +328,16 @@ class base_collector(collector):
 
 
 class percentable(base_collector):
-  def __init__(self, columns, groupby = None, max_ = 10):
+  def __init__(self, columns, groupby = None, max_ = 10, formatter = None):
     base_collector.__init__(self, columns, groupby , max_ =max_)
     self.others = 0
+    if (formatter ==None):
+      self.format= lambda x : x
+    else:
+      self.format= formatter
 
   def print_item(self,printer,  key, value):
-    printer.row(key , self.get_percent(value), value)
+    printer.row(key , self.get_percent(value), self.format(value))
     #printer.row(key , value)
 
   def update_others(self, key, value):
@@ -299,11 +351,14 @@ class percentable(base_collector):
 
 
 class count(percentable):
-  def __init__(self, groupby , max_ = 10):
+  def __init__(self, groupby , excludeMatch=None, max_ = 10):
     percentable.__init__(self, [], groupby=groupby , max_=max_)
     self.tot = 0
+    self.excludeMatch = get_list(excludeMatch)
 
   def update_values(self, key, value):
+    if key in self.excludeMatch:
+      return
     if not (self._values.has_key(key)):
       self._values[key] = 1
     else:
@@ -329,25 +384,32 @@ class count_domain(count):
 
   def get_key(self, fields):
     field = fields[self._groupby[0]]
+    val = exclude_port(field)
     try:
-      dn_parts = field.split(".")
-      return dn_parts[-2] + "."+dn_parts[-1]
+      if (is_ip_address(val)):
+	return val
+      else:
+	dn_parts = val.split(".")
+	return dn_parts[-2] + "."+dn_parts[-1]
     except:
-      return field
+      return val
 
 class count_content_type(count):
-  def __init__(self, groupby = None, max_ = 10):
-    count.__init__(self, ["content_type"], max_=max_)
+  def __init__(self, groupby = None, max_ = 10, excludeMatch=None):
+    count.__init__(self, ["content_type"], max_=max_, excludeMatch=excludeMatch)
 
   def get_key(self, fields):
     return fields[self._groupby[0]].split("/")[0]
 
 class sum_(percentable):
-  def __init__(self, columns, groupby = None, max_ = 10):
-    percentable.__init__(self, columns, groupby , max_)
+  def __init__(self, columns, groupby = None, max_ = 10, formatter = None, excludeMatch=None):
+    percentable.__init__(self, columns, groupby , max_, formatter )
     self.tot = 0
+    self.excludeMatch = get_list(excludeMatch)
 
   def update_values(self, key, value):
+    if key in self.excludeMatch:
+      return
     if not (self._values.has_key(key)):
       self._values[key] = value
     else:
@@ -531,8 +593,8 @@ class sum_domain(sum_):
       return field
 
 class sum_content_type(sum_):
-  def __init__(self, columns, max_ = 10):
-    sum_.__init__(self, columns, ["content_type"] , max_= max_)
+  def __init__(self, columns, max_ = 10, excludeMatch= None):
+    sum_.__init__(self, columns, ["content_type"] , max_= max_, excludeMatch= excludeMatch)
 
   def get_key(self, fields):
     return fields[self._groupby[0]].split("/")[0]
@@ -576,6 +638,34 @@ try:
 except:
   pass
 
+filter_func = lambda x : True
+
+def equal(a, b):
+  return a == b
+
+class base_filter:
+  def __init__(self, field, value, op = equal):
+    self.field = collector.get_column_numbers([field])[0]
+    self.value = value
+    self.op = op
+
+  def do_filter (self, fields):
+    value = fields[self.field]
+    return self.op(self.value, value)
+
+filters = [base_filter("host", "www.plecno.com", op = lambda x, y: not equal(x, y))]
+
+
+def main_filter (fields):
+  res = True
+  for f in filters :
+    if not f.do_filter(fields):
+      res = False
+      break
+  return res
+
+filter_func = main_filter
+
 def create_javascript(out):
   l = [	
 	count(["host"]),
@@ -597,27 +687,27 @@ def create_javascript(out):
 	elapsed(),
 	start_time(),
 	end_time(),
-	requests_per_sec(),
+	requests_per_sec(formatter=lambda x: "%.02f"%x),
 	keep_alive_count(),
-	count(["resp_code"]),
-	count(["content_type"]),
+	count(["resp_code"], excludeMatch=["-"]),
+	count(["content_type"], excludeMatch=["-"]),
 	count(["host","url"], max_ = 20), 
 	count_source_ip(),
 	count_domain(),
-	count_content_type(),
+	count_content_type(excludeMatch=["-"]),
 	count_close_originator(),
 	percentiles_close_time_server(),
 	percentiles_close_time_client(),
 	percentiles_close_time_server(includeMax= False),
 	percentiles_close_time_client(includeMax=False),
-	sum_(["req_size","resp_size"]),
+	sum_(["req_size","resp_size"], formatter=_format),
 	sum_source_ip(["req_size","resp_size"]),
 	sum_domain(["req_size","resp_size"]),
-	sum_content_type(["req_size","resp_size"]),
+	sum_content_type(["req_size","resp_size"], excludeMatch=["-"]),
 	sum_(["req_size","resp_size"], ["dest"]),
 	sum_(["req_size","resp_size"], ["host"]),
 	sum_(["req_size","resp_size"], ["method"]),
-	sum_(["req_size","resp_size"], ["content_type"]),
+	sum_(["req_size","resp_size"], ["content_type"], excludeMatch=["-"]),
 	max_(["req_size","resp_size"], ["host"]) ,
 	max_(["req_size","resp_size"], ["host", "url"]),
 	max_(["response_time"], ["host"]),
@@ -631,17 +721,18 @@ def create_javascript(out):
 	max_source_ip(["idle0_time"]),
 	max_source_ip(["idle1_time"], ["url"])
       ]
-  print "create_javascript"
+  #print "create_javascript"
   counter=0
   for line in get_all_lines(filename):
     #print line
     fields = line.split()
-    if (len (fields)!= 20): 
-      print line, len (fields), counter
-      pass
-    else:
-      for c in l:
-	c.parse_fields(fields)
+    if filter_func(fields):
+      if (len (fields)!= 20): 
+	print line, len (fields), counter
+	pass
+      else:
+	for c in (l):
+	  c.parse_fields(fields)
     counter+=1
   out.write ("(result = {\n")
   first = True

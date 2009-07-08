@@ -87,11 +87,22 @@
                 this.id = id;
                 this.write = function(val)
                 {
-                                        var v = (val/1024/1024).toFixed(2) +" MB " 
                     var elem = document.getElementById(this.id);
-                    elem.innerHTML = v;
+                    elem.innerHTML = val[1];
                 }
             }
+
+	    function listWrite(id)
+	    {
+                this.id = id;
+                this.write = function(val)
+                {
+		    for (elem in val)
+		    {
+			console.log("listWrite",  val[elem][0], val[elem][1][0]);
+		    }
+		}
+	    }
                         
             function tableWriter(id)
             {
@@ -250,7 +261,7 @@
   <div id="mainPage">
     <h1>Just HTTP Report</h1>
     <!--<button onclick="update();">update</button>-->
-
+  
     <table class="summary global">
       <caption>
         Global Info
@@ -886,9 +897,48 @@
 	<td>
 	</td>
       </tr>
+      <tr>
+	<td colspan="2">
+	  <table id="max__req_size_resp_size_host_url" just_type="tableWriter" ><caption>Max host response time</caption></table>
+	</td>
+      </tr>
+
 
     </table>
 
+    <table class="summary">
+      <caption>
+        Performance Summary Percentiles
+      </caption>
+      <tr>
+	<td>
+	  <table id="max__response_time_host" just_type="tableWriter" ><caption>Max host response time</caption></table>
+	</td>
+      </tr>
+      <tr>
+	<td>
+	  <table id="max__response_time_host_url" just_type="tableWriter" ><caption>Max url response time</caption></table>
+	</td>
+      </tr>
+      <tr>
+	<td>
+	  <table id="max__connection_time_host" just_type="tableWriter" ><caption>Max host connection time</caption></table>
+	</td>
+      </tr>
+      <tr>
+	<td>
+	  <table id="max__close_time_host" just_type="tableWriter" ><caption>Max host connection time</caption></table>
+	</td>
+      </tr>
+      <tr>
+	<td>
+	  <table id="max__close_time_host_url" just_type="tableWriter" ><caption>Max host connection time</caption></table>
+	</td>
+      </tr>
+
+
+
+     </table>
 
     <table class="summary">
       <caption>
