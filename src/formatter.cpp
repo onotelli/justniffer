@@ -144,9 +144,9 @@ void parser::init_parse_elements()
     elements["request.time"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, request_time_handler> >(_default_not_found));
     elements["request.size"] = pelem(new keyword<handler_factory_t<request_size_handler> > ());
     elements["request.line"] = pelem(new keyword<handler_factory_t<request_first_line> >());
-    elements["request.method"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_request_line> >(string("(^[^\\s]*)")));
-    elements["request.url"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_request_line> >(string("^[^\\s]*\\s*([^\\s]*)")));
-    elements["request.protocol"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_request_line> >(string("^[^\\s]*\\s*[^\\s]*\\s*([^\\s]*)")));
+    elements["request.method"] = pelem(new keyword_arg_and_optional_params<regex_handler_factory_t<regex_handler_request_line> >(string("(^[^\\s]*)"),_default_not_found ));
+    elements["request.url"] = pelem(new keyword_arg_and_optional_params<regex_handler_factory_t<regex_handler_request_line> >(string("^[^\\s]*\\s*([^\\s]*)"),_default_not_found ));
+    elements["request.protocol"] = pelem(new keyword_arg_and_optional_params<regex_handler_factory_t<regex_handler_request_line> >(string("^[^\\s]*\\s*[^\\s]*\\s*([^\\s]*)"),_default_not_found ));
     elements["request.grep"] = pelem(new keyword_params_and_arg<regex_handler_factory_t<regex_handler_all_request> >(_default_not_found));
     elements["request.header"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_request> >(string(".*")));
 
@@ -180,8 +180,8 @@ void parser::init_parse_elements()
     elements["response.time.end"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, response_time_2> >(_default_not_found));
     elements["response.line"] = pelem(new keyword<handler_factory_t<response_first_line> >());
     elements["response.protocol"] = pelem(new keyword_arg_and_optional_params<regex_handler_factory_t<regex_handler_response_line> >(string("(^[^\\s]*)"),_default_not_found ));
-    elements["response.code"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_response_line> >(string("^[^\\s]*\\s*([^\\s]*)")));
-    elements["response.message"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_response_line> >(string("^[^\\s]*\\s*[^\\s]*\\s*([^\\r]*)")));	
+    elements["response.code"] = pelem(new keyword_arg_and_optional_params<regex_handler_factory_t<regex_handler_response_line> >(string("^[^\\s]*\\s*([^\\s]*)"), _default_not_found));
+    elements["response.message"] = pelem(new keyword_arg_and_optional_params<regex_handler_factory_t<regex_handler_response_line> >(string("^[^\\s]*\\s*[^\\s]*\\s*([^\\r]*)"), _default_not_found));
     elements["response.grep"] = pelem(new keyword_params_and_arg<regex_handler_factory_t<regex_handler_all_response> >(_default_not_found));
     elements["response.header"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_response> >(string(".*")));
     RESPONSE_HEADER("response.header.allow","Allow");
@@ -210,7 +210,8 @@ void parser::init_parse_elements()
     RESPONSE_HEADER("response.header.www-authenticate","WWW-Authenticate");
 
     elements["response.header.value"] = pelem(new keyword_params<header_handler_factory_t<regex_handler_response> >());
-    elements["response.header.grep"] = pelem(new keyword_params<regex_handler_factory_t<regex_handler_response> >());
+    //elements["response.header.grep"] = pelem(new keyword_params_and_arg<regex_handler_factory_t<regex_handler_response> >());
+    elements["response.header.grep"] = pelem(new keyword_params_and_arg<regex_handler_factory_t<regex_handler_response> >(_default_not_found));
 
     elements["idle.time.0"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, idle_time_1> >(_default_not_found));
     elements["idle.time.1"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, idle_time_2> >(_default_not_found));
