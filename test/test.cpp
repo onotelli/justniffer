@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <functional>
+#include <map>
 ///////////////////////////////////////push_back(const T&)////////////////////////////////////////
 using namespace std;
 using namespace boost::spirit;
@@ -29,11 +30,11 @@ typedef stored_rule<phrase_scanner_t> _sr;
 typedef rule<> _r2;
 
 
-// _r2 karg 	=  *(space_p)>> (+(~ch_p(',') & ~ch_p(')')  & ~ch_p('(') &~space_p))[&action_key]>>*(space_p);
-// _r2 args 	= ch_p('(')>> karg >> *(ch_p(',') >> karg) >>ch_p(')');
-// _r2 keyword 	=  ch_p('%')>> (str_p("key") | str_p("ciccio") | str_p("pluto") | str_p("paperino") )[&action_key];
+// _r2 karg =  *(space_p)>> (+(~ch_p(',') & ~ch_p(')')  & ~ch_p('(') &~space_p))[&action_key]>>*(space_p);
+// _r2 args = ch_p('(')>> karg >> *(ch_p(',') >> karg) >>ch_p(')');
+// _r2 keyword =  ch_p('%')>> (str_p("key") | str_p("ciccio") | str_p("pluto") | str_p("paperino") )[&action_key];
 // _r2 keyword_args =  keyword >> *(space_p) >> *(args)[&action_key];
-// _r2 line 	= *(~ch_p('%')) >>keyword_args >> *(+(space_p) >> keyword_args) >> *(space_p) ;
+// _r2 line = *(~ch_p('%')) >>keyword_args >> *(+(space_p) >> keyword_args) >> *(space_p) ;
 // 
 
 // template <typename Class_ref, typename Func_ptr>
@@ -187,19 +188,47 @@ void push_back(vector<T> & v, T t)
     v.push_back(t);
 }
 
+any to_char(const any& arg)
+{
+    stringstream ss;
+    try
+    {
+      ss << any_cast<string> (arg);
+    }
+    catch(...)
+    {
+      ss << any_cast<int> (arg);
+    }
+    return any (ss.str());
+}
+any to_int(const any& arg)
+{
+    stringstream ss;
+    int v ;
+    try
+    {
+      ss << any_cast<string> (arg);
+      ss>> v;
+    }
+    catch(...)
+    {
+      v = any_cast<int> (arg);
+    }
+    return any (v);
+}
 
 class test
 {
 
 /*    class caller
     {
-	test* _pTest;
+test* _pTest;
     public:
-	caller(test* pTest) :_pTest(pTest){};
-	void operator() (const char* start,  const char* end) const
-	{
-	  _pTest->action_key2(start,  end);
-	}
+caller(test* pTest) :_pTest(pTest){};
+void operator() (const char* start,  const char* end) const
+{
+  _pTest->action_key2(start,  end);
+}
     };*/
 //     _r2 karg;
 //     _r2 args;
@@ -223,12 +252,15 @@ class test
   _r function;
   _r integer;
   any value;
+  typedef any(*convert_func)(const any& a);
   vector<any> terms;
+  vector<any> args;
   vector<binary_func> operands;
   vector<logic_func> logic_operands;
+  vector<convert_func> functions;
   any term1, term2;
   logic_func logic_op;
-  
+  map <string, convert_func> _funcs;
   bool first_expression, second_expression, logic_expression;
 
   static void action_key(const char* start,  const char* end)
@@ -237,8 +269,9 @@ class test
   }
   void on_key(const char* start,  const char* end)
   {
-    cout << this << " on_key : " <<std::string(start, end)<<endl;
+    //cout << this << " on_key : " <<std::string(start, end)<<endl;
     value = std::string(start, end);
+    push_back(terms, value);
   }
   void on_expression(const char* start,  const char* end)
   {
@@ -249,12 +282,37 @@ class test
   void on_string(const char* start,  const char* end)
   {
     value = string(start, end);
+    push_back(terms, value);
     //cout << this << " on_string: " <<std::string(start, end)<<endl;
   }
   void on_integer(int val)
   {
     value = val;
+    push_back(terms, value);
     //cout << this << " on_integer: " <<val<<endl;
+  }
+  void on_func(const char* start,  const char* end)
+  {
+    string v(start, end);
+    //cout <<"on_func" << v << endl; 
+    convert_func f= _funcs[v];
+    push_back(functions, f);
+  }
+  void on_func_arg(const char* start,  const char* end)
+  {
+    string v(start, end);
+    //cout <<"on_func_arg " << v << endl; 
+  }
+
+  void on_calc_func(const char* start,  const char* end)
+  {
+    value = pop_back(terms);
+    convert_func f = pop_back(functions);
+    value = f(value);
+    push_back(terms, value);
+    string v(start, end);
+    //cout <<"on_calc_func " << v <<  " " << typeid(value).name() <<endl; 
+    //value = value;
   }
   void on_op(const char* start,  const char* end)
   {
@@ -273,7 +331,6 @@ class test
   }
   void on_term(const char* start,  const char* end)
   {
-    push_back(terms, value);
     //term1 = value;
     //cout << this << " on_term1: " <<std::string(start, end)<<endl;
   }
@@ -294,15 +351,15 @@ class test
     bool v1 = pop_back(espr_results);
     while (!espr_results.empty())
     {
-	bool v2 = pop_back(espr_results);
-	logic_func op = pop_back(logic_operands);
-	push_back(espr_results, op(v1, v2));
-	v1 = pop_back(espr_results);
+bool v2 = pop_back(espr_results);
+logic_func op = pop_back(logic_operands);
+push_back(espr_results, op(v1, v2));
+v1 = pop_back(espr_results);
     }
     push_back(espr_results, v1);
     //cout << this << " on_complex_espression " <<first_expression <<" "<< string (start, end)<< " "<< expr_value<<endl;
   }
-  void on_logic_expression(const char* start,  const char* end)
+  void on_logic_expres_funcssion(const char* start,  const char* end)
   {
     logic_expression = logic_op(first_expression, second_expression);
     cout << this << " logic_expression " <<logic_expression <<" "<< string (start, end)<<endl;
@@ -315,6 +372,8 @@ class test
 public:
   test()
   {
+    _funcs["int"] = to_int;
+    _funcs["char"] = to_char;
     v.push_back("key");
     v.push_back("ciccio");
     v.push_back("pluto");
@@ -328,11 +387,11 @@ public:
       cout << " iter :";
       if (first)
       {
-	res = str_p(*i);
+res = str_p(*i);
       }
       else
       {
-	res = res.copy() | str_p(*i);
+res = res.copy() | str_p(*i);
       }
       first = false;
       cout <<*i<< endl;
@@ -340,27 +399,26 @@ public:
     cout << " end "<< endl;
     
     //caller(this)("cuai", "siuso");
-//     karg 		=  *(space_p)>> (+(~ch_p(',') & ~ch_p(')')  & ~ch_p('(') &~space_p))[c]>>*(space_p);
-//     args 		=  ch_p('(')>> karg >> *(ch_p(',') >> karg) >>ch_p(')');
-//     keyword 		=  ch_p('%')>> (str_p("key") | str_p("ciccio") | str_p("pluto") | str_p("paperino") )[c];
-//     keyword_args 	=  keyword >> *(space_p) >> *(args)[c];
-//     line 		= *(~ch_p('%')) >>keyword_args >> *(+(space_p) >> keyword_args) >> *(space_p) ;
+//     karg =  *(space_p)>> (+(~ch_p(',') & ~ch_p(')')  & ~ch_p('(') &~space_p))[c]>>*(space_p);
+//     args =  ch_p('(')>> karg >> *(ch_p(',') >> karg) >>ch_p(')');
+//     keyword =  ch_p('%')>> (str_p("key") | str_p("ciccio") | str_p("pluto") | str_p("paperino") )[c];
+//     keyword_args =  keyword >> *(space_p) >> *(args)[c];
+//     line = *(~ch_p('%')) >>keyword_args >> *(+(space_p) >> keyword_args) >> *(space_p) ;
 
-    operand 	= (str_p("==") | str_p("!=") | str_p(">") | str_p("<"))[caller_make(this, &test::on_op)];
-    keyword 	= lexeme_d[ch_p('%')>> (res )[caller_make(this, &test::on_key)]];
-    string_ 	= lexeme_d[ch_p('\'') >> (*(~ch_p('\''))) [caller_make(this, &test::on_string)]>>ch_p('\'')];
-    integer	= int_p[caller_make(this, &test::on_integer)];
-    func_arg 	= keyword | string_;
-    func_name	= str_p("int");
-    function	= func_name >> ch_p('(') >> func_arg >>ch_p(')');
-    term  	= keyword  | string_ | function | integer;
+    operand = (str_p("==") | str_p("!=") | str_p(">") | str_p("<"))[caller_make(this, &test::on_op)];
+    keyword = lexeme_d[ch_p('%')>> (res )[caller_make(this, &test::on_key)]];
+    string_ = lexeme_d[ch_p('\'') >> (*(~ch_p('\''))) [caller_make(this, &test::on_string)]>>ch_p('\'')];
+    integer = int_p[caller_make(this, &test::on_integer)];
+    func_arg = term;
+    func_name = str_p("int")|str_p("char") ;
+    function = (func_name[caller_make(this, &test::on_func)] >> ch_p('(') >> func_arg >>ch_p(')'))[caller_make(this, &test::on_calc_func)];
+    term  = keyword  | string_ | function | integer;
     logic_operand = str_p("&&") | str_p("||");
-    atomic_expression 	= (term [caller_make(this, &test::on_term)] >> 
-			  operand[caller_make(this, &test::on_op)] >> 
-			   term[caller_make(this, &test::on_term)])[caller_make(this, &test::on_expression)];
+    atomic_expression = (term >> operand[caller_make(this, &test::on_op)] >> 
+   term[caller_make(this, &test::on_term)])[caller_make(this, &test::on_expression)];
     complex_expression =  (ch_p('(') >> (atomic_expression|complex_expression) >> 
-			  *(logic_operand[caller_make(this, &test::on_logic_op)]>> 
-			  (atomic_expression|complex_expression))>>ch_p(')'))[caller_make(this, &test::on_complex_espression)];
+  *(logic_operand[caller_make(this, &test::on_logic_op)]>> 
+  (atomic_expression|complex_expression))>>ch_p(')'))[caller_make(this, &test::on_complex_espression)];
     
   }
 
@@ -376,7 +434,7 @@ parse_numbers(const string& str)
 
         //  Begin grammar
             //real_p[push_back_a(v)] >> *("---" >> real_p[push_back_a(v)])
-	  t.get_rule(), space_p
+  t.get_rule(), space_p
         
         ).full;
 }
@@ -398,10 +456,10 @@ value("0 == 9  || ((1 == 2) || (3 == 4))  || ((5==6) ||(7==8))", false),
 value("1 == 2 || 3 == 4  || 5==6 ||7==8",false),
 value("1 == 2",false),
 value("(1 == 2 ) ",false),
-value("1 == 2 || 1 == 2",false),
+value("1 == 2 || 1 > 2",false),
 value("(1 == 2 ) || 3 == 4",false),
 value("1 == 2  || (3 == 4)",false),
-value("(1 == 2 || 3 == 4  || 5==6) ||7==8",false),
+value("(1 == 2 || 3 == 4  corsi gratuiti|| 5==6) ||7==8",false),
 value("(1 == 1 ) ",true),
 value("1 == 1  ",true),
 value("1 == 1 ||  1 == 2",true),
@@ -409,7 +467,13 @@ value("1 == 1 &&  2 == 2",true),
 value("1 == 1 &&  1 == 2",false),
 value("(1 == 1) ||  (1 == 2)",true),
 value("(1 == 1 || 3 == 4  ) && (5==6 ||7==8) ",false),
-value("(1 == 1 || 3 == 3  ) && (5==6 ||'7'=='7') ",true)
+value("(1 == 1 || 3 == 3  ) && (5==6 ||'7'=='7') ",true),
+value("(int('6') == 1 || char(3 )== char(int('03'))  ) && (5==6 ||int ('7')== int(char(7))) ",true),
+value("int (char(7627)) > int('00000000022')",true),
+value("int (char(7627)) > int('00000000022') && (1 == 1 || 3 == 3  ) && (5==6 ||'7'=='7') ",true),
+value("int (char(7627)) > int('00000000022') && int (char(7627)) > int('00000000022') ",true),
+value("char(2) > char(12)",true),
+value("int (char(2)) > int(char(12))",false)
 };
 
 void test_case()
@@ -426,16 +490,16 @@ void test_case()
       cout <<str2<< "\n "; 
       if (parse_numbers(str2))
       {
-	bool res_expression = pop_back(t.espr_results);
-	cout << "result " <<((res_expression )? string("True"):string("False"))<< endl;
-	if (res_expression == it->expected)
-	  cout <<"OK"<< endl;
-	else
-	  cout <<"KO"<< endl;
+bool res_expression = pop_back(t.espr_results);
+cout << "result " <<((res_expression )? string("True"):string("False"))<< endl;
+if (res_expression == it->expected)
+  cout <<"OK"<< endl;
+else
+  cout <<"KO"<< endl;
 
       }
       else
-	cout <<"Parsing failed!!"<< endl;
+cout <<"Parsing failed!!"<< endl;
 
       cout << endl;
     }
@@ -452,6 +516,7 @@ main()
     cout << "Give me a comma separated list of numbers.\n";
     cout << "The numbers will be inserted in a vector of numbers\n";
     cout << "Type [q or Q] to quit\n\n";
+    //cout <<t.get_rule();
     test_case();
     cout << endl;
     string str;
@@ -460,17 +525,17 @@ main()
         if (str.empty() || str[0] == 'q' || str[0] == 'Q')
             break;
 
-	string str2;
-	str2.append("(");
-	str2.append(str);
-	str2.append(")");
+string str2;
+str2.append("(");
+str2.append(str);
+str2.append(")");
         if (parse_numbers(str2.c_str()))
         {
             cout << "-------------------------\n";
             cout << "Parsing succeeded\n";
             cout << str << " Parses OK: " << endl;
 
-	    cout << "result " <<((pop_back(t.espr_results))? string("True"):string("False"))<< endl;
+    cout << "result " <<((pop_back(t.espr_results))? string("True"):string("False"))<< endl;
 
             cout << "-------------------------\n";
         }
@@ -485,5 +550,4 @@ main()
     cout << "Bye... :-) \n\n";
     return 0;
 }
-
 
