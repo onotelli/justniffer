@@ -9,10 +9,37 @@
   "text/html; charset=us-ascii" />
   <link rel="stylesheet" href="justmonitor.css" type="text/css"
   media="screen" charset="utf-8" />
-  <script type="text/javascript" src="./extensions/parse_logs">
+  <script id="script" type="text/javascript" src="./extensions/parse_logs">
+  <!--<script id="script" type="text/javascript" src="./extensions/parse_logs?f=eq_('host', 'www.plecno.com')"> -->
 </script>
   <script type="text/javascript">
 //<![CDATA[
+
+	    function call_url(args)
+	    {
+	      var decode = function(text)
+	      {
+		  return eval (text);
+	      }
+	      if (!window.req)
+	      {
+		window.req = new XMLHttpRequest();
+	      }
+	      var req = window.req;
+	      var mycallback = function ()
+	      {
+		if (req.readyState ==4)
+		{
+		  args.callback(decode (req.responseText));
+		}   
+	      }
+	      req.onreadystatechange = mycallback;
+	      req.open("GET", args.url, true);
+  
+	      req.send(null);
+	      
+
+	    }
             function create_query_string(values, prefix, postfix)
             {
                 var first = true;
@@ -235,20 +262,25 @@
             
             function update()
             {
-                for (val in result) 
-                {
-                    try 
-                    {
-                        var id = val;
-                        var writer = get_writer(id);
-                        writer.write(result[val]);
-                    } 
-                    catch (e) 
-                    {
-                        alert(e);
-                    }
-                }
-            }
+		
+		call_url({url:"/extensions/parse_logs"+location.search, callback : 
+		function (response)
+		{        
+		  for (val in result) 
+		  {
+		      try 
+		      {
+			  var id = val;
+			  var writer = get_writer(id);
+			  writer.write(result[val]);
+		      } 
+		      catch (e) 
+		      {
+			  alert(e);
+		      }
+		  }
+		}});
+	    }
             
             window.onload = update;
   //]]>
@@ -260,6 +292,8 @@
 <body>
   <div id="mainPage">
     <h1>Just HTTP Report</h1>
+<a href="http://www.prchecker.info/" target="_blank">
+<img src="http://pr.prchecker.info/getpr.php?codex=aHR0cDovL2p1c3RuaWZmZXIuc291cmNlZm9yZ2UubmV0Lw==&tag=1" alt="Check PageRank" border="0" /></a>
     <!--<button onclick="update();">update</button>-->
   
     <table class="summary global">

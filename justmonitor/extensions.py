@@ -149,9 +149,9 @@ def __order(values, keys):
   #return values.items()
     
 
-def parse_logs():
+def parse_logs(f=""):
   res = StringIO.StringIO()
-  parse_log.create_javascript(res)
+  parse_log.create_javascript(res, f)
   return text_javascript(res)
   
   

@@ -165,6 +165,17 @@ class myEncoder(json.JSONEncoder):
 def json_dumps(el):
   return json.dumps(el, cls=myEncoder)
 
+class null_printer(printer):
+
+  def title(self, title_):
+    pass
+
+  def row(self, key, *fields):
+    pass
+
+  def end(self):
+    pass
+
 class javascript_printer(printer):
   def __init__(self, out):
     self.rows =[]
@@ -586,11 +597,22 @@ class sum_domain(sum_):
 
   def get_key(self, fields):
     field = fields[self._groupby[0]]
+    val = exclude_port(field)
     try:
-      dn_parts = field.split(".")
-      return dn_parts[-2] + "."+dn_parts[-1]
+      if (is_ip_address(val)):
+	return val
+      else:
+	dn_parts = val.split(".")
+	return dn_parts[-2] + "."+dn_parts[-1]
     except:
-      return field
+      return val
+  #def get_key(self, fields):
+    #field = fields[self._groupby[0]]
+    #try:
+      #dn_parts = field.split(".")
+      #return dn_parts[-2] + "."+dn_parts[-1]
+    #except:
+      #return field
 
 class sum_content_type(sum_):
   def __init__(self, columns, max_ = 10, excludeMatch= None):
@@ -638,12 +660,15 @@ try:
 except:
   pass
 
+
+
 filter_func = lambda x : True
 
 def equal(a, b):
   return a == b
 
-class base_filter:
+
+class eq_:
   def __init__(self, field, value, op = equal):
     self.field = collector.get_column_numbers([field])[0]
     self.value = value
@@ -653,20 +678,60 @@ class base_filter:
     value = fields[self.field]
     return self.op(self.value, value)
 
-filters = [base_filter("host", "www.plecno.com", op = lambda x, y: not equal(x, y))]
+class not_:
+  def __init__(self, filter_):
+    self.filter_ = filter_
+  def do_filter (self, fields):
+    return not (self.filter_.do_filter(fields))
+
+class and_:
+  def __init__(self, *filters):
+    self.filters = filters
+  def do_filter (self, fields):
+    res = True
+    for f in self.filters:
+      res = f.do_filter(fields)
+      if not res:
+	break
+    return res
 
 
-def main_filter (fields):
-  res = True
-  for f in filters :
-    if not f.do_filter(fields):
-      res = False
-      break
-  return res
+class or_:
+  def __init__(self, *filters):
+    self.filters = filters
+  def do_filter (self, fields):
+    res = False
+    for f in self.filters:
+      res = f.do_filter(fields)
+      if res:
+	break
+    return res
+
+class any_:
+  def do_filter (self, fields):
+    return True
+
+filters = []
+
+#try:
+  ##filters = eval (and_(cmp_("host", "www.plecno.com"), cmp_("resp_code", "200"))]
+  #filters = [eval (sys.argv[2])]
+#except IndexError:
+  #pass
+#except Exception, e:
+  #pass
+  #print type(e), e
+  #sys.exit(-1)
+
+
+
+def main_filter (fields, filt):
+  return filt.do_filter(fields)
+  
 
 filter_func = main_filter
 
-def create_javascript(out):
+def create_javascript(out, filter_string):
   l = [	
 	count(["host"]),
 	count(["dest"]),
@@ -722,11 +787,17 @@ def create_javascript(out):
 	max_source_ip(["idle1_time"], ["url"])
       ]
   #print "create_javascript"
+  f = any_() 
+  try:
+    f = eval (filter_string)
+  except:
+    pass
   counter=0
   for line in get_all_lines(filename):
     #print line
     fields = line.split()
-    if filter_func(fields):
+    if filter_func(fields, f):
+      #print line
       if (len (fields)!= 20): 
 	print line, len (fields), counter
 	pass
@@ -740,13 +811,15 @@ def create_javascript(out):
     if not first:
       out.write (",\n")
     c.print_result(javascript_printer(out))
+    #c.print_result(null_printer())
     first = False
   out.write ("})")
   out.flush()
   return out
 
 if __name__ =="__main__":
-  create_javascript(sys.stdout)
+  create_javascript(sys.stdout, sys.argv[2])
+  
   #create_javascript(sys.stdout)
 
 #c.print_result()
