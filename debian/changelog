@@ -1,4 +1,4 @@
-justniffer (0.5.6) unstable; urgency=low
+justniffer (0.5.6) jaunty; urgency=low
   * forced flush on standard output whenever an new line is written 
   * close_originator handler fixed
   * lintian errors fixed
