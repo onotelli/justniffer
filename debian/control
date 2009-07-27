@@ -9,10 +9,7 @@ Package: justniffer
 Homepage: http://justniffer.sourceforge.net/
 Architecture: any
 Depends: ${shlibs:Depends}, python (>=2.6)
-Description: tcp and http sniffer. It displays the tcp flow and network timings
- tcp packet sniffer. It captures reassembles and reorders TCP packets ,
- performs IP packet defragmentation and displays the tcp flow in a customizable
- way . It is useful for logging network traffic in a 'standard' (web server 
- like) or in a customized way. It can log timings (e.g. response time), useful
- for tracking network services performances (e.g. web server, application 
- server, etc.) 
+Description: justniffer is a tcp packet sniffer. It can log network traffic in 
+ a 'standard' (web server like) or in a customized way. It can also log response 
+ times, useful for tracking network services performances (e.g. web server, 
+ application server, etc.).
