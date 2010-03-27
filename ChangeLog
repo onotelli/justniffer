@@ -1,3 +1,6 @@
+2010-03-27  Oreste Notelli
+      * fixed libnids for gcc4.4
+
 2009-07-03  Oreste Notelli
       * forced flush on standard output whenever an new line is written 
       * close_originator handler fixed
