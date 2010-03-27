@@ -1,3 +1,8 @@
+justniffer (0.5.7) karmic; urgency=low
+  * fixed libnids for gcc 4.4
+  
+ -- Oreste Notelli <oreste.notelli@plecno.com>  Sat, 27 March 2010 22:06:00 +0100
+
 justniffer (0.5.6) jaunty; urgency=low
   * forced flush on standard output whenever an new line is written 
   * close_originator handler fixed
