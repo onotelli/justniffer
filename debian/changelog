@@ -1,3 +1,8 @@
+justniffer (0.5.8) lucid; urgency=low
+  * fixed patch libnids (bug introduced in 0.5.7)
+
+ -- Oreste Notelli <oreste.notelli plecno.com> Thu, 8 September 2010 18:30:00 +0100
+
 justniffer (0.5.7) karmic; urgency=low
   * fixed libnids for gcc 4.4
   
