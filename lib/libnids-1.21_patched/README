@@ -1,5 +1,0 @@
-This library is a modified version of the libnids-1.21.
-It has been modified in order to pass capture time-stamp to the original tcp callback functions.
-The original README was renamed README.original
-
-Oreste Notelli
