@@ -1,10 +1,10 @@
 m4trace:/usr/share/aclocal-1.11/amversion.m4:14: -1- AC_DEFUN([AM_AUTOMAKE_VERSION], [am__api_version='1.11'
 dnl Some users find AM_AUTOMAKE_VERSION and mistake it for a way to
 dnl require some minimum version.  Point them to the right macro.
-m4_if([$1], [1.11], [],
+m4_if([$1], [1.11.1], [],
       [AC_FATAL([Do not call $0, use AM_INIT_AUTOMAKE([$1]).])])dnl
 ])
-m4trace:/usr/share/aclocal-1.11/amversion.m4:33: -1- AC_DEFUN([AM_SET_CURRENT_AUTOMAKE_VERSION], [AM_AUTOMAKE_VERSION([1.11])dnl
+m4trace:/usr/share/aclocal-1.11/amversion.m4:33: -1- AC_DEFUN([AM_SET_CURRENT_AUTOMAKE_VERSION], [AM_AUTOMAKE_VERSION([1.11.1])dnl
 m4_ifndef([AC_AUTOCONF_VERSION],
   [m4_copy([m4_PACKAGE_VERSION], [AC_AUTOCONF_VERSION])])dnl
 _AM_AUTOCONF_VERSION(m4_defn([AC_AUTOCONF_VERSION]))])
@@ -521,6 +521,14 @@ python2.1 python2.0])
        am__strip_prefix=`echo "$am_py_prefix" | sed 's|.|.|g'`
        am_cv_python_pythondir=`echo "$am_cv_python_pythondir" | sed "s,^$am__strip_prefix,$PYTHON_PREFIX,"`
        ;;
+     *)
+       case $am_py_prefix in
+         /usr|/System*) ;;
+         *)
+	  am_cv_python_pythondir=$PYTHON_PREFIX/lib/python$PYTHON_VERSION/site-packages
+	  ;;
+       esac
+       ;;
      esac
     ])
   AC_SUBST([pythondir], [$am_cv_python_pythondir])
@@ -551,6 +559,14 @@ python2.1 python2.0])
        am__strip_prefix=`echo "$am_py_exec_prefix" | sed 's|.|.|g'`
        am_cv_python_pyexecdir=`echo "$am_cv_python_pyexecdir" | sed "s,^$am__strip_prefix,$PYTHON_EXEC_PREFIX,"`
        ;;
+     *)
+       case $am_py_exec_prefix in
+         /usr|/System*) ;;
+         *)
+	   am_cv_python_pyexecdir=$PYTHON_EXEC_PREFIX/lib/python$PYTHON_VERSION/site-packages
+	   ;;
+       esac
+       ;;
      esac
     ])
   AC_SUBST([pyexecdir], [$am_cv_python_pyexecdir])
@@ -564,7 +580,7 @@ python2.1 python2.0])
   fi
 
 ])
-m4trace:/usr/share/aclocal-1.11/python.m4:183: -1- AC_DEFUN([AM_PYTHON_CHECK_VERSION], [prog="import sys
+m4trace:/usr/share/aclocal-1.11/python.m4:199: -1- AC_DEFUN([AM_PYTHON_CHECK_VERSION], [prog="import sys
 # split strings by '.' and convert to numeric.  Append some zeros
 # because we need at least 4 digits for the hex conversion.
 # map returns an iterator in Python 3.0 and a list in 2.x
@@ -1206,8 +1222,8 @@ m4trace:configure.in:14: -1- m4_pattern_allow([^JUSTNIFFER_VERSION$])
 m4trace:configure.in:16: -1- AM_INIT_AUTOMAKE
 m4trace:configure.in:16: -1- m4_pattern_allow([^AM_[A-Z]+FLAGS$])
 m4trace:configure.in:16: -1- AM_SET_CURRENT_AUTOMAKE_VERSION
-m4trace:configure.in:16: -1- AM_AUTOMAKE_VERSION([1.11])
-m4trace:configure.in:16: -1- _AM_AUTOCONF_VERSION([2.64])
+m4trace:configure.in:16: -1- AM_AUTOMAKE_VERSION([1.11.1])
+m4trace:configure.in:16: -1- _AM_AUTOCONF_VERSION([2.65])
 m4trace:configure.in:16: -1- m4_pattern_allow([^INSTALL_PROGRAM$])
 m4trace:configure.in:16: -1- m4_pattern_allow([^INSTALL_SCRIPT$])
 m4trace:configure.in:16: -1- m4_pattern_allow([^INSTALL_DATA$])
@@ -1439,45 +1455,45 @@ m4trace:configure.in:76: -1- m4_pattern_allow([^HAVE_BOOST_IOSTREAMS$])
 m4trace:configure.in:76: -1- m4_pattern_allow([^BOOST_IOSTREAMS_LIB$])
 m4trace:configure.in:76: -1- m4_pattern_allow([^BOOST_IOSTREAMS_LIB$])
 m4trace:configure.in:76: -1- m4_pattern_allow([^BOOST_IOSTREAMS_LIB$])
-m4trace:configure.in:82: -1- _m4_warn([cross], [cannot check for file existence when cross compiling], [../../lib/autoconf/general.m4:2764: AC_CHECK_FILE is expanded from...
+m4trace:configure.in:82: -1- _m4_warn([cross], [cannot check for file existence when cross compiling], [../../lib/autoconf/general.m4:2744: AC_CHECK_FILE is expanded from...
 configure.in:82: the top level])
 m4trace:configure.in:82: -1- m4_pattern_allow([^PATCH$])
 m4trace:configure.in:82: -1- m4_pattern_allow([^TAR$])
-m4trace:configure.in:82: -1- _m4_warn([cross], [cannot check for file existence when cross compiling], [../../lib/autoconf/general.m4:2764: AC_CHECK_FILE is expanded from...
-../../lib/m4sugar/m4sh.m4:620: AS_IF is expanded from...
-../../lib/autoconf/general.m4:2764: AC_CHECK_FILE is expanded from...
+m4trace:configure.in:82: -1- _m4_warn([cross], [cannot check for file existence when cross compiling], [../../lib/autoconf/general.m4:2744: AC_CHECK_FILE is expanded from...
+../../lib/m4sugar/m4sh.m4:598: AS_IF is expanded from...
+../../lib/autoconf/general.m4:2744: AC_CHECK_FILE is expanded from...
 configure.in:82: the top level])
-m4trace:configure.in:103: -1- m4_pattern_allow([^subdirs$])
-m4trace:configure.in:105: -1- AX_PYTHON
-m4trace:configure.in:105: -1- AM_PATH_PYTHON([2.4], [], [AC_MSG_NOTICE([your need python >=2.4, disabling python feature]) ; AX_PYTHON_ENABLED="disabled"])
-m4trace:configure.in:105: -1- AM_PYTHON_CHECK_VERSION([$PYTHON], [2.4], [AC_MSG_RESULT(yes)], [AC_MSG_ERROR(too old)])
-m4trace:configure.in:105: -1- AM_RUN_LOG([$PYTHON -c "$prog"])
-m4trace:configure.in:105: -1- AM_PYTHON_CHECK_VERSION([$am_cv_pathless_PYTHON], [2.4], [break])
-m4trace:configure.in:105: -1- AM_RUN_LOG([$am_cv_pathless_PYTHON -c "$prog"])
-m4trace:configure.in:105: -1- m4_pattern_allow([^PYTHON$])
-m4trace:configure.in:105: -1- m4_pattern_allow([^PYTHON_VERSION$])
-m4trace:configure.in:105: -1- m4_pattern_allow([^PYTHON_PREFIX$])
-m4trace:configure.in:105: -1- m4_pattern_allow([^PYTHON_EXEC_PREFIX$])
-m4trace:configure.in:105: -1- m4_pattern_allow([^PYTHON_PLATFORM$])
-m4trace:configure.in:105: -1- m4_pattern_allow([^pythondir$])
-m4trace:configure.in:105: -1- m4_pattern_allow([^pkgpythondir$])
-m4trace:configure.in:105: -1- m4_pattern_allow([^pyexecdir$])
-m4trace:configure.in:105: -1- m4_pattern_allow([^pkgpyexecdir$])
-m4trace:configure.in:107: -1- m4_pattern_allow([^PYTHONCODEDIR$])
-m4trace:configure.in:112: -1- m4_pattern_allow([^PYTHONSUBDIR$])
-m4trace:configure.in:115: -1- _m4_warn([obsolete], [AC_OUTPUT should be used without arguments.
+m4trace:configure.in:98: -1- m4_pattern_allow([^subdirs$])
+m4trace:configure.in:100: -1- AX_PYTHON
+m4trace:configure.in:100: -1- AM_PATH_PYTHON([2.4], [], [AC_MSG_NOTICE([your need python >=2.4, disabling python feature]) ; AX_PYTHON_ENABLED="disabled"])
+m4trace:configure.in:100: -1- AM_PYTHON_CHECK_VERSION([$PYTHON], [2.4], [AC_MSG_RESULT(yes)], [AC_MSG_ERROR(too old)])
+m4trace:configure.in:100: -1- AM_RUN_LOG([$PYTHON -c "$prog"])
+m4trace:configure.in:100: -1- AM_PYTHON_CHECK_VERSION([$am_cv_pathless_PYTHON], [2.4], [break])
+m4trace:configure.in:100: -1- AM_RUN_LOG([$am_cv_pathless_PYTHON -c "$prog"])
+m4trace:configure.in:100: -1- m4_pattern_allow([^PYTHON$])
+m4trace:configure.in:100: -1- m4_pattern_allow([^PYTHON_VERSION$])
+m4trace:configure.in:100: -1- m4_pattern_allow([^PYTHON_PREFIX$])
+m4trace:configure.in:100: -1- m4_pattern_allow([^PYTHON_EXEC_PREFIX$])
+m4trace:configure.in:100: -1- m4_pattern_allow([^PYTHON_PLATFORM$])
+m4trace:configure.in:100: -1- m4_pattern_allow([^pythondir$])
+m4trace:configure.in:100: -1- m4_pattern_allow([^pkgpythondir$])
+m4trace:configure.in:100: -1- m4_pattern_allow([^pyexecdir$])
+m4trace:configure.in:100: -1- m4_pattern_allow([^pkgpyexecdir$])
+m4trace:configure.in:102: -1- m4_pattern_allow([^PYTHONCODEDIR$])
+m4trace:configure.in:107: -1- m4_pattern_allow([^PYTHONSUBDIR$])
+m4trace:configure.in:110: -1- _m4_warn([obsolete], [AC_OUTPUT should be used without arguments.
 You should run autoupdate.], [])
-m4trace:configure.in:115: -1- m4_pattern_allow([^LIB@&t@OBJS$])
-m4trace:configure.in:115: -1- m4_pattern_allow([^LTLIBOBJS$])
-m4trace:configure.in:115: -1- AM_CONDITIONAL([am__EXEEXT], [test -n "$EXEEXT"])
-m4trace:configure.in:115: -1- m4_pattern_allow([^am__EXEEXT_TRUE$])
-m4trace:configure.in:115: -1- m4_pattern_allow([^am__EXEEXT_FALSE$])
-m4trace:configure.in:115: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_TRUE])
-m4trace:configure.in:115: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_FALSE])
-m4trace:configure.in:115: -1- AM_CONDITIONAL([am__EXEEXT], [test -n "$EXEEXT"])
-m4trace:configure.in:115: -1- m4_pattern_allow([^am__EXEEXT_TRUE$])
-m4trace:configure.in:115: -1- m4_pattern_allow([^am__EXEEXT_FALSE$])
-m4trace:configure.in:115: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_TRUE])
-m4trace:configure.in:115: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_FALSE])
-m4trace:configure.in:115: -1- _AC_AM_CONFIG_HEADER_HOOK(["$ac_file"])
-m4trace:configure.in:115: -1- _AM_OUTPUT_DEPENDENCY_COMMANDS
+m4trace:configure.in:110: -1- m4_pattern_allow([^LIB@&t@OBJS$])
+m4trace:configure.in:110: -1- m4_pattern_allow([^LTLIBOBJS$])
+m4trace:configure.in:110: -1- AM_CONDITIONAL([am__EXEEXT], [test -n "$EXEEXT"])
+m4trace:configure.in:110: -1- m4_pattern_allow([^am__EXEEXT_TRUE$])
+m4trace:configure.in:110: -1- m4_pattern_allow([^am__EXEEXT_FALSE$])
+m4trace:configure.in:110: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_TRUE])
+m4trace:configure.in:110: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_FALSE])
+m4trace:configure.in:110: -1- AM_CONDITIONAL([am__EXEEXT], [test -n "$EXEEXT"])
+m4trace:configure.in:110: -1- m4_pattern_allow([^am__EXEEXT_TRUE$])
+m4trace:configure.in:110: -1- m4_pattern_allow([^am__EXEEXT_FALSE$])
+m4trace:configure.in:110: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_TRUE])
+m4trace:configure.in:110: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_FALSE])
+m4trace:configure.in:110: -1- _AC_AM_CONFIG_HEADER_HOOK(["$ac_file"])
+m4trace:configure.in:110: -1- _AM_OUTPUT_DEPENDENCY_COMMANDS

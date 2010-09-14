@@ -1,4 +1,4 @@
-m4trace:aclocal.m4:1170: -1- m4_include([acinclude.m4])
+m4trace:aclocal.m4:1186: -1- m4_include([acinclude.m4])
 m4trace:configure.in:13: -1- AC_INIT([justniffer], [0.5.8], [info@plecno.com])
 m4trace:configure.in:13: -1- m4_pattern_forbid([^_?A[CHUM]_])
 m4trace:configure.in:13: -1- m4_pattern_forbid([_AC_])
@@ -153,7 +153,7 @@ m4trace:configure.in:14: -1- AH_OUTPUT([JUSTNIFFER_VERSION], [/* justniffer vers
 @%:@undef JUSTNIFFER_VERSION])
 m4trace:configure.in:16: -1- AM_INIT_AUTOMAKE
 m4trace:configure.in:16: -1- m4_pattern_allow([^AM_[A-Z]+FLAGS$])
-m4trace:configure.in:16: -1- AM_AUTOMAKE_VERSION([1.11])
+m4trace:configure.in:16: -1- AM_AUTOMAKE_VERSION([1.11.1])
 m4trace:configure.in:16: -1- AC_REQUIRE_AUX_FILE([install-sh])
 m4trace:configure.in:16: -1- AC_SUBST([INSTALL_PROGRAM])
 m4trace:configure.in:16: -1- AC_SUBST_TRACE([INSTALL_PROGRAM])
@@ -563,7 +563,7 @@ m4trace:configure.in:76: -1- m4_pattern_allow([^BOOST_IOSTREAMS_LIB$])
 m4trace:configure.in:76: -1- AC_SUBST([BOOST_IOSTREAMS_LIB])
 m4trace:configure.in:76: -1- AC_SUBST_TRACE([BOOST_IOSTREAMS_LIB])
 m4trace:configure.in:76: -1- m4_pattern_allow([^BOOST_IOSTREAMS_LIB$])
-m4trace:configure.in:82: -1- _m4_warn([cross], [cannot check for file existence when cross compiling], [../../lib/autoconf/general.m4:2764: AC_CHECK_FILE is expanded from...
+m4trace:configure.in:82: -1- _m4_warn([cross], [cannot check for file existence when cross compiling], [../../lib/autoconf/general.m4:2744: AC_CHECK_FILE is expanded from...
 configure.in:82: the top level])
 m4trace:configure.in:82: -1- AC_SUBST([PATCH])
 m4trace:configure.in:82: -1- AC_SUBST_TRACE([PATCH])
@@ -571,9 +571,9 @@ m4trace:configure.in:82: -1- m4_pattern_allow([^PATCH$])
 m4trace:configure.in:82: -1- AC_SUBST([TAR])
 m4trace:configure.in:82: -1- AC_SUBST_TRACE([TAR])
 m4trace:configure.in:82: -1- m4_pattern_allow([^TAR$])
-m4trace:configure.in:82: -1- _m4_warn([cross], [cannot check for file existence when cross compiling], [../../lib/autoconf/general.m4:2764: AC_CHECK_FILE is expanded from...
-../../lib/m4sugar/m4sh.m4:620: AS_IF is expanded from...
-../../lib/autoconf/general.m4:2764: AC_CHECK_FILE is expanded from...
+m4trace:configure.in:82: -1- _m4_warn([cross], [cannot check for file existence when cross compiling], [../../lib/autoconf/general.m4:2744: AC_CHECK_FILE is expanded from...
+../../lib/m4sugar/m4sh.m4:598: AS_IF is expanded from...
+../../lib/autoconf/general.m4:2744: AC_CHECK_FILE is expanded from...
 configure.in:82: the top level])
 m4trace:configure.in:98: -1- AC_CONFIG_SUBDIRS([lib/libnids-1.21_patched])
 m4trace:configure.in:98: -1- AC_SUBST([subdirs], ["$subdirs m4_normalize([lib/libnids-1.21_patched])"])
