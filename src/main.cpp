@@ -55,6 +55,8 @@ const char* config_cmd = "config";
 const char* user_cmd = "user";
 const char* packet_filter_cmd = "packet-filter";
 const char* tcp_timeout_cmd = "tcp-timeout";
+const char* max_concurrent_tcp_stream = "max-tcp-streams";
+const char* max_fragmented_ip_hosts = "max-fragmented-ip";
 const char* version_cmd = "version";
 const char* uprintable_cmd= "unprintable";
 const char* uprintable_cmd_ext= "hex-encode";
@@ -96,6 +98,9 @@ bool check_conflicts( const po::variables_map &vm, const vector<string>& argumen
   
 }
 
+static int max_concurrent_tcp_stream_v;
+static int max_fragmented_ip_hosts_v;
+
 int main(int argc, char*argv [])
 {
 		parser p;
@@ -115,6 +120,9 @@ int main(int argc, char*argv [])
 			(string(uprintable_cmd_ext).append(",x").c_str(), "encode unprintable characters as [<char hexadecimal code>] ")
 			(string(raw_cmd).append(",r").c_str(), "show raw stream. it is a shortcat for  -l %request%response")
 			(string(not_found_string).append(",n").c_str(), po::value<string>()->default_value(default_not_found), string("default \"not found\" value, default is ").append(default_not_found).c_str())
+            (string(max_concurrent_tcp_stream).append(",s").c_str(), po::value<int>(&max_concurrent_tcp_stream_v)->default_value(65536), "Max concurrent tcp streams")
+            (string(max_fragmented_ip_hosts).append(",d").c_str(), po::value<int>(&max_fragmented_ip_hosts_v)->default_value(65536), "Max concurrent fragmented ip host")
+			
 		;
 
 		po::variables_map vm;        
@@ -201,8 +209,8 @@ int main(int argc, char*argv [])
 		nids_params.scan_num_hosts = 0;
 		nids_params.pcap_timeout=10;
 		nids_params.tcp_workarounds=1;
-        nids_params.n_tcp_streams=-1;
-        nids_params.n_hosts= -1;
+        nids_params.n_tcp_streams=max_concurrent_tcp_stream_v;
+        nids_params.n_hosts= max_fragmented_ip_hosts_v;
 		// we don want to log intrusions
 		nids_params.syslog =reinterpret_cast<void (*)()>(null_syslog);
 		if (!nids_init())
