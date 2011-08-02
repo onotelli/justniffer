@@ -6,6 +6,9 @@
 	Released under the terms of the GPLv3 or later
 
 	Author: Oreste Notelli <oreste.notelli@plecno.com>	
+
+    Contributors: Benet Leong <benetleong@gmail.com>
+    
 */
 
 #include "config.h"
@@ -209,6 +212,8 @@ int main(int argc, char*argv [])
 		nids_params.scan_num_hosts = 0;
 		nids_params.pcap_timeout=10;
 		nids_params.tcp_workarounds=1;
+        
+        // Thanks to Benet Leong       
         nids_params.n_tcp_streams=max_concurrent_tcp_stream_v;
         nids_params.n_hosts= max_fragmented_ip_hosts_v;
 		// we don want to log intrusions

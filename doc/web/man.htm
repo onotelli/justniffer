@@ -1,7 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
-        <meta name="generator" content= "HTML Tidy for Linux/x86 (vers 7 December 2008), see www.w3.org" />
         <title>Man page of JUSTNIFFER</title>
         <style type="text/css">
             /*<![CDATA[*/
@@ -31,7 +30,7 @@
         </script>
         <h1><a href="index.html">JUSTNIFFER</a></h1>Section: (8)
         <br/>
-        Updated: June 29, 2009
+        Updated: August 2, 2011
         <br/>
         <h2>NAME</h2>
         <b>justniffer</b>
@@ -41,7 +40,9 @@
 <b>justniffer</b> [ [<b>-i</b> <b>interface</b>] or [<b>-f</b> &lt;tcpdump file&gt;] ] 
     [<b>-p</b> &lt;packet filter&gt;] [<b>-u</b> or <b>-x</b>] 
     [ [<b>-r</b>] or [<b>-l</b> &lt;log format&gt;] or [<b>-a</b> &lt;log format&gt;]  ] 
-    [<b>-c</b> &lt;config file&gt;]  [<b>-e</b> &lt;external program&gt;]  [<b>-U</b> &lt;user&gt; ]   [<b>-n</b> &lt;not-found&gt; ]
+    [<b>-c</b> &lt;config file&gt;]  [<b>-e</b> &lt;external program&gt;]  [<b>-U</b> &lt;user&gt; ]   
+    [<b>-n</b> &lt;not-found&gt; ]  [<b>-s</b> &lt;max concurrent tcp streams&gt; ]  
+    [<b>-d</b> &lt;max concurrent ip fragments&gt; ]
 
 <b>Examples:</b> 
   Logging network traffic in Apache like format:
@@ -244,6 +245,20 @@
             <dt>
                 Example: justniffer -i eth0 -r
             </dt>
+            <dt>
+                <b>-s</b>
+                or <b>--max-tcp-streams</b>
+            </dt>
+            <dd>
+                max concurrent tcp stream. (default= 65536) excess will be discarded
+            </dd>
+            <dt>
+                <b>-d</b>
+                or <b>--max-fragmented-ip</b>
+            </dt>
+            <dd>
+                max concurrent fragmented ip. (default= 65536) excess will be discarded
+            </dd>
             <dt>
                 <b>-u</b>
                 or <b>--unprintable</b>
@@ -1481,7 +1496,7 @@
         </dl>
         <a name="lbAJ" id="lbAJ">&nbsp;</a>
         <h2>AUTHOR</h2>Oreste Notelli &lt;<a href= "mailto:oreste.notelli@plecno.com">oreste.notelli@plecno.com</a>&gt;<a name="lbAK" id="lbAK">&nbsp;</a>
-        <h2>COPYRIGHT</h2>Copyright (c) 2007-2009 Plecno s.r.l.<hr/><a name="index" id="index">&nbsp;</a>
+        <h2>COPYRIGHT</h2>Copyright (c) 2007-2011 Plecno s.r.l.<hr/><a name="index" id="index">&nbsp;</a>
         <h2>Index</h2>
         <dl>
             <dt>

@@ -1,3 +1,8 @@
+justniffer (0.5.9) unstable; urgency=high
+  * right configuration for tcp streams limit of libnids (thanks to Benet Leong's contribution)
+
+ -- Oreste Notelli <oreste.notelli plecno.com>  Tue, 2 August 2011 12:24:00 +0100
+
 justniffer (0.5.8) lucid; urgency=low
   * fixed patch libnids (bug introduced in 0.5.7)
 
@@ -5,7 +10,7 @@ justniffer (0.5.8) lucid; urgency=low
 
 justniffer (0.5.7) karmic; urgency=low
   * fixed libnids for gcc 4.4
-
+  
  -- Oreste Notelli <oreste.notelli@plecno.com>  Sat, 27 March 2010 22:06:00 +0100
 
 justniffer (0.5.6) jaunty; urgency=low
@@ -87,4 +92,3 @@ justniffer (0.2-1) unstable; urgency=low
   * Initial release 
 
  -- Oreste Notelli <oreste.notelli@plecno.com>  Thu, 30 Oct 2008 01:32:23 +0100
-
