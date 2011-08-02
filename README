@@ -8,23 +8,24 @@
 * Author: Oreste Notelli <oreste.notelli@plecno.com>	
 ********************************************************
 
-justniffer captures TCP packets, reassembles and reorders them, performs IP packet defragmentation and displays the tcp flow in a customizable way. It is useful for logging network traffic in a 'standard' (web server like) or in a customized way. It can log timings (e.g. response time), useful for tracking network services performances (e.g. web server, application server, etc.) . 
+Justniffer is a tcp packet sniffer. It can log network traffic in a customizable way. can simulate web server logs as the Apache access_log. may include information such as response times. useful to troubleshoot performance issues. It can also capture http traffic content (html, javascript, css, images, sounds, etc..) And save it in a directory
 
-Main differences from other sniffers:
-- capture tcp/ip traffic and handle all tcp/ip stuff (reordering, retrasmissions, defragmentation). The tcp flow adjustment is performed using linux kernel code.    
-- report timing informations. So it can be useful for tracking network system performances
+Main differences from other sniffers
 
-Justniffer put together features of stream and packet sniffers.
+Most of the sniffers are divided into two categories, packet an text sniffers. Both suffer from incompleteness of information that may be collected and analyzed
+
+    Packet sniffers collect too much data, such as packet headers details, and they make easy to analize low level network problem (such as tcp retrasmissions, or ip fragmentation) but make hard-working and time wasting to analize more high level details ( such as content correctness, keep-alive issues, connection timeouts, response time, etc)
+
+    Textmode sniffers usually rebuild TCP stream but cannot collect low level information such as timestamps. They often rebuild the tcp flow in a too simplistic way and fail when dealing with complex TCP/IP issues (reordering, retransmission, reassemlbying, etc). TCP reassembling and reordering is a complex exercise, and require a deep knowledge of TCP/IP protocol and long experience in the field. Usually,they are useful for pure grabbing content from network traffic.
+
+ Justniffer was born to help in toubleshooting perfomance in network tcp based services : HTTP, JDBC, RTSP, SIP, SMTP, IMAP, POP, LDAP, etc. 
+ 
+It can collect low and hight level protocol and performance info reconstructing the tcp flow in a reliable way using portions of the Linux Kernel code. Precisely, it uses a slightly modified version of the libnids libraries that already include a modified version of linux kernel code in a more reusable way. 
+
+You can extend traffic analisys with external scripts (bash, python, or any executable). An example is provided: justniffer-grab-http-traffic script use justniffer to saves files (images, text, html pages, javascript, flash, video, etc) captured from HTTP traffic. 
+
+Justniffer can generate logs in a customizable way. For example it can mimic the apache access_log
+
 
 Oreste Notelli
 
-
-WHAT'S NEW on 0.3
- - no default tcp filter.
- - finer timing tracking
- - traceability of tcp destintion and source port
- - debian packaging
-WHAT'S NEW on 0.2
- - No more checksum (it gives problems when sniffing some interfaces). We trust in kernel checks
- - More keywords
- - simple encoding for unprintable characters

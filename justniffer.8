@@ -1,11 +1,11 @@
-.TH JUSTNIFFER 8 "September 9, 2010" "" ""
+.TH JUSTNIFFER 8 "August 2, 2011" "" ""
 .SH NAME
 \fBjustniffer \fP- tcp flow sniffer
 \fB
 .SH SYNOPSIS
 .nf
 .fam C
-\fBjustniffer\fP [ [\fB-i\fP \fBinterface\fP] or [\fB-f\fP <tcpdump file>] ] [\fB-p\fP <packet filter>] [\fB-u\fP or \fB-x\fP] [ \fB-r\fP or \fB-l\fP <log format> or \fB-a\fP <log format>] [\fB-c\fP <config file>]  [\fB-e\fP <external program>]  [\fB-U\fP <user> ]  [\fB-n\fP <not_found_string> ] 
+\fBjustniffer\fP [ [\fB-i\fP \fBinterface\fP] or [\fB-f\fP <tcpdump file>] ] [\fB-p\fP <packet filter>] [\fB-u\fP or \fB-x\fP] [ \fB-r\fP or \fB-l\fP <log format> or \fB-a\fP <log format>] [\fB-c\fP <config file>]  [\fB-e\fP <external program>]  [\fB-U\fP <user> ]  [\fB-n\fP <not_found_string> ]  [\fB-d\fP <max concurrent hosts for fragmented ip> ] [\fB-s\fP <max concurrent tcp streams> ]  
 .fam T
 
 \fBExamples:\fP 
@@ -150,6 +150,14 @@ show raw stream. it is a shortcut for  -l %request%response
 Example: justniffer -i eth0 -r
 .TP
 .B
+\fB-s\fP or \fB--max-tcp-streams\fP
+max concurrent tcp stream. (default= 65536) excess will be discarded
+.TP
+.B
+\fB-d\fP or \fB--max-fragmented-ip\fP
+max concurrent fragmented ip. (default= 65536) excess will be discarded
+.TP
+.B
 \fB-x\fP or \fB--hex-encode\fP
 encode unprintable characters in [<char hexcode>] format
 .TP
@@ -223,6 +231,7 @@ configuration file. You can specify options in a configuration file (command lin
 log-format = "%request.url %request.header.host %response.code %response.time"
 .PP
 packet-filter = "tcp port 80 or tcp port 8080 or tcp port 3526"
+
 
 .SH FORMAT KEYWORDS
 List of all recognized keywords:
@@ -906,4 +915,4 @@ justniffer \fB-f\fP ./test.cap
 .SH AUTHOR
 Oreste Notelli <oreste.notelli@plecno.com>
 .SH COPYRIGHT
-Copyright (c) 2007-2010 Plecno s.r.l.
+Copyright (c) 2007-2011 Plecno s.r.l.
