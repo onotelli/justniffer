@@ -201,6 +201,8 @@ int main(int argc, char*argv [])
 		nids_params.scan_num_hosts = 0;
 		nids_params.pcap_timeout=10;
 		nids_params.tcp_workarounds=1;
+        nids_params.n_tcp_streams=-1;
+        nids_params.n_hosts= -1;
 		// we don want to log intrusions
 		nids_params.syslog =reinterpret_cast<void (*)()>(null_syslog);
 		if (!nids_init())
