@@ -70,11 +70,18 @@ iframe
             }
 			h2
 			{
-				margin-top:60px;
+				margin-top:30px;
 			}
+            h2.body
+                        {
+				margin-top:4px;
+                font-weight: normal;
+                font-size: 1em;
+            }
+
 			h3
 			{
-				margin-top:40px;
+				margin-top:20px;
 			}
             .home br
             {
