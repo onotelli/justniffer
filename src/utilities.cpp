@@ -56,7 +56,7 @@ void check_pcap_file(const string& str) throw (invalid_pcap_file)
 		{
 			stringstream ss;
 			ss<<hdr.snaplen;
-			throw invalid_pcap_file(string ("invalid pcap file snaplen: ").append(ss.str()).append(". Snaplen must be set to 0 (look at tcpdump -s snaplen documentation)"));		
+			throw invalid_pcap_file(string ("invalid pcap file snaplen: ").append(ss.str()).append(". Snaplen must be set to 0 (look at tcpdump -s snaplen documentation or use the -F option"));		
 		}
 	}
 	else

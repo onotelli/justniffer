@@ -44,6 +44,18 @@ ostream& print_error(const char* arg )
 	return cerr;
 }
 
+ostream& print_warning(const string& arg )
+{
+	cerr <<"\nWARNING: "<< arg;
+	return cerr;
+}
+
+ostream& print_warning(const char* arg )
+{
+	cerr <<"nWARNING: "<< arg;
+	return cerr;
+}
+
 static void null_syslog(int type, int errnum, struct ip *iph, void *data)
 {  
 }
@@ -70,6 +82,7 @@ const char* default_packet_filter ="";
 const char* default_format= "%source.ip - - [%request.timestamp(%d/%b/%Y:%T %z)] \"%request.line\" %response.code %response.header.content-length(0) \"%request.header.referer()\" \"%request.header.user-agent()\"";
 const char* raw_format= "%request%response";
 const char* default_not_found="-";
+const char* force_read_pcap = "force-read-pcap";
 
 typedef vector<string>::const_iterator args_type;
 bool check_conflicts( const po::variables_map &vm, const vector<string>& arguments)
@@ -125,6 +138,7 @@ int main(int argc, char*argv [])
 			(string(not_found_string).append(",n").c_str(), po::value<string>()->default_value(default_not_found), string("default \"not found\" value, default is ").append(default_not_found).c_str())
             (string(max_concurrent_tcp_stream).append(",s").c_str(), po::value<int>(&max_concurrent_tcp_stream_v)->default_value(65536), "Max concurrent tcp streams")
             (string(max_fragmented_ip_hosts).append(",d").c_str(), po::value<int>(&max_fragmented_ip_hosts_v)->default_value(65536), "Max concurrent fragmented ip host")
+			(string(force_read_pcap).append(",F").c_str(), "force the reading of the pcap file ignoring the snaplen value. WARNING: could give unexpected results")
 			
 		;
 
@@ -153,6 +167,7 @@ int main(int argc, char*argv [])
 		{
 			out.push(ascii_filter());
 		}
+        
 		if (vm.count(uprintable_cmd_ext))
 		{
 			out.push(ascii_filter_ext());
@@ -190,7 +205,15 @@ int main(int argc, char*argv [])
 		else
 		{
 			pcap_filename = pcapfile_arg.as<string>();
-			check_pcap_file(pcap_filename);
+            try{
+                check_pcap_file(pcap_filename);
+            }
+            catch(invalid_pcap_file& e)
+            {
+                if (!vm.count(force_read_pcap))
+                    throw e;
+                print_warning("you're forcing the reading of a file with potentially incomplete packets\n");
+            }
 			nids_params.filename=(char*)pcap_filename.c_str();
 		}
 
