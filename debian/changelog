@@ -1,17 +1,17 @@
-justniffer (0.5.10) unstable; urgency=low
+justniffer (0.5.10) natty; urgency=low
   * -F option added, to force the reading pcap files with truncated packets
 
- -- Oreste Notelli <oreste.notelli plecno.com>  Tue, 12 September 2011 10:42:00 +0100
+ -- Oreste Notelli <oreste.notelli@plecno.com>  Tue, 12 September 2011 10:42:00 +0100
  
 justniffer (0.5.9) unstable; urgency=high
   * right configuration for tcp streams limit of libnids (thanks to Benet Leong's contribution)
 
- -- Oreste Notelli <oreste.notelli plecno.com>  Tue, 2 August 2011 12:24:00 +0100
+ -- Oreste Notelli <oreste.notelli@plecno.com>  Tue, 2 August 2011 12:24:00 +0100
 
 justniffer (0.5.8) lucid; urgency=low
   * fixed patch libnids (bug introduced in 0.5.7)
 
- -- Oreste Notelli <oreste.notelli plecno.com>  Thu, 8 September 2010 18:30:00 +0100
+ -- Oreste Notelli <oreste.notelli@plecno.com>  Thu, 8 September 2010 18:30:00 +0100
 
 justniffer (0.5.7) karmic; urgency=low
   * fixed libnids for gcc 4.4
