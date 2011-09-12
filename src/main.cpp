@@ -52,7 +52,7 @@ ostream& print_warning(const string& arg )
 
 ostream& print_warning(const char* arg )
 {
-	cerr <<"nWARNING: "<< arg;
+	cerr <<"\nWARNING: "<< arg;
 	return cerr;
 }
 

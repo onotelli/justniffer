@@ -5,7 +5,7 @@
 .SH SYNOPSIS
 .nf
 .fam C
-\fBjustniffer\fP [ [\fB-i\fP \fBinterface\fP] or [\fB-f\fP <tcpdump file>] ] [\fB-p\fP <packet filter>] [\fB-u\fP or \fB-x\fP] [ \fB-r\fP or \fB-l\fP <log format> or \fB-a\fP <log format>] [\fB-c\fP <config file>]  [\fB-e\fP <external program>]  [\fB-U\fP <user> ]  [\fB-n\fP <not_found_string> ]  [\fB-d\fP <max concurrent hosts for fragmented ip> ] [\fB-s\fP <max concurrent tcp streams> ]  
+\fBjustniffer\fP [ [\fB-i\fP \fBinterface\fP] or [\fB-f\fP <tcpdump file>] ] [\fB-p\fP <packet filter>] [\fB-u\fP or \fB-x\fP] [ \fB-r\fP or \fB-l\fP <log format> or \fB-a\fP <log format>] [\fB-c\fP <config file>]  [\fB-e\fP <external program>]  [\fB-U\fP <user> ]  [\fB-n\fP <not_found_string> ]  [\fB-d\fP <max concurrent hosts for fragmented ip> ] [\fB-s\fP <max concurrent tcp streams> ]  [\fB-F\fP]  
 .fam T
 
 \fBExamples:\fP 
@@ -101,6 +101,10 @@ tcpdump file to read from (for offline network traffic processing). It must be a
 \fBWARNING\fP: justniffer needs a complete dump, usually, sniffers collect just the few first (96) bytes per packet. (when using tcpdump you must specify "-s 0" option. Example: tcpdump -i eth0 -s 0 -w /tmp/file.cap)
 .TP
 Example: justniffer -f /tmp/file.cap
+.TP
+.B
+\fB-F\fP or \fB--force-read-pcap\fP
+Force the reading of a pcap file also if captured with truncated packets (for example when using tcpdump without the "-s 0" option)
 .TP
 .B
 \fB-p\fP or \fB--packet-filter\fP=<filter>

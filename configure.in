@@ -10,7 +10,7 @@ dnl
 
 AC_PREREQ(2.60)
 AC_COPYRIGHT(2007-2011 (c) Plecno s.r.l)
-AC_INIT(justniffer, [0.5.9], info@plecno.com)
+AC_INIT(justniffer, [0.5.10], info@plecno.com)
 AC_DEFINE(JUSTNIFFER_VERSION, ["0.5.10"], [justniffer version])
 
 AM_INIT_AUTOMAKE

@@ -51,7 +51,7 @@
         - tcp flow sniffer <a name="lbAC" id="lbAC">&nbsp;</a>
         <h2>SYNOPSIS</h2>
         <pre>
-<b>justniffer</b> [ [<b>-i</b> <b>interface</b>] or [<b>-f</b> &lt;tcpdump file&gt;] ] 
+<b>justniffer</b> [ [<b>-i</b> <b>interface</b>] or [<b>-f</b> &lt;tcpdump file&gt;] ] [<b>-F</b>]
     [<b>-p</b> &lt;packet filter&gt;] [<b>-u</b> or <b>-x</b>] 
     [ [<b>-r</b>] or [<b>-l</b> &lt;log format&gt;] or [<b>-a</b> &lt;log format&gt;]  ] 
     [<b>-c</b> &lt;config file&gt;]  [<b>-e</b> &lt;external program&gt;]  [<b>-U</b> &lt;user&gt; ]   
@@ -181,6 +181,16 @@
                 just the few first (96) bytes per packet. (when using tcpdump
                 you must specify "-s 0" option. Example: tcpdump -i eth0 -s 0
                 -w /tmp/file.cap)
+            </dd>
+            <dt>
+                Example: justniffer -f /tmp/file.cap
+            </dt>
+            <dt>
+                <b>-F</b>
+                or <b>--force-read-pcap</b>
+            </dt>
+            <dd>
+                Force the reading of a pcap file also if captured with truncated packets (for example when using tcpdump without the "-s 0" option)
             </dd>
             <dt>
                 Example: justniffer -f /tmp/file.cap
@@ -1563,6 +1573,7 @@
             <g:plusone size="small" count="false" href="http://justniffer.sourceforge.net/"></g:plusone>
             
             <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://justniffer.sourceforge.net/" data-count="none">Tweet</a><script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>
+            <a  title="bookmark on delicious" href="http://www.delicious.com/save" onclick="window.open('http://www.delicious.com/save?v=5&noui&jump=close&url='+encodeURIComponent('http://justniffer.sourceforge.net/')+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=550,height=550'); return false;"><img src="http://l.yimg.com/hr/img/delicious.small.gif" height="10" width="10" alt="Delicious" /></a>
         </div>
     </body>
 </html>
