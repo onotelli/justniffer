@@ -62,7 +62,7 @@ class proxy(object):
       return result
     except:
       return getattr(self.o, name)
-  def readline(self):
+  def readline(self, max=None):
     if self.first:
       self.first = False
       return self.first_line+"\n"
@@ -243,31 +243,31 @@ def print_info(in_, base_dir):
 	  print "empty response (truncated connection)"
     
 
-in_ =proxy(sys.stdin)
-
-parser = OptionParser()
-parser.add_option("-d", "--directory", dest="directory",
-                  help="Directory where to save files")
-
-(options, args) = parser.parse_args()
-
-if (options.directory == None):
-  parser.print_help()
-  sys.exit(-1)
-
-if (os.geteuid() == 0):
-  print "ERROR: "+sys.argv[0]+ " cannot run as root!!!"
-  sys.exit(-1)
 
 try:
-  print_info(in_, options.directory)
+    in_ =proxy(sys.stdin)
+
+    parser = OptionParser()
+    parser.add_option("-d", "--directory", dest="directory",
+                      help="Directory where to save files")
+
+    (options, args) = parser.parse_args()
+
+    if (options.directory == None):
+      parser.print_help()
+      sys.exit(-1)
+
+    if (os.geteuid() == 0):
+      print "ERROR: "+sys.argv[0]+ " cannot run as root!!!"
+      sys.exit(-1)
+    print_info(in_, options.directory)
 except Exception,e :
-  import traceback
-  print "*********************ERROR BEGIN*********************"
-  t,v,tb = sys.exc_info()
-  traceback.print_exception(t,v,tb)
-  print "*****************************************************"
-  print in_.c
-  print "*****************************************************"
-  print str(e)
-  print "*********************ERROR END***********************"
+    import traceback
+    print "*********************ERROR BEGIN*********************"
+    t,v,tb = sys.exc_info()
+    traceback.print_exception(t,v,tb)
+    print "*****************************************************"
+    print in_.c
+    print "*****************************************************"
+    print str(e)
+    print "*********************ERROR END***********************"

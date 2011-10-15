@@ -426,7 +426,7 @@ const char* break_keyword_base::parse(const char* cursor, const string& _keyword
 void cmd_execute_printer::_execute(handlers::iterator start, handlers::iterator end,const timeval*t)
 {
 	FILE *output  = NULL;
-	output = popen (_command.c_str(), "w");
+    output = popen (_command.c_str(), "w");
 	try
 	{
 		check (output != NULL, cannot_execute_command(_command));
