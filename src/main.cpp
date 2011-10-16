@@ -26,7 +26,7 @@ using namespace std;
 namespace po = boost::program_options;
 namespace pos = boost::iostreams;
 static void show_usage(parser& p);
-static const char* copyrights =  PACKAGE_NAME " " JUSTNIFFER_VERSION "\nWritten by Oreste Notelli <oreste.notelli@plecno.com>\nCopyright (c) 2007-2009 Plecno s.r.l.";
+static const char* copyrights =  PACKAGE_NAME " " JUSTNIFFER_VERSION "\nWritten by Oreste Notelli <oreste.notelli@plecno.com>\nCopyright (c) 2007-2011 Plecno s.r.l.";
 static po::options_description desc(string (copyrights).append("\n\nUsage").c_str());
 static void show_version()
 {
