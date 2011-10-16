@@ -1,3 +1,8 @@
+justniffer (0.5.11) natty; urgency=low
+  * Fixes for python 2.7
+
+ -- Oreste Notelli <oreste.notelli@plecno.com>  Tue, 16 October 2011 18:55:00 +0100
+
 justniffer (0.5.10) natty; urgency=low
   * -F option added, to force the reading pcap files with truncated packets
 
