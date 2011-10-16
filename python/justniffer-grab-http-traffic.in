@@ -70,7 +70,7 @@ check(options.packet_filter, "-p", options_to_pass)
 check_user(options.user, options_to_pass)
 options_to_pass.append("-r")
 options_to_pass.append("-e")
-options_to_pass.append('"'+options.parser_script+' -d '+options.directory+'"')
+options_to_pass.append(options.parser_script+' -d "'+options.directory+'"')
 options_to_pass.insert(0, "justniffer")
 result = subprocess.call(options_to_pass)
 
