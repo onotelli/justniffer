@@ -120,6 +120,12 @@ Examples:
 
   sniffing row pop3 traffic
     \fBjustniffer -i eth0 -r -p "tcp port 110"\fP
+    
+  sniffing  traffic from/to a specific host 
+    \fBjustniffer -i eth0 -r -p "host 10.10.10.2"\fP
+
+  sniffing  HTTP traffic from/to a specific host and port 
+    \fBjustniffer -i eth0 -r -p "host 10.10.10.2 and tcp port 80"\fP
 .TP
 .B
 \fB-l\fP or \fB--log-format\fP=<format>
