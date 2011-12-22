@@ -4,7 +4,7 @@ diff -Naur libnids-1.21/configure.gnu libnids-1.21_patched/configure.gnu
 @@ -0,0 +1,3 @@
 +#!/bin/sh
 +
-+./configure --disable-libnet --disable-libglib $@
++./configure --disable-libnet --disable-libglib "$@"
 \ No newline at end of file
 diff -Naur libnids-1.21/README libnids-1.21_patched/README
 --- libnids-1.21/README	2006-05-04 18:24:02.000000000 +0200
