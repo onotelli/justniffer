@@ -1,4 +1,4 @@
-justniffer (0.5.11) natty; urgency=low
+justniffer (0.5.11.quantal) quantal; urgency=low
   * Fixes for python 2.7
 
  -- Oreste Notelli <oreste.notelli@plecno.com>  Tue, 16 October 2011 18:55:00 +0100
