@@ -149,7 +149,8 @@ void parser::init_parse_elements()
     elements["request.protocol"] = pelem(new keyword_arg_and_optional_params<regex_handler_factory_t<regex_handler_request_line> >(string("^[^\\s]*\\s*[^\\s]*\\s*([^\\s]*)"),_default_not_found ));
     elements["request.grep"] = pelem(new keyword_params_and_arg<regex_handler_factory_t<regex_handler_all_request> >(_default_not_found));
     elements["request.header"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_request> >(string(".*")));
-
+    elements["session.time"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, session_time_handler> >(_default_not_found));
+    
     REQUEST_HEADER("request.header.host","Host");
     REQUEST_HEADER("request.header.user-agent","User-Agent");
     REQUEST_HEADER("request.header.accept","Accept");

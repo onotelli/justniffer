@@ -946,12 +946,12 @@ private:
 	string _not_found;
 };
 
-/*
+
 class session_time_handler : public basic_handler
 {
 public:
-	session_time_handler(){t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0;}
-	virtual void append(std::basic_ostream<char>& out, const timeval* ) {to_double(t2-t1);}
+	session_time_handler(const string& not_found){t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0;_not_found = not_found;}
+	virtual void append(std::basic_ostream<char>& out, const timeval* ) {if (t1.tv_sec &  t2.tv_sec) out <<to_double(t2-t1); else out << _not_found;}
  	virtual void onOpen(tcp_stream* pstream, const timeval* t){ t2=*t;}
  	virtual void onRequest(tcp_stream* pstream, const timeval* t){t2=*t;}
  	virtual void onResponse(tcp_stream* pstream, const timeval* t){t2=*t;}
@@ -960,8 +960,9 @@ public:
 
 private:
 	timeval t1, t2;
+	string _not_found;
 };
-*/
+
 
 class response_size_handler : public basic_handler
 {
