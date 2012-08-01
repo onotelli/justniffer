@@ -956,7 +956,7 @@ public:
  	virtual void onRequest(tcp_stream* pstream, const timeval* t){t2=*t;}
  	virtual void onResponse(tcp_stream* pstream, const timeval* t){t2=*t;}
 	virtual void onOpening(tcp_stream* pstream, const timeval* t){t1=*t; }
-	virtual void onClose(tcp_stream* pstream, const timeval* t){t2=*t;}
+	virtual void onClose(tcp_stream* pstream, const timeval* t,unsigned char* packet){t2=*t;}
 
 private:
 	timeval t1, t2;
