@@ -25,7 +25,13 @@ const char parser::_key_word_id='%';
 void parser::nids_handler(struct tcp_stream *ts, void **yoda, struct timeval* t, unsigned char* packet)
 {
 	check(theOnlyParser != NULL, parser_not_initialized());
-	//cout << "nids_handler "<< (int)ts->nids_state << "\n";
+	//string flag ="";
+	//if (packet)
+	//{
+    //    flag = "packet found";
+	//}
+	//cout << "ts->nids_state "<< (int) ts->nids_state << " " <<flag <<"\n";
+	
 	switch (ts->nids_state) 
 	{
 		case NIDS_JUST_EST:
@@ -44,9 +50,8 @@ void parser::nids_handler(struct tcp_stream *ts, void **yoda, struct timeval* t,
 				theOnlyParser->process_server(ts, t, packet);
 			}
 			break;
-			
 		case NIDS_EXITING:
-			break;
+		    break;	
 		case NIDS_OPENING:
 			theOnlyParser->process_opening_connection(ts, t, packet);
 			break;
@@ -150,6 +155,7 @@ void parser::init_parse_elements()
     elements["request.grep"] = pelem(new keyword_params_and_arg<regex_handler_factory_t<regex_handler_all_request> >(_default_not_found));
     elements["request.header"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_request> >(string(".*")));
     elements["session.time"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, session_time_handler> >(_default_not_found));
+    elements["session.requests"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, session_request_counter> >(_default_not_found));
     
     REQUEST_HEADER("request.header.host","Host");
     REQUEST_HEADER("request.header.user-agent","User-Agent");
@@ -471,64 +477,102 @@ void outstream_printer::doit(handlers::iterator start, handlers::iterator end,co
 
 ///// stream /////
 
+int stream::id = 0;
+
+stream::stream(handler_factories::iterator _begin, handler_factories::iterator _end, printer* printer):
+		begin(_begin), end(_end), status(unknown), _printer(printer), tot_requests(0)
+		{
+		    id++;
+		    _id=id;
+		}
+
+
 void stream::onOpening(tcp_stream* pstream, const timeval* t)
 {
 	//cout<<"stream::onOpen\n";
-	init();
+	init(pstream);
+	opening_time = *t;
 	for (handlers::iterator i= _handlers.begin(); i!= _handlers.end(); i++)
-		(*i)->onOpening(pstream, t);
+		(*i)->onOpening(this, t);
 	status = opening;
 }
 
 
 void stream::onOpen(tcp_stream* pstream, const timeval* t)
 {
-	//cout<<"stream::onOpen\n";
+	copy_tcp_stream(pstream);
 	for (handlers::iterator i= _handlers.begin(); i!= _handlers.end(); i++)
-		(*i)->onOpen(pstream, t);
+		(*i)->onOpen(this, t);
 	status = open;
 }
 
 void stream::onClose(tcp_stream* pstream, const timeval* t,unsigned char* packet)
 {
-	//cout<<"stream::onClose\n";
+	copy_tcp_stream(pstream);
 	for (handlers::iterator i= _handlers.begin(); i!= _handlers.end(); i++)
-		(*i)->onClose(pstream, t,packet);
+		(*i)->onClose(this, t,packet);
 	// don't print log for only open connection. (hmmmm, i should think more about it)
 	if (status!=open)
 	  print(t);
 	//cout<<"stream::onClose end\n";
+	tot_requests = 0;
 	status=close;
 }
 
 void stream::onRequest(tcp_stream* pstream, const timeval* t)
 {
+	copy_tcp_stream(pstream);
+	
 	if (status == response)
 	{
 		print(t);
 	}
+    if (status != request)
+	    tot_requests++;
 	for (handlers::iterator i= _handlers.begin(); i!= _handlers.end(); i++)
 	{
-		(*i)->onRequest(pstream, t);
+		(*i)->onRequest(this, t);
 	}
 	status=request;
 }
 
 void stream::onResponse(tcp_stream* pstream, const timeval* t)
 {
-	//cout<<"stream::onResponse\n";
+	copy_tcp_stream(pstream);
 	for (handlers::iterator i= _handlers.begin(); i!= _handlers.end(); i++)
-		(*i)->onResponse(pstream, t);
+		(*i)->onResponse(this, t);
 	status=response;
 }
 
-void stream::init()
+void stream::copy_tcp_stream(tcp_stream* pstream)
+{
+    addr = pstream->addr;
+    nids_state = pstream->nids_state;
+    listeners = pstream->listeners;
+    client = pstream->client;
+    server = pstream->server;
+    next_node = pstream->next_node;
+    prev_node = pstream->prev_node;
+    hash_index = pstream->hash_index;
+    next_time = pstream->next_time;
+    prev_time = pstream->prev_time;
+    read = pstream->read;
+    next_free = pstream->next_free;
+    user = pstream->user;
+}
+
+void stream::init(tcp_stream* pstream)
+{
+	copy_tcp_stream(pstream);
+	this->reinit();
+}
+
+void stream::reinit()
 {
 	_handlers.erase(_handlers.begin(), _handlers.end());
 	for ( handler_factories::iterator i= begin; i!= end;i++)
 		_handlers.push_back((*i)->create_handler());
 }
-
 
 void stream::print(const timeval* t)
 {
@@ -537,7 +581,7 @@ void stream::print(const timeval* t)
 		(*i)->append(_out, t);
 	_out<<std::endl;
 	_out.flush();*/
-	init();
+	reinit();
 }
 
 /////////////////
@@ -551,7 +595,7 @@ void close_originator::append(std::basic_ostream<char>& out, const timeval* t)
 	  else if (ip_originator == dip)
 		  out <<"server";
 	  else 
-		out <<"impossible";
+		out <<_not_found;//<< ip_originator<< " " << dip<< " "<<sip;
 	  
 	}
 	else

@@ -318,22 +318,27 @@ private:
 };
 
 
-class stream : public shared_obj<stream>
+class stream : public shared_obj<stream>, public tcp_stream
 {
 enum status_enum{unknown, opening, open, request, response, close};
 public:
-	stream(handler_factories::iterator _begin, handler_factories::iterator _end, printer* printer):
-		begin(_begin), end(_end), status(unknown), _printer(printer){};
+    timeval opening_time;
+    unsigned tot_requests;
+    void copy_tcp_stream(tcp_stream* pstream);
+	stream(handler_factories::iterator _begin, handler_factories::iterator _end, printer* printer);
 	virtual void onOpening(tcp_stream* pstream, const timeval* t);
 	virtual void onOpen(tcp_stream* pstream, const timeval* t);
 	virtual void onClose(tcp_stream* pstream, const timeval* t,unsigned char* packet);
 	virtual void onRequest(tcp_stream* pstream, const timeval* t);
 	virtual void onResponse(tcp_stream* pstream, const timeval* t);
 	virtual ~stream(){};
-	virtual void init();
+	virtual void init(tcp_stream* pstream);
+	virtual void reinit();
 	virtual void print(const timeval* t);
 
 private:
+    static int id;
+    int _id;
 	handler_factories::iterator begin, end;
 	handlers _handlers;
 	status_enum status;
@@ -952,16 +957,33 @@ class session_time_handler : public basic_handler
 public:
 	session_time_handler(const string& not_found){t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0;_not_found = not_found;}
 	virtual void append(std::basic_ostream<char>& out, const timeval* ) {if (t1.tv_sec &  t2.tv_sec) out <<to_double(t2-t1); else out << _not_found;}
- 	virtual void onOpen(tcp_stream* pstream, const timeval* t){ t2=*t;}
- 	virtual void onRequest(tcp_stream* pstream, const timeval* t){t2=*t;}
- 	virtual void onResponse(tcp_stream* pstream, const timeval* t){t2=*t;}
-	virtual void onOpening(tcp_stream* pstream, const timeval* t){t1=*t; }
-	virtual void onClose(tcp_stream* pstream, const timeval* t,unsigned char* packet){t2=*t;}
+ 	virtual void onOpen(tcp_stream* pstream, const timeval* t){ t1=((stream*) pstream)->opening_time; t2=*t;}
+ 	virtual void onRequest(tcp_stream* pstream, const timeval* t){t1=((stream*) pstream)->opening_time;t2=*t;}
+ 	virtual void onResponse(tcp_stream* pstream, const timeval* t){t1=((stream*) pstream)->opening_time;t2=*t;}
+	virtual void onOpening(tcp_stream* pstream, const timeval* t){t1=((stream*) pstream)->opening_time; t2=((stream*) pstream)->opening_time; }
+	virtual void onClose(tcp_stream* pstream, const timeval* t,unsigned char* packet){t1=((stream*) pstream)->opening_time; t2=*t;}
 
 private:
 	timeval t1, t2;
 	string _not_found;
 };
+
+class session_request_counter : public basic_handler
+{
+public:
+	session_request_counter(const string& not_found):_pstream(0), _not_found(not_found){}
+	virtual void append(std::basic_ostream<char>& out, const timeval* ) {if (!_pstream) out << _not_found; else out << _pstream->tot_requests; }
+ 	virtual void onOpen(tcp_stream* pstream, const timeval* t){ _pstream=((stream*) pstream);}
+ 	virtual void onRequest(tcp_stream* pstream, const timeval* t){ _pstream=((stream*) pstream);}
+ 	virtual void onResponse(tcp_stream* pstream, const timeval* t){ _pstream=((stream*) pstream);}
+	virtual void onOpening(tcp_stream* pstream, const timeval* t){ _pstream=((stream*) pstream);}
+	virtual void onClose(tcp_stream* pstream, const timeval* t,unsigned char* packet){ _pstream=((stream*) pstream);}
+
+private:
+	stream* _pstream;
+	string _not_found;
+};
+
 
 
 class response_size_handler : public basic_handler
