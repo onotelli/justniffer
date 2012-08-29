@@ -221,6 +221,8 @@ def save_content_to_file(base_dir, request, response):
 
 def print_info(in_, base_dir):
   requests , response_line= get_requests(in_)
+  print requests
+  return 
   if (response_line != None):
     responses = get_responses(in_, response_line)
   index =0
@@ -235,7 +237,7 @@ def print_info(in_, base_dir):
 	#print "saving file.. ",make_filename("default", request, response)
 	print "from ",method, host, url 
 	print "of type '" +str( response.get_header("content-type"))+"'"
-	save_content_to_file(base_dir, request, response)
+	#save_content_to_file(base_dir, request, response)
       index +=1
     except IndexError: 
 	  print ("---------------------------------------------------------")

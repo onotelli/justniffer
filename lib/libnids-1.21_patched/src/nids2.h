@@ -49,6 +49,7 @@ enum
 # define NIDS_TIMED_OUT 5
 # define NIDS_EXITING   6	/* nids is exiting; last chance to get data */
 # define NIDS_OPENING 7
+# define NIDS_PARTIAL_CAPTURE 8
 
 # define NIDS_DO_CHKSUM  0
 # define NIDS_DONT_CHKSUM 1

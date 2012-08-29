@@ -800,7 +800,6 @@ public:
 	close_timestamp_handler(const string& format, const string& not_found){fmt = format; _not_found= not_found;}
 };
 
-
 class request_timestamp_handler2 : public request_timestamp_handler_base<timestamp_handler2>
 {
 public:
@@ -824,7 +823,6 @@ class close_timestamp_handler2 : public close_timestamp_handler_base<timestamp_h
 public:
 	close_timestamp_handler2(const string& not_found){ _not_found= not_found;}
 };
-
 
 class response_time_handler : public basic_handler
 {
@@ -951,7 +949,6 @@ private:
 	string _not_found;
 };
 
-
 class session_time_handler : public basic_handler
 {
 public:
@@ -1009,5 +1006,32 @@ private:
 	int size;
 };
 
+class request_part : public request_collector<basic_handler>
+{
+public:
+    request_part(const string& keyword){
+        std::istringstream s(keyword) ;
+        s>> start;
+        s>> length;
+    }
+	virtual void append(std::basic_ostream<char>& out, const timeval* ) {out <<text.substr(start, length);}
+private:
+	int start;
+	int length;
+};
+
+class response_part : public response_collector<basic_handler>
+{
+public:
+    response_part(const string& keyword){
+        std::istringstream s(keyword) ;
+        s>> start;
+        s>> length;
+    }
+	virtual void append(std::basic_ostream<char>& out, const timeval* ) {out <<text.substr(start, length);}
+private:
+	int start;
+	int length;
+};
 
 #endif// _sniffer_formatter_h

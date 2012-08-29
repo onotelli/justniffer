@@ -55,6 +55,7 @@ AC_CHECK_HEADER(netinet/ip.h, ,
   
 AC_CHECK_LIB(pcap, pcap_open_live, AC_DEFINE(HAVE_LIB_PCAP))
 
+
 AX_BOOST_BASE
 if test "$succeeded" != "yes";
 then
@@ -65,6 +66,13 @@ AX_BOOST_REGEX
 if test "$ax_cv_boost_regex" != "yes";
 then
     AC_MSG_ERROR(["cannot find the boost regex libraries: see http://www.boost.org/"])
+fi
+
+
+AX_BOOST_PYTHON
+if test "$ac_cv_boost_python" != "yes";
+then
+    AC_MSG_ERROR(["cannot find the boost python libraries: see http://www.boost.org/"])
 fi
 
 AX_BOOST_PROGRAM_OPTIONS
