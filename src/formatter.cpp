@@ -156,6 +156,8 @@ void parser::init_parse_elements()
     elements["request.header"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_request> >(string(".*")));
     
     elements["request.part"] = pelem(new keyword_params<handler_factory_t_arg<string, request_part> >());
+
+    elements["python"] = pelem(new keyword_params<handler_factory_t_arg<string, request_part> >());
     
     elements["session.time"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, session_time_handler> >(_default_not_found));
     elements["session.requests"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, session_request_counter> >(_default_not_found));
@@ -178,9 +180,9 @@ void parser::init_parse_elements()
     REQUEST_HEADER("request.header.content-length","Content-Length");
     REQUEST_HEADER("request.header.content-md5","Content-MD5");
     REQUEST_HEADER("request.header.via","Via");
+    
     elements["request.header.value"] = pelem(new keyword_params<header_handler_factory_t<regex_handler_request> >());
     elements["request.header.grep"] = pelem(new keyword_params_and_arg<regex_handler_factory_t<regex_handler_request> >(_default_not_found));
-
     elements["response"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_all_response> >(string(".*")));
     elements["response.timestamp"] = pelem(new keyword_arg_and_optional_params<handler_factory_t_arg2<string, string, response_timestamp_handler> > ("%D %T", _default_not_found));
     elements["response.timestamp2"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, response_timestamp_handler2> > ( _default_not_found));

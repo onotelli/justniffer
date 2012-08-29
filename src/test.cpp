@@ -1,18 +1,7 @@
+#include "test.h"
 #include <iostream>
-#include <boost/python.hpp>
-#include "formatter.h"
 #include "utilities.h"
 
-namespace python=boost::python;
-
-class OUTStream
-{
-public:
-  virtual void write(string val){
-    cout << val;
-  }
-  
-};
 
 /**
 
@@ -44,49 +33,6 @@ struct tcp_stream {
 
 **/
 
-class TCPStream
-{
-public:
-    TCPStream(tcp_stream* stream )
-    {
-        _tcp_stream=stream;
-    }
-    
-    std::string src_ip(){
-        return ip_to_str(_tcp_stream->addr.saddr);
-    }
-    
-    std::string dst_ip(){
-        return ip_to_str(_tcp_stream->addr.daddr);
-    }
-    
-    int dst_port(){
-        return _tcp_stream->addr.dest;
-    }
-    
-    int src_port(){
-        return _tcp_stream->addr.source;
-    }
-    
-    //virtual ~TCPStream(){}
-private:
-    tcp_stream * _tcp_stream;
-};
-
-class BaseHandler: public basic_handler, public boost::noncopyable
-{
-public:
-    //virtual void append(int i) = 0;
-    virtual void append(OUTStream& s) = 0;
-	/*virtual void append(std::basic_ostream<char>& out, const timeval* t) {}
-	virtual void onOpening(tcp_stream* pstream, const timeval* t){}
-	virtual void onOpen(tcp_stream* pstream, const timeval* t){}
-	virtual void onRequest(tcp_stream* pstream, const timeval* t){}
-	virtual void onResponse(tcp_stream* pstream,const  timeval* t){}
-	virtual void onClose(tcp_stream* pstream, const timeval* ,unsigned char* packet){}
-	*/
-    virtual ~BaseHandler() {};
-}; 
 
 class BaseHandlerWrap: public BaseHandler, public python::wrapper<BaseHandler>
 {
@@ -94,9 +40,9 @@ public:
     virtual void append(OUTStream& s) {
         this->get_override("append")(boost::ref(s));
     };
-    virtual void onOpening(tcp_stream* pstream, const timeval* t){
-        this->get_override(" onOpening")(boost::ref(TCPStream(pstream)));
-    };
+	virtual void onOpening(TCPStream& stream, double time){
+	    this->get_override("onOpening")(boost::ref(stream), time);
+    }
 }; 
 
 
@@ -117,7 +63,7 @@ const char* class_name = "PythonDerived";
 
 using namespace std;
 
-int main()
+int main_()
 {
     Py_Initialize();
     // Register the module with the interpreter
@@ -144,6 +90,7 @@ int main()
           BaseHandler& py = python::extract<BaseHandler&>(py_base) BOOST_EXTRACT_WORKAROUND;
           OUTStream s = OUTStream();
           // Make sure the right 'hello' method is called.
+         py.onOpening((tcp_stream*) 0, (timeval*)0) ;
          py.append(boost::ref(s)) ;
          cout << endl;
       }

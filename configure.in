@@ -68,7 +68,7 @@ then
     AC_MSG_ERROR(["cannot find the boost regex libraries: see http://www.boost.org/"])
 fi
 
-
+AC_PYTHON_DEVEL
 AX_BOOST_PYTHON
 if test "$ac_cv_boost_python" != "yes";
 then

@@ -1,6 +1,6 @@
-AM_CPPFLAGS= $(NIDS2_INCLUDE) $(PCAP_INCLUDE) $(BOOST_CPPFLAGS) $(PYTHON_CFLAGS) -I ../include
+AM_CPPFLAGS= $(NIDS2_INCLUDE) $(PCAP_INCLUDE) $(BOOST_CPPFLAGS) $(PYTHON_CPPFLAGS) -I ../include
 LDADD=$(NIDS2_LIB) $(PCAP_LIB) $(BOOST_LDFLAGS) $(BOOST_REGEX_LIB) $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_PYTHON_LIB)  $(PYTHON_LDFLAGS) 
 
 bin_PROGRAMS = justniffer
 
-justniffer_SOURCES =  main.cpp formatter.cpp utilities.cpp regex.cpp
+justniffer_SOURCES =  main.cpp formatter.cpp utilities.cpp regex.cpp test.cpp
