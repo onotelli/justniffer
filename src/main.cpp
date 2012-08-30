@@ -60,7 +60,6 @@ static void null_syslog(int type, int errnum, struct ip *iph, void *data)
 {  
 }
 
-
 const char* help_cmd = "help";
 const char* filecap_cmd = "filecap";
 const char* interface_cmd = "interface";
@@ -119,7 +118,7 @@ static int max_fragmented_ip_hosts_v;
 
 int main(int argc, char*argv [])
 {
-		parser p;
+    parser p;
     try {
 		desc.add_options()
 			(help_cmd, "command line description")
@@ -139,7 +138,6 @@ int main(int argc, char*argv [])
             (string(max_concurrent_tcp_stream).append(",s").c_str(), po::value<int>(&max_concurrent_tcp_stream_v)->default_value(65536), "Max concurrent tcp streams")
             (string(max_fragmented_ip_hosts).append(",d").c_str(), po::value<int>(&max_fragmented_ip_hosts_v)->default_value(65536), "Max concurrent fragmented ip host")
 			(string(force_read_pcap).append(",F").c_str(), "force the reading of the pcap file ignoring the snaplen value. WARNING: could give unexpected results")
-			
 		;
 
 		po::variables_map vm;        
@@ -321,6 +319,7 @@ int main(int argc, char*argv [])
     catch(...) 
 	{
         print_error("Exception of unknown type!\n");
+        return -1;
     }
 
 }

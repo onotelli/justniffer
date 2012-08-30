@@ -3,4 +3,4 @@ LDADD=$(NIDS2_LIB) $(PCAP_LIB) $(BOOST_LDFLAGS) $(BOOST_REGEX_LIB) $(BOOST_PROGR
 
 bin_PROGRAMS = justniffer
 
-justniffer_SOURCES =  main.cpp formatter.cpp utilities.cpp regex.cpp test.cpp
+justniffer_SOURCES =  main.cpp formatter.cpp utilities.cpp regex.cpp python.cpp

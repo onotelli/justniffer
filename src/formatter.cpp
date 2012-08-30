@@ -16,7 +16,7 @@
 #include <cstdio>
 #include <ext/stdio_filebuf.h>
 #include <signal.h>
-
+#include "python.h"
 using namespace std;
 
 parser* parser::theOnlyParser= NULL;
@@ -62,6 +62,7 @@ void parser::nids_handler(struct tcp_stream *ts, void **yoda, struct timeval* t,
 	//cout << "nids_handler end "<< (int)ts->nids_state << "\n";
 }
 
+parser::modules parser::_modules=parser::modules();
 
 const char* parser::_parse_element(const char* input)
 {
@@ -122,7 +123,6 @@ void parser::parse(const char* input)
 
 typedef keyword_arg_and_optional_not_found<header_handler_factory_t<regex_handler_request> > req_header;
 typedef keyword_arg_and_optional_not_found<header_handler_factory_t<regex_handler_response> > resp_header;
-typedef parse_element::ptr pelem;
 
 #define REQUEST_HEADER(key,head) elements[key]=pelem(new req_header(string(head),_default_not_found))
 #define RESPONSE_HEADER(key,head) elements[key]=pelem(new resp_header(string(head),_default_not_found))
@@ -157,7 +157,7 @@ void parser::init_parse_elements()
     
     elements["request.part"] = pelem(new keyword_params<handler_factory_t_arg<string, request_part> >());
 
-    elements["python"] = pelem(new keyword_params<handler_factory_t_arg<string, request_part> >());
+    
     
     elements["session.time"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, session_time_handler> >(_default_not_found));
     elements["session.requests"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, session_request_counter> >(_default_not_found));
@@ -235,6 +235,11 @@ void parser::init_parse_elements()
     elements["%"] = pelem(new keyword_arg<string, handler_factory_t_arg<string, constant> >(string("%")));
     elements["newline"] = pelem(new keyword_arg<string, handler_factory_t_arg<string, constant> >(string("\n")));
     _already_init = true;
+}
+
+void parser::add_parse_element(const std::string& key, parse_element::ptr pelem)
+{
+    elements[key]=pelem;
 }
 
 void parser::process_open_connection(tcp_stream *ts, struct timeval* t, unsigned char* packet)

@@ -72,6 +72,7 @@ public:
 
 class basic_handler : public handler
 {
+public:
 	virtual void append(std::basic_ostream<char>& out, const timeval* t) {}
 	virtual void onOpening(tcp_stream* pstream, const timeval* t){}
 	virtual void onOpen(tcp_stream* pstream, const timeval* t){}
@@ -348,17 +349,31 @@ private:
 typedef std::basic_ostream<char>& Out;
 // typedef std::basic_ostream<char>* pOut;
 
+class parser;
+typedef parse_element::ptr pelem;
+class Module
+{
+public:
+    virtual void init(parser*) = 0;
+};
+
 class parser
 {
 public:
 	typedef std::map< std::string , parse_element::ptr> parse_elements;
 	typedef std::map<struct tuple4, stream::ptr > streams;
-
+	typedef std::vector<Module*> modules;
 	parser()
 	{
 		_already_init = false;
 		check(theOnlyParser==NULL, common_exception("parser::parser(): I am not the only parser"));
 		theOnlyParser=this;
+        for (modules::iterator it = _modules.begin(); it != _modules.end(); it++)
+        {
+            Module* module = *it;
+            module->init(this);
+        }
+        
 	}
 	
 	parser(printer* printer):_printer(printer)
@@ -374,8 +389,14 @@ public:
 	virtual ~parser(){theOnlyParser = NULL;};
 	void set_printer(printer* printer){_printer=printer;}
 	void set_default_not_found( const std::string& default_not_found) {_default_not_found = default_not_found;}
-	bool _already_init;
+    void add_parse_element(const std::string& key, parse_element::ptr);
+	static void register_module(Module* module)
+    {
+        _modules.push_back(module);
+    }
+
 private:
+	bool _already_init;
 	const char* _parse_element(const char* format);
 	void init_parse_elements();
 	void process_opening_connection(tcp_stream *ts, struct timeval* t, unsigned char* packet);
@@ -384,6 +405,7 @@ private:
 	void process_client(tcp_stream *ts, struct timeval* t, unsigned char* packet);
 	void process_close_connection(tcp_stream *ts, struct timeval* t, unsigned char* packet);
 	static parser* theOnlyParser;
+    static modules _modules;
 	parse_elements elements;
 	streams connections;
 	handler_factories factories;
