@@ -688,7 +688,7 @@ void tcp_exit(void)
          a_tcp = a_tcp->next_node) {
       for (j = a_tcp->listeners; j; j = j->next) {
           a_tcp->nids_state = NIDS_EXITING;
-	  (j->item)(a_tcp, &j->data, 0);
+	  (j->item)(a_tcp, &j->data, 0, 0);
       }
     }
   }
