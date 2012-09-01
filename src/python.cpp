@@ -114,9 +114,17 @@ public:
             BaseHandler::onClose(boost::ref(stream), time);
         END_PYTHON_CALL
     }
+    
+	virtual void onExit(TCPStream& stream){
+        START_PYTHON_CALL
+        if (python::override f = this->get_override("onExit"))
+            f(boost::ref(stream));
+        else
+            BaseHandler::onExit(boost::ref(stream));
+        END_PYTHON_CALL
+    }
 }; 
 
-// Pack the Base class wrapper into a module
 BOOST_PYTHON_MODULE(justniffer)
 {
   python::class_<BaseHandlerWrap, boost::noncopyable> basehandler("BaseHandler");
@@ -128,17 +136,17 @@ BOOST_PYTHON_MODULE(justniffer)
         .def("onRequest", &BaseHandlerInterface::onRequest)
         .def("onResponse", &BaseHandlerInterface::onResponse)
         .def("onClose", &BaseHandlerInterface::onClose)
+        .def("onExit", &BaseHandlerInterface::onExit)
         .def("append", &BaseHandlerInterface::append);
   
-  stream.def("src_port", &TCPStream::src_port)
-        .def("dst_port", &TCPStream::dst_port)
-        .def("src_ip", &TCPStream::src_ip)
-        .def("dst_ip", &TCPStream::dst_ip)
-        .def("server_data", &TCPStream::server_data)
-        .def("client_data", &TCPStream::client_data);
+  stream.add_property("src_port", &TCPStream::src_port)
+        .add_property("dst_port", &TCPStream::dst_port)
+        .add_property("src_ip", &TCPStream::src_ip)
+        .add_property("dst_ip", &TCPStream::dst_ip)
+        .add_property("server_data", &TCPStream::server_data)
+        .add_property("client_data", &TCPStream::client_data);
 
   out.def("write", &OUTStream::write);
-  
 }
 
 
@@ -230,6 +238,11 @@ void python_handler::onClose(tcp_stream* pstream, const timeval*t ,unsigned char
     __handler->onClose(pstream, t, packet);
 }
 
+void python_handler::onExit(tcp_stream* pstream)
+{
+    __handler->onExit(pstream);
+}
+
 class PythonModule: public Module
 {
 public:
@@ -238,10 +251,4 @@ public:
     }
 };
 
-static PythonModule module;
-static bool init_module()
-{
-    parser::register_module(&module);
-    return true;
-}
-bool initresult = init_module();
+REGISTER_MODULE(PythonModule);

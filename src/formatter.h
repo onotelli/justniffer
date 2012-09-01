@@ -67,6 +67,7 @@ public:
 	virtual void onResponse(tcp_stream* pstream,const  timeval* t) = 0 ;
 	virtual void append(std::basic_ostream<char>& out, const timeval* t) = 0;
 	virtual void onClose(tcp_stream* pstream, const timeval* ,unsigned char* packet) = 0;
+	virtual void onExit(tcp_stream* pstream) = 0;
 	virtual ~handler(){}
 };
 
@@ -79,6 +80,7 @@ public:
 	virtual void onRequest(tcp_stream* pstream, const timeval* t){}
 	virtual void onResponse(tcp_stream* pstream,const  timeval* t){}
 	virtual void onClose(tcp_stream* pstream, const timeval* ,unsigned char* packet){}
+	virtual void onExit(tcp_stream* pstream){}
 };
 
 typedef std::vector<handler::ptr> handlers;
@@ -321,7 +323,7 @@ private:
 
 class stream : public shared_obj<stream>, public tcp_stream
 {
-enum status_enum{unknown, opening, open, request, response, close};
+enum status_enum{unknown, opening, open, request, response, close, exit};
 public:
     timeval opening_time;
     unsigned tot_requests;
@@ -330,6 +332,7 @@ public:
 	virtual void onOpening(tcp_stream* pstream, const timeval* t);
 	virtual void onOpen(tcp_stream* pstream, const timeval* t);
 	virtual void onClose(tcp_stream* pstream, const timeval* t,unsigned char* packet);
+	virtual void onExit(tcp_stream* pstream);
 	virtual void onRequest(tcp_stream* pstream, const timeval* t);
 	virtual void onResponse(tcp_stream* pstream, const timeval* t);
 	virtual ~stream(){};
@@ -356,6 +359,15 @@ class Module
 public:
     virtual void init(parser*) = 0;
 };
+
+#define REGISTER_MODULE(name) static name module;\
+static bool init_module()\
+{\
+    parser::register_module(&module);\
+    return true;\
+}\
+bool initresult = init_module();
+
 
 class parser
 {
@@ -404,6 +416,7 @@ private:
 	void process_server(tcp_stream *ts, struct timeval* t, unsigned char* packet);
 	void process_client(tcp_stream *ts, struct timeval* t, unsigned char* packet);
 	void process_close_connection(tcp_stream *ts, struct timeval* t, unsigned char* packet);
+	void process_end_data(tcp_stream *ts);
 	static parser* theOnlyParser;
     static modules _modules;
 	parse_elements elements;
@@ -955,6 +968,18 @@ private:
 	bool closed;
 	u_int32_t ip_originator, sip, dip;
 	string _not_found;
+};
+
+class complete_truncated : public basic_handler
+{
+public:
+	complete_truncated (){truncated=false;}
+	virtual void append(std::basic_ostream<char>& out, const timeval* ){
+        out<<(truncated?"truncated":"complete");
+    };
+	virtual void onExit(tcp_stream* pstream){truncated=true;}
+private:
+	bool truncated;
 };
 
 class connection_time_handler : public basic_handler

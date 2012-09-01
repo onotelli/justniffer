@@ -31,10 +31,11 @@ void parser::nids_handler(struct tcp_stream *ts, void **yoda, struct timeval* t,
     //    flag = "packet found";
 	//}
 	//cout << "ts->nids_state "<< (int) ts->nids_state << " " <<flag <<"\n";
-	
+    //cout<<"ts->nids_state "<<(int) ts->nids_state<< " " << reinterpret_cast<long>(packet)<<"\n";
 	switch (ts->nids_state) 
 	{
-		case NIDS_JUST_EST:
+        
+        case NIDS_JUST_EST:
 			ts->server.collect = 1;
 			ts->client.collect = 1;
 			theOnlyParser->process_open_connection(ts, t, packet);
@@ -51,7 +52,8 @@ void parser::nids_handler(struct tcp_stream *ts, void **yoda, struct timeval* t,
 			}
 			break;
 		case NIDS_EXITING:
-		    break;	
+			theOnlyParser->process_end_data(ts);
+			break;
 		case NIDS_OPENING:
 			theOnlyParser->process_opening_connection(ts, t, packet);
 			break;
@@ -134,7 +136,6 @@ void parser::init_parse_elements()
     elements["source.ip"] = pelem(new keyword<handler_factory_t<source_ip> >());
     elements["dest.port"] = pelem(new keyword<handler_factory_t<dest_port> >());
     elements["source.port"] = pelem(new keyword<handler_factory_t<source_port> >());
-
     elements["connection"] = pelem(new keyword<handler_factory_t<connection_handler> >());
     elements["connection.time"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, connection_time_handler> >(_default_not_found));
     elements["connection.timestamp"] = pelem(new keyword_arg_and_optional_params<handler_factory_t_arg2<string, string, connection_timestamp_handler> > (string("%D %T"), string( _default_not_found)));
@@ -157,10 +158,10 @@ void parser::init_parse_elements()
     
     elements["request.part"] = pelem(new keyword_params<handler_factory_t_arg<string, request_part> >());
 
-    
-    
     elements["session.time"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, session_time_handler> >(_default_not_found));
     elements["session.requests"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, session_request_counter> >(_default_not_found));
+    
+    elements["complete_truncated"]= pelem(new keyword<handler_factory_t<complete_truncated> >());
     
     REQUEST_HEADER("request.header.host","Host");
     REQUEST_HEADER("request.header.user-agent","User-Agent");
@@ -266,6 +267,12 @@ void parser::process_server(tcp_stream *ts, struct timeval* t, unsigned char* pa
 void parser::process_client(tcp_stream *ts, struct timeval* t, unsigned char* packet)
 {
 	connections[ts->addr]->onRequest(ts, t);
+}
+
+void parser::process_end_data(tcp_stream *ts)
+{
+	connections[ts->addr]->onExit(ts);
+	connections.erase(ts->addr);
 }
 
 void parser::process_close_connection(tcp_stream *ts, struct timeval* t, unsigned char* packet)
@@ -480,7 +487,7 @@ void cmd_execute_printer::doit(handlers::iterator start, handlers::iterator end,
 
 void outstream_printer::doit(handlers::iterator start, handlers::iterator end,const timeval*t)
 {
-	for (handlers::iterator i= start; i!= end; i++)
+    for (handlers::iterator i= start; i!= end; i++)
 		(*i)->append(_out, t);
 	_out<<std::endl<<std::flush;
 	//_out.sync();
@@ -516,6 +523,20 @@ void stream::onOpen(tcp_stream* pstream, const timeval* t)
 	for (handlers::iterator i= _handlers.begin(); i!= _handlers.end(); i++)
 		(*i)->onOpen(this, t);
 	status = open;
+}
+
+void stream::onExit(tcp_stream* pstream)
+{
+	copy_tcp_stream(pstream);
+	for (handlers::iterator i= _handlers.begin(); i!= _handlers.end(); i++)
+    {
+        (*i)->onExit(this);
+    }
+	if (status!=open)
+	  print(0);
+	//cout<<"stream::onClose end\n";
+	tot_requests = 0;
+	status=exit;
 }
 
 void stream::onClose(tcp_stream* pstream, const timeval* t,unsigned char* packet)

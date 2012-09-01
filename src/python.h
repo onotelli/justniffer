@@ -79,6 +79,7 @@ public:
 	virtual void onRequest(TCPStream& stream, double time){};
 	virtual void onResponse(TCPStream& stream, double time){};
 	virtual void onClose(TCPStream& stream, double time){};
+	virtual void onExit(TCPStream& stream){};
 };
 
 class BaseHandler: public basic_handler, public BaseHandlerInterface, public boost::noncopyable
@@ -87,7 +88,10 @@ public:
     //virtual void append(int i) = 0;
 	virtual void append(std::basic_ostream<char>& out, const timeval* t){
         OUTStream s = OUTStream(out);
-	    append(s, to_double(*t));
+        double time =  0;
+        if (t)
+            time = to_double(*t);
+	    append(s,time);
 	}
     
 	virtual void onOpening(tcp_stream* pstream, const timeval* t){
@@ -109,12 +113,17 @@ public:
 	virtual void onClose(tcp_stream* pstream, const timeval* t ,unsigned char* packet){
 	    onClose(get_tcp_stream(pstream), to_double(*t));
 	}
+    
+	virtual void onExit(tcp_stream* pstream){
+        onExit(get_tcp_stream(pstream));
+	}
     virtual void append(OUTStream& s, double time){};
 	virtual void onOpening(TCPStream& stream, double time){};
 	virtual void onOpen(TCPStream& stream, double time){};
 	virtual void onRequest(TCPStream& stream, double time){};
 	virtual void onResponse(TCPStream& stream, double time){};
 	virtual void onClose(TCPStream& stream, double time){};
+	virtual void onExit(TCPStream& stream){};
 
 	/*virtual void append(std::basic_ostream<char>& out, const timeval* t) {}
 	virtual void onOpening(tcp_stream* pstream, const timeval* t){}
@@ -144,6 +153,7 @@ public:
     virtual void append(std::basic_ostream<char>& out, const timeval* t);
 	virtual void onOpening(tcp_stream* pstream, const timeval* t);
 	virtual void onOpen(tcp_stream* pstream, const timeval* t);
+	virtual void onExit(tcp_stream* pstream);
 	virtual void onRequest(tcp_stream* pstream, const timeval* t);
 	virtual void onResponse(tcp_stream* pstream,const  timeval* t);
 	virtual void onClose(tcp_stream* pstream, const timeval* ,unsigned char* packet);
