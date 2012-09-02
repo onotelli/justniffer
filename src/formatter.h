@@ -341,12 +341,13 @@ public:
 	virtual void print(const timeval* t);
 
 private:
-    static int id;
-    int _id;
-	handler_factories::iterator begin, end;
-	handlers _handlers;
 	status_enum status;
 	printer* _printer;
+    handler_factories::iterator begin, end;
+	static int id;
+    int _id;
+	handlers _handlers;
+    
 };
 
 typedef std::basic_ostream<char>& Out;

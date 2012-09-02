@@ -608,6 +608,7 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+HAVE_PYTHON_MODULES
 PYTHONSUBDIR
 PYTHONCODEDIR
 subdirs
@@ -615,6 +616,8 @@ TAR
 PATCH
 BOOST_IOSTREAMS_LIB
 BOOST_PROGRAM_OPTIONS_LIB
+HAVE_PYTHON_MODULES_FALSE
+HAVE_PYTHON_MODULES_TRUE
 BOOST_PYTHON_LIB
 PYTHON_LIB
 PYTHON_INCLUDE_DIR
@@ -2866,6 +2869,9 @@ am__tar='$${TAR-tar} chof - "$$tardir"' am__untar='$${TAR-tar} xf -'
 
 
 
+if test "$CXXFLAGS" = ""; then
+CXXFLAGS="-Os -Wall"
+fi
 
 LIBNIDS="libnids-1.21_patched"
 NIDS2_INCLUDE="-I ../lib/$LIBNIDS/src"
@@ -6432,10 +6438,14 @@ fi
 
 fi
 
-if test "$ac_cv_boost_python" != "yes";
-then
-    as_fn_error $? "\"cannot find the boost python libraries: see http://www.boost.org/\"" "$LINENO" 5
+ if test "$ac_cv_boost_python" == "yes"; then
+  HAVE_PYTHON_MODULES_TRUE=
+  HAVE_PYTHON_MODULES_FALSE='#'
+else
+  HAVE_PYTHON_MODULES_TRUE='#'
+  HAVE_PYTHON_MODULES_FALSE=
 fi
+
 
 
 
@@ -7182,6 +7192,7 @@ fi
 
 
 
+
 ac_config_files="$ac_config_files Makefile src/Makefile python/Makefile"
 
 cat >confcache <<\_ACEOF
@@ -7327,6 +7338,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_PYTHON_MODULES_TRUE}" && test -z "${HAVE_PYTHON_MODULES_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_PYTHON_MODULES\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

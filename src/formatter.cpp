@@ -499,7 +499,7 @@ void outstream_printer::doit(handlers::iterator start, handlers::iterator end,co
 int stream::id = 0;
 
 stream::stream(handler_factories::iterator _begin, handler_factories::iterator _end, printer* printer):
-		begin(_begin), end(_end), status(unknown), _printer(printer), tot_requests(0)
+		tot_requests(0), status(unknown), _printer(printer), begin(_begin), end(_end)
 		{
 		    id++;
 		    _id=id;
@@ -642,7 +642,7 @@ void close_originator::onClose(tcp_stream* pstream, const timeval* t, unsigned c
 	if (packet)
 	{
 		struct ip *this_iphdr = (struct ip *)packet;
-		struct tcphdr *this_tcphdr = (struct tcphdr *)(packet + 4 * this_iphdr->ip_hl);
+		//struct tcphdr *this_tcphdr = (struct tcphdr *)(packet + 4 * this_iphdr->ip_hl);
 		ip_originator = this_iphdr->ip_src.s_addr;
 	}
 }

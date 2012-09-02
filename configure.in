@@ -20,9 +20,9 @@ AM_CONFIG_HEADER(include/config.h)
 
 AM_INIT_AUTOMAKE([-Wall -Werror])
 
-dnl if test "$CXXFLAGS" = ""; then
-dnl CXXFLAGS="-Os -Wall"
-dnl fi
+if test "$CXXFLAGS" = ""; then
+CXXFLAGS="-Os -Wall"
+fi
 
 LIBNIDS="libnids-1.21_patched"
 NIDS2_INCLUDE="-I ../lib/$LIBNIDS/src"
@@ -70,10 +70,7 @@ fi
 
 AC_PYTHON_DEVEL
 AX_BOOST_PYTHON
-if test "$ac_cv_boost_python" != "yes";
-then
-    AC_MSG_ERROR(["cannot find the boost python libraries: see http://www.boost.org/"])
-fi
+AM_CONDITIONAL(HAVE_PYTHON_MODULES, [test "$ac_cv_boost_python" == "yes"])
 
 AX_BOOST_PROGRAM_OPTIONS
 if test "$ax_cv_boost_program_options" != "yes";
@@ -113,6 +110,7 @@ if test "$AX_PYTHON_ENABLED" == "enabled"; then
 fi
 
 AC_SUBST(PYTHONSUBDIR)
+AC_SUBST(HAVE_PYTHON_MODULES)
 
 	
 AC_OUTPUT(Makefile src/Makefile python/Makefile )

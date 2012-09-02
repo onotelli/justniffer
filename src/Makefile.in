@@ -33,6 +33,7 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 bin_PROGRAMS = justniffer$(EXEEXT)
+@HAVE_PYTHON_MODULES_TRUE@am__append_1 = python.cpp 
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -46,8 +47,11 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
+am__justniffer_SOURCES_DIST = main.cpp formatter.cpp utilities.cpp \
+	regex.cpp python.cpp
+@HAVE_PYTHON_MODULES_TRUE@am__objects_1 = python.$(OBJEXT)
 am_justniffer_OBJECTS = main.$(OBJEXT) formatter.$(OBJEXT) \
-	utilities.$(OBJEXT) regex.$(OBJEXT) python.$(OBJEXT)
+	utilities.$(OBJEXT) regex.$(OBJEXT) $(am__objects_1)
 justniffer_OBJECTS = $(am_justniffer_OBJECTS)
 justniffer_LDADD = $(LDADD)
 am__DEPENDENCIES_1 =
@@ -65,7 +69,7 @@ CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
 SOURCES = $(justniffer_SOURCES)
-DIST_SOURCES = $(justniffer_SOURCES)
+DIST_SOURCES = $(am__justniffer_SOURCES_DIST)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -99,6 +103,7 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 GREP = @GREP@
+HAVE_PYTHON_MODULES = @HAVE_PYTHON_MODULES@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -187,7 +192,8 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_CPPFLAGS = $(NIDS2_INCLUDE) $(PCAP_INCLUDE) $(BOOST_CPPFLAGS) $(PYTHON_CPPFLAGS) -I ../include
 LDADD = $(NIDS2_LIB) $(PCAP_LIB) $(BOOST_LDFLAGS) $(BOOST_REGEX_LIB) $(BOOST_PROGRAM_OPTIONS_LIB) $(BOOST_PYTHON_LIB)  $(PYTHON_LDFLAGS) 
-justniffer_SOURCES = main.cpp formatter.cpp utilities.cpp regex.cpp python.cpp
+justniffer_SOURCES = main.cpp formatter.cpp utilities.cpp regex.cpp \
+	$(am__append_1)
 all: all-am
 
 .SUFFIXES:
