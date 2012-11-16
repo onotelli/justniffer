@@ -379,6 +379,7 @@ public:
 	parser()
 	{
 		_already_init = false;
+        handle_truncated = false;
 		check(theOnlyParser==NULL, common_exception("parser::parser(): I am not the only parser"));
 		theOnlyParser=this;
         for (modules::iterator it = _modules.begin(); it != _modules.end(); it++)
@@ -401,7 +402,8 @@ public:
 	void parse(const char* format);
 	virtual ~parser(){theOnlyParser = NULL;};
 	void set_printer(printer* printer){_printer=printer;}
-	void set_default_not_found( const std::string& default_not_found) {_default_not_found = default_not_found;}
+    void set_handle_truncated(bool value){handle_truncated=value;}
+    void set_default_not_found( const std::string& default_not_found) {_default_not_found = default_not_found;}
     void add_parse_element(const std::string& key, parse_element::ptr);
 	static void register_module(Module* module)
     {
@@ -409,6 +411,7 @@ public:
     }
 
 private:
+    bool handle_truncated;
 	bool _already_init;
 	const char* _parse_element(const char* format);
 	void init_parse_elements();

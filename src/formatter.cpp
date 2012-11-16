@@ -271,8 +271,11 @@ void parser::process_client(tcp_stream *ts, struct timeval* t, unsigned char* pa
 
 void parser::process_end_data(tcp_stream *ts)
 {
-	connections[ts->addr]->onExit(ts);
-	connections.erase(ts->addr);
+    if (handle_truncated)
+    {
+        connections[ts->addr]->onExit(ts);
+        connections.erase(ts->addr);
+    }
 }
 
 void parser::process_close_connection(tcp_stream *ts, struct timeval* t, unsigned char* packet)

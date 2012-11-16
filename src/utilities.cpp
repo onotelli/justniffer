@@ -12,7 +12,7 @@
 #include <pcap.h>
 #include <fstream>
 #include <sstream>
-
+#include <vector>
 #include <iostream>
 #include <unistd.h>
 #include <pwd.h>
@@ -23,6 +23,103 @@ template <class T> void print (T t)
 {
 	cout <<t <<"\n";
 }
+#define	TH_FIN	0x01
+#define	TH_SYN	0x02
+#define	TH_RST	0x04
+#define	TH_PUSH	0x08
+#define	TH_ACK	0x10
+#define	TH_URG	0x20
+#define	TH_ECE	0x40
+#define	TH_CWR	0x80
+#define	TH_FLAGS	(TH_FIN|TH_SYN|TH_RST|TH_ACK|TH_URG|TH_ECE|TH_CWR)
+
+extern "C" void tcp_flags(char* buffer, int flag)
+{
+    vector<string> strings;
+    string result;
+    if (flag & TH_FIN)
+        strings.push_back("fin");
+    if (flag & TH_SYN)
+        strings.push_back("syn");
+    if (flag & TH_RST)
+        strings.push_back("rst");
+    if (flag & TH_PUSH)
+        strings.push_back("push");
+    if (flag & TH_ACK)
+        strings.push_back("ack");
+    if (flag & TH_URG)
+        strings.push_back("urg");
+    if (flag & TH_ECE)
+        strings.push_back("exe");
+    if (flag & TH_CWR)
+        strings.push_back("cwr");
+    //
+    bool first = true;
+    string sep;
+    for (vector<string>::iterator it = strings.begin(); it != strings.end(); it++)
+    {
+        if (first)
+            sep="";
+        else
+            sep="|";
+        result+=sep+*it;
+        first= false;
+    }
+    sprintf(buffer, result.c_str());
+}
+/*
+{
+#  define TH_FIN        0x01
+#  define TH_SYN        0x02
+#  define TH_RST        0x04
+#  define TH_PUSH       0x08
+#  define TH_ACK        0x10
+#  define TH_URG        0x20
+
+    char fin[6];
+    char syn[6];
+    char rst[6];
+    char push[6];
+    char ack[6];
+    char urg[6];
+    
+    
+    if (flag & TH_FIN)
+        sprintf(fin, "FIN");
+    else
+        sprintf(fin, " ");
+        
+    if (flag & TH_SYN)
+        sprintf(syn, "SYN");
+    else
+        sprintf(syn, " ");
+        
+    if (flag & TH_RST)
+        sprintf(rst, "RST");
+    else
+        sprintf(rst, " ");
+        
+    if (flag & TH_PUSH)
+        sprintf(push, "PUSH");
+    else
+        sprintf(push, " ");
+        
+    if (flag & TH_ACK)
+        sprintf(ack, "ACK");
+    else
+        sprintf(ack, " ");
+        
+    if (flag & TH_URG)
+        sprintf(urg, "URG");
+    else
+        sprintf(urg, " ");
+    
+    printf(syn);
+    sprintf(buffer, "%s%s%s%s%s%s%s", syn, ack, push, fin, urg, rst);
+#  define TH_PUSH       0x08
+#  define TH_ACK        0x10
+#  define TH_URG        0x20
+}*/
 
 unsigned long ip_to_ulong(char b0, char b1, char b2 , char b3)
 {
@@ -43,6 +140,7 @@ void check_pcap_file(const string& str) throw (invalid_pcap_file)
 	{
 		pcap_close(p);
 	}
+
 	else
 	{
 		throw invalid_pcap_file(string("invalid pcap file: ").append(errbuff));

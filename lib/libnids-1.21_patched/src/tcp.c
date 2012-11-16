@@ -699,6 +699,15 @@ void tcp_exit(void)
   /* FIXME: anything else we should free? */
 }
 
+void ip_to_str (char* buffer,struct in_addr* addr)
+{
+    u_char* p = (u_char *)addr;
+    sprintf(buffer, "%d.%d.%d.%d", p[0]&255,p[1]&255,p[2]&255,p[3]&255);
+    
+}
+
+void tcp_flags(char* buffer, int flag);
+
 void
 process_tcp(u_char * data, int skblen, struct timeval* ts)
 {
@@ -709,30 +718,39 @@ process_tcp(u_char * data, int skblen, struct timeval* ts)
   unsigned int tmp_ts;
   struct tcp_stream *a_tcp;
   struct half_stream *snd, *rcv;
-
+  char buffer[200];
+  
   ugly_iphdr = this_iphdr;
   iplen = ntohs(this_iphdr->ip_len);
+  ip_to_str(buffer, &this_iphdr->ip_src);
+  
+  printf("iplen=%d ip_src=%s src_port=%d ", iplen, buffer, ntohs(this_tcphdr->th_sport));
+  ip_to_str(buffer, &this_iphdr->ip_dst);
+  printf("ip_dst=%s dst_port=%d ",buffer, ntohs(this_tcphdr->th_dport));
   if ((unsigned)iplen < 4 * this_iphdr->ip_hl + sizeof(struct tcphdr)) {
     nids_params.syslog(NIDS_WARN_TCP, NIDS_WARN_TCP_HDR, this_iphdr,
 		       this_tcphdr);
+    printf("datalen=N/A\n");
     return;
   } // ktos sie bawi
   
   datalen = iplen - 4 * this_iphdr->ip_hl - 4 * this_tcphdr->th_off;
+  printf("datalen=%d ", datalen);
+  tcp_flags(buffer , this_tcphdr->th_flags);
+  printf("flags=%s ",buffer);
   
   if (datalen < 0) {
     nids_params.syslog(NIDS_WARN_TCP, NIDS_WARN_TCP_HDR, this_iphdr,
 		       this_tcphdr);
     return;
   } // ktos sie bawi
-  //printf("this_tcphdr->th_flags %X\n",this_tcphdr->th_flags);
   if ((this_iphdr->ip_src.s_addr | this_iphdr->ip_dst.s_addr) == 0) {
     nids_params.syslog(NIDS_WARN_TCP, NIDS_WARN_TCP_HDR, this_iphdr,
 		       this_tcphdr);
     return;
   }
-  if (!(this_tcphdr->th_flags & TH_ACK))
-    detect_scan(this_iphdr);
+  //if (!(this_tcphdr->th_flags & TH_ACK))
+  //  detect_scan(this_iphdr);
   if (!nids_params.n_tcp_streams) return;
   if (my_tcp_check(this_tcphdr, iplen - 4 * this_iphdr->ip_hl,
 		   this_iphdr->ip_src.s_addr, this_iphdr->ip_dst.s_addr)) {
@@ -748,23 +766,39 @@ process_tcp(u_char * data, int skblen, struct timeval* ts)
     if ((this_tcphdr->th_flags & TH_SYN) &&
 	!(this_tcphdr->th_flags & TH_ACK) &&
 	!(this_tcphdr->th_flags & TH_RST))
+    {
       a_tcp = add_new_tcp(this_tcphdr, this_iphdr, ts, data);
       if (a_tcp)
       {
-	a_tcp->nids_state = NIDS_OPENING;
-	{
-	  //printf("a_tcp->nids_state = NIDS_OPENING\n");
-	  struct proc_node *i;
-	  for (i = tcp_procs; i; i = i->next) 
-	  {
-	    void *data;
-	    //printf("for (i = a_tcp->listeners; i; i = i->next) %X\n", i);
-	    (i->item) (a_tcp, NULL, ts, data);      
-	  }
-	}
-      }
+        a_tcp->nids_state = NIDS_OPENING;
+        {
+        //printf("a_tcp->nids_state = NIDS_OPENING\n");
+          struct proc_node *i;
+          for (i = tcp_procs; i; i = i->next) 
+          {
+            void *data;
+            //printf("for (i = a_tcp->listeners; i; i = i->next) %X\n", i);
+            (i->item) (a_tcp, NULL, ts, data);      
+          }
+        }
+     }
+     printf(" created stream");
+    }
+    else
+    {
+      //a_tcp = add_new_tcp(this_tcphdr, this_iphdr, ts, data);
+      //if (a_tcp)
+      //{
+        
+      //}
+     printf(" not found stream");
+    }
+    printf(" from_client=%d", from_client);
+    printf("\n");
+    
     return;
   }
+  printf(" from_client=%d", from_client);
   //printf("a_tcp->listeners %X\n",a_tcp->listeners);
   if (from_client) {
     snd = &a_tcp->client;
@@ -801,6 +835,7 @@ process_tcp(u_char * data, int skblen, struct timeval* ts)
     	a_tcp->server.wscale_on = 0;	
     	a_tcp->server.wscale = 1;
     }	
+    printf("\n");
     return;
   }
   if (
@@ -825,70 +860,71 @@ process_tcp(u_char * data, int skblen, struct timeval* ts)
   }
 
   /* PAWS check */
-  if (rcv->ts_on && get_ts(this_tcphdr, &tmp_ts) && 
-  	before(tmp_ts, snd->curr_ts))
-  return; 	
+    if (rcv->ts_on && get_ts(this_tcphdr, &tmp_ts) && 
+        before(tmp_ts, snd->curr_ts))
+    return; 	
   
-  if ((this_tcphdr->th_flags & TH_ACK)) {
-    if (from_client && a_tcp->client.state == TCP_SYN_SENT &&
-	a_tcp->server.state == TCP_SYN_RECV) {
-      if (ntohl(this_tcphdr->th_ack) == a_tcp->server.seq) {
-	a_tcp->client.state = TCP_ESTABLISHED;
-	a_tcp->client.ack_seq = ntohl(this_tcphdr->th_ack);
-	{
-	  struct proc_node *i;
-	  struct lurker_node *j;
-	  void *data;
-	  
-	  a_tcp->server.state = TCP_ESTABLISHED;
-	  a_tcp->nids_state = NIDS_JUST_EST;
-	  for (i = tcp_procs; i; i = i->next) {
-	    char whatto = 0;
-	    char cc = a_tcp->client.collect;
-	    char sc = a_tcp->server.collect;
-	    char ccu = a_tcp->client.collect_urg;
-	    char scu = a_tcp->server.collect_urg;
-	    
-	    (i->item) (a_tcp, &data,  ts, data);
-	    if (cc < a_tcp->client.collect)
-	      whatto |= COLLECT_cc;
-	    if (ccu < a_tcp->client.collect_urg)
-	      whatto |= COLLECT_ccu;
-	    if (sc < a_tcp->server.collect)
-	      whatto |= COLLECT_sc;
-	    if (scu < a_tcp->server.collect_urg)
-	      whatto |= COLLECT_scu;
-	    if (nids_params.one_loop_less) {
-	    		if (a_tcp->client.collect >=2) {
-	    			a_tcp->client.collect=cc;
-	    			whatto&=~COLLECT_cc;
-	    		}
-	    		if (a_tcp->server.collect >=2 ) {
-	    			a_tcp->server.collect=sc;
-	    			whatto&=~COLLECT_sc;
-	    		}
-	    }  
-	    if (whatto) {
-	      j = mknew(struct lurker_node);
-	      j->item = i->item;
-	      j->data = data;
-	      j->whatto = whatto;
-	      j->next = a_tcp->listeners;
-	      a_tcp->listeners = j;
-	    }
-	  }
-	  if (!a_tcp->listeners) {
-	    nids_free_tcp_stream(a_tcp);
-	    return;
-	  }
-	  a_tcp->nids_state = NIDS_DATA;
-	}
-      }
-      // return;
+    if ((this_tcphdr->th_flags & TH_ACK)) {
+        if (from_client && a_tcp->client.state == TCP_SYN_SENT && a_tcp->server.state == TCP_SYN_RECV) {
+            if (ntohl(this_tcphdr->th_ack) == a_tcp->server.seq) {
+                a_tcp->client.state = TCP_ESTABLISHED;
+                a_tcp->client.ack_seq = ntohl(this_tcphdr->th_ack);
+                {
+                    struct proc_node *i;
+                    struct lurker_node *j;
+                    void *data;
+                    a_tcp->server.state = TCP_ESTABLISHED;
+                    a_tcp->nids_state = NIDS_JUST_EST;
+                    for (i = tcp_procs; i; i = i->next) {
+                        char whatto = 0;
+                        char cc = a_tcp->client.collect;
+                        char sc = a_tcp->server.collect;
+                        char ccu = a_tcp->client.collect_urg;
+                        char scu = a_tcp->server.collect_urg;
+                        
+                        (i->item) (a_tcp, &data,  ts, data);
+                        if (cc < a_tcp->client.collect)
+                          whatto |= COLLECT_cc;
+                        if (ccu < a_tcp->client.collect_urg)
+                          whatto |= COLLECT_ccu;
+                        if (sc < a_tcp->server.collect)
+                          whatto |= COLLECT_sc;
+                        if (scu < a_tcp->server.collect_urg)
+                          whatto |= COLLECT_scu;
+                        if (nids_params.one_loop_less) {
+                                if (a_tcp->client.collect >=2) {
+                                    a_tcp->client.collect=cc;
+                                    whatto&=~COLLECT_cc;
+                                }
+                                if (a_tcp->server.collect >=2 ) {
+                                    a_tcp->server.collect=sc;
+                                    whatto&=~COLLECT_sc;
+                                }
+                        }  
+                        if (whatto) {
+                          j = mknew(struct lurker_node);
+                          j->item = i->item;
+                          j->data = data;
+                          j->whatto = whatto;
+                          j->next = a_tcp->listeners;
+                          a_tcp->listeners = j;
+                        }
+                    }
+                    if (!a_tcp->listeners) {
+                        nids_free_tcp_stream(a_tcp);
+                        return;
+                    }
+                    a_tcp->nids_state = NIDS_DATA;
+                }
+            }
+          // return;
+        }
     }
-  }
+
   if ((this_tcphdr->th_flags & TH_ACK)) {
-    handle_ack(snd, ntohl(this_tcphdr->th_ack));
+      printf(" ciccio ");
+      printf("\n");
+  handle_ack(snd, ntohl(this_tcphdr->th_ack));
     if (rcv->state == FIN_SENT)
       rcv->state = FIN_CONFIRMED;
     if (rcv->state == FIN_CONFIRMED && snd->state == FIN_CONFIRMED) {

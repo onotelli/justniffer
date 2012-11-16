@@ -72,8 +72,9 @@ const char* tcp_timeout_cmd = "tcp-timeout";
 const char* max_concurrent_tcp_stream = "max-tcp-streams";
 const char* max_fragmented_ip_hosts = "max-fragmented-ip";
 const char* version_cmd = "version";
-const char* uprintable_cmd= "unprintable";
-const char* uprintable_cmd_ext= "hex-encode";
+const char* uprintable_cmd = "unprintable";
+const char* uprintable_cmd_ext = "hex-encode";
+const char* handle_truncated_cmd ="truncated";
 const char* raw_cmd= "raw";
 const char* not_found_string="not-found";
 const char* execute_cmd="execute";
@@ -132,6 +133,7 @@ int main(int argc, char*argv [])
 			(string(execute_cmd).append(",e").c_str(), po::value<string>(), "execute the specified command every request/response phase")
 			(string(packet_filter_cmd).append(",p").c_str(), po::value<string>(), "packet filter (tcpdump filter syntax)")
 			(string(uprintable_cmd).append(",u").c_str(), "encode as dots (.) unprintable characters")
+			(string(handle_truncated_cmd).append(",t").c_str(), "handle truncated streams (not correctly closed)")
 			(string(uprintable_cmd_ext).append(",x").c_str(), "encode unprintable characters as [<char hexadecimal code>] ")
 			(string(raw_cmd).append(",r").c_str(), "show raw stream. it is a shortcat for  -l %request%response")
 			(string(not_found_string).append(",n").c_str(), po::value<string>()->default_value(default_not_found), string("default \"not found\" value, default is ").append(default_not_found).c_str())
@@ -258,6 +260,8 @@ int main(int argc, char*argv [])
 				_printer = printer::ptr(new cmd_execute_printer(execute_cmd_arg.as<string>()));
 		}
 		p.set_printer(_printer.get());
+        
+        p.set_handle_truncated(vm.count(handle_truncated_cmd));
 		
 		p.set_default_not_found(vm[not_found_string].as<string>());
 		// parse output format specifications
