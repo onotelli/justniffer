@@ -724,20 +724,20 @@ process_tcp(u_char * data, int skblen, struct timeval* ts)
   iplen = ntohs(this_iphdr->ip_len);
   ip_to_str(buffer, &this_iphdr->ip_src);
   
-  printf("iplen=%d ip_src=%s src_port=%d ", iplen, buffer, ntohs(this_tcphdr->th_sport));
+  //printf("iplen=%d ip_src=%s src_port=%d ", iplen, buffer, ntohs(this_tcphdr->th_sport));
   ip_to_str(buffer, &this_iphdr->ip_dst);
-  printf("ip_dst=%s dst_port=%d ",buffer, ntohs(this_tcphdr->th_dport));
+  //printf("ip_dst=%s dst_port=%d ",buffer, ntohs(this_tcphdr->th_dport));
   if ((unsigned)iplen < 4 * this_iphdr->ip_hl + sizeof(struct tcphdr)) {
     nids_params.syslog(NIDS_WARN_TCP, NIDS_WARN_TCP_HDR, this_iphdr,
 		       this_tcphdr);
-    printf("datalen=N/A\n");
+    //printf("datalen=N/A\n");
     return;
   } // ktos sie bawi
   
   datalen = iplen - 4 * this_iphdr->ip_hl - 4 * this_tcphdr->th_off;
-  printf("datalen=%d ", datalen);
+  //printf("datalen=%d ", datalen);
   tcp_flags(buffer , this_tcphdr->th_flags);
-  printf("flags=%s ",buffer);
+  //printf("flags=%s ",buffer);
   
   if (datalen < 0) {
     nids_params.syslog(NIDS_WARN_TCP, NIDS_WARN_TCP_HDR, this_iphdr,
@@ -782,7 +782,7 @@ process_tcp(u_char * data, int skblen, struct timeval* ts)
           }
         }
      }
-     printf(" created stream");
+     //printf(" created stream");
     }
     else
     {
@@ -791,14 +791,14 @@ process_tcp(u_char * data, int skblen, struct timeval* ts)
       //{
         
       //}
-     printf(" not found stream");
+     //printf(" not found stream");
     }
-    printf(" from_client=%d", from_client);
-    printf("\n");
+    //printf(" from_client=%d", from_client);
+    //printf("\n");
     
     return;
   }
-  printf(" from_client=%d", from_client);
+  //printf(" from_client=%d", from_client);
   //printf("a_tcp->listeners %X\n",a_tcp->listeners);
   if (from_client) {
     snd = &a_tcp->client;
@@ -835,7 +835,7 @@ process_tcp(u_char * data, int skblen, struct timeval* ts)
     	a_tcp->server.wscale_on = 0;	
     	a_tcp->server.wscale = 1;
     }	
-    printf("\n");
+    //printf("\n");
     return;
   }
   if (
@@ -922,8 +922,8 @@ process_tcp(u_char * data, int skblen, struct timeval* ts)
     }
 
   if ((this_tcphdr->th_flags & TH_ACK)) {
-      printf(" ciccio ");
-      printf("\n");
+      //printf(" ciccio ");
+      //printf("\n");
   handle_ack(snd, ntohl(this_tcphdr->th_ack));
     if (rcv->state == FIN_SENT)
       rcv->state = FIN_CONFIRMED;
