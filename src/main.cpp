@@ -14,8 +14,10 @@
 #include "config.h"
 #include <boost/program_options.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
+#include <boost/algorithm/string.hpp>
 #include <string>
 #include <vector>
+#include <map>
 #include <iostream>
 #include <fstream>
 #include <nids2.h>
@@ -78,6 +80,7 @@ const char* handle_truncated_cmd ="truncated";
 const char* raw_cmd= "raw";
 const char* not_found_string="not-found";
 const char* execute_cmd="execute";
+const char* new_line_cmd = "new-line";
 const char* default_packet_filter ="";
 const char* default_format= "%source.ip - - [%request.timestamp(%d/%b/%Y:%T %z)] \"%request.line\" %response.code %response.header.content-length(0) \"%request.header.referer()\" \"%request.header.user-agent()\"";
 const char* raw_format= "%request%response";
@@ -117,15 +120,24 @@ bool check_conflicts( const po::variables_map &vm, const vector<string>& argumen
 static int max_concurrent_tcp_stream_v;
 static int max_fragmented_ip_hosts_v;
 
+static map<string, const char*> _new_line_map;
+
 int main(int argc, char*argv [])
 {
     parser p;
+    _new_line_map["LF"]="\x0A";
+    _new_line_map["CR+LF"]="\x0D\x0A";
+    _new_line_map["LF+CR"]="\x0A\x0D";
+    _new_line_map["CR"]="\x0D";
+    _new_line_map["NONE"]="";
+    _new_line_map["AUTO"]="\n";
     try {
 		desc.add_options()
 			(help_cmd, "command line description")
 			(string(version_cmd).append(",V").c_str(), "version")
+			(string(new_line_cmd).append(",T").c_str(), po::value<string>()->default_value("AUTO"), "the trailing newline [LF|CR+LF|LF+CR|CR|NONE|AUTO]")
 			(string(filecap_cmd).append(",f").c_str(), po::value<string>(), "input file in 'tcpdump capture file format' (e.g. produced by tshark or tcpdump)")
-			(string(interface_cmd).append(",i").c_str(), po::value<string>(), "network interface to listen on (e.g. eth0, en1, etc.)")
+			(string(interface_cmd).append(",i").c_str(), po::value<string>(), "network interface to listen on (e.g. eth0, en1, etc.) 'all' for all interfaces")
 			(string(logformat_cmd).append(",l").c_str(), po::value<string>(), string("log format (see FORMAT KEYWORDS). If missing the CommonLog (apache access log) format will ne used. See man page for further infos\nIt is equivalent to \n").append(default_format).c_str())
 			(string(append_logformat_cmd).append(",a").c_str(), po::value<string>(), "append log format (see FORMAT KEYWORDS) to the default apache log format.")
 			(string(config_cmd).append(",c").c_str(), po::value<string>(), "configuration file")
@@ -248,9 +260,18 @@ int main(int argc, char*argv [])
 		}
 		
 		po::variable_value execute_cmd_arg = vm[execute_cmd];
+		po::variable_value new_line_arg = vm[new_line_cmd];
+        
+        string unew_line_arg = boost::to_upper_copy(new_line_arg.as<string>());
+        if (!_new_line_map.count(unew_line_arg))
+        {
+			print_error("EOL tailing code unknown: ")<< unew_line_arg<<"\n" ;
+			return -1;
+        }
+        string new_line=_new_line_map[unew_line_arg];
 		printer::ptr _printer;
 		if (execute_cmd_arg.empty())
-			_printer = printer::ptr(new outstream_printer(out));
+			_printer = printer::ptr(new outstream_printer(out, new_line));
 		else
 		{
 			po::variable_value user_arg = vm[user_cmd];

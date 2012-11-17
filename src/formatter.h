@@ -301,10 +301,11 @@ class outstream_printer : public printer
 public:
 	typedef std::basic_ostream<char>& Out;
 	//typedef T& Out;
-	outstream_printer(Out out): _out(out){_out.setf(ios_base::fixed);}
+	outstream_printer(Out out, const string& eol): _out(out), _eol(eol){_out.setf(ios_base::fixed);}
 	void doit(handlers::iterator start, handlers::iterator end,const timeval*t);
 private :
 	Out _out;
+    string _eol;
 };
 
 
@@ -376,26 +377,8 @@ public:
 	typedef std::map< std::string , parse_element::ptr> parse_elements;
 	typedef std::map<struct tuple4, stream::ptr > streams;
 	typedef std::vector<Module*> modules;
-	parser()
-	{
-		_already_init = false;
-        handle_truncated = false;
-		check(theOnlyParser==NULL, common_exception("parser::parser(): I am not the only parser"));
-		theOnlyParser=this;
-        for (modules::iterator it = _modules.begin(); it != _modules.end(); it++)
-        {
-            Module* module = *it;
-            module->init(this);
-        }
-        
-	}
-	
-	parser(printer* printer):_printer(printer)
-	{
-		_already_init = false;
-		check(theOnlyParser==NULL, common_exception("parser::parser(): I am not the only parser"));
-		theOnlyParser=this;
-	}
+	parser();
+	parser(printer* printer);
 	parse_elements::iterator keywords_begin() {init_parse_elements();return elements.begin();}
 	parse_elements::iterator keywords_end() {init_parse_elements();return elements.end();}
 	static void nids_handler(struct tcp_stream *ts, void **yoda, struct timeval* t, unsigned char* packet);
@@ -405,10 +388,7 @@ public:
     void set_handle_truncated(bool value){handle_truncated=value;}
     void set_default_not_found( const std::string& default_not_found) {_default_not_found = default_not_found;}
     void add_parse_element(const std::string& key, parse_element::ptr);
-	static void register_module(Module* module)
-    {
-        _modules.push_back(module);
-    }
+	static void register_module(Module* module);
 
 private:
     bool handle_truncated;

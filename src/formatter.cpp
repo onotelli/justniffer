@@ -22,6 +22,31 @@ using namespace std;
 parser* parser::theOnlyParser= NULL;
 const char parser::_key_word_id='%';
 
+parser::parser()
+{
+    _already_init = false;
+    handle_truncated = false;
+    check(theOnlyParser==NULL, common_exception("parser::parser(): I am not the only parser"));
+    theOnlyParser=this;
+    for (modules::iterator it = _modules.begin(); it != _modules.end(); it++)
+    {
+        Module* module = *it;
+        module->init(this);
+    }
+}
+
+parser::parser(printer* printer):_printer(printer)
+{
+    _already_init = false;
+    check(theOnlyParser==NULL, common_exception("parser::parser(): I am not the only parser"));
+    theOnlyParser=this;
+}
+
+void parser::register_module(Module* module)
+{
+    _modules.push_back(module);
+}
+
 void parser::nids_handler(struct tcp_stream *ts, void **yoda, struct timeval* t, unsigned char* packet)
 {
 	check(theOnlyParser != NULL, parser_not_initialized());
@@ -492,7 +517,7 @@ void outstream_printer::doit(handlers::iterator start, handlers::iterator end,co
 {
     for (handlers::iterator i= start; i!= end; i++)
 		(*i)->append(_out, t);
-	_out<<std::endl<<std::flush;
+	_out<<_eol<<std::flush;
 	//_out.sync();
 	fflush(stdout);
 }
