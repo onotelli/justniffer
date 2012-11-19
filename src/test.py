@@ -109,8 +109,7 @@ class PythonDerived2(justniffer.BaseHandler):
         if res:
             msg = "\t".join([str(e) for e in res])
             s.write(msg)
-        else:
-            s.write("NOT_APPLICABLE")
+            s.write("\n")
             
     def result(self):
         response_time = self.response_time

@@ -25,6 +25,8 @@ const char parser::_key_word_id='%';
 parser::parser()
 {
     _already_init = false;
+    _counter=0;
+    _max_lines = -1;
     handle_truncated = false;
     check(theOnlyParser==NULL, common_exception("parser::parser(): I am not the only parser"));
     theOnlyParser=this;
@@ -37,6 +39,8 @@ parser::parser()
 
 parser::parser(printer* printer):_printer(printer)
 {
+    _max_lines = -1;
+    _counter = 0;
     _already_init = false;
     check(theOnlyParser==NULL, common_exception("parser::parser(): I am not the only parser"));
     theOnlyParser=this;
@@ -273,12 +277,24 @@ void parser::process_open_connection(tcp_stream *ts, struct timeval* t, unsigned
 	connections[ts->addr]->onOpen( ts, t);
 }
 
+void parser::on_print(void)
+{
+    if (_max_lines != -1)
+    {
+        _counter++;
+        if (_counter >= _max_lines)
+        {
+            exit (0);
+        }
+    }
+}
+    
 void parser::process_opening_connection(tcp_stream *ts, struct timeval* t, unsigned char* packet)
 {
 	streams::const_iterator it = connections.find(ts->addr);
 	if (it == connections.end())
 	{
-		stream::ptr pstream(new stream(factories.begin(), factories.end(), _printer));
+		stream::ptr pstream(new stream(this, factories.begin(), factories.end(), _printer));
 		pstream->onOpening( ts, t);
 		connections[ts->addr]= pstream;
 	}	
@@ -526,9 +542,12 @@ void outstream_printer::doit(handlers::iterator start, handlers::iterator end,co
 
 int stream::id = 0;
 
-stream::stream(handler_factories::iterator _begin, handler_factories::iterator _end, printer* printer):
-		tot_requests(0), status(unknown), _printer(printer), begin(_begin), end(_end)
-		{
+stream::stream(stream_listener* pStream_listener, handler_factories::iterator _begin, handler_factories::iterator _end, printer* printer):
+		tot_requests(0), status(unknown),
+        _printer(printer), 
+        _pStream_listener(pStream_listener),
+		begin(_begin), end(_end)
+        {
 		    id++;
 		    _id=id;
 		}
@@ -638,6 +657,7 @@ void stream::reinit()
 void stream::print(const timeval* t)
 {
 	_printer->doit(_handlers.begin(), _handlers.end(), t);
+    _pStream_listener->on_print();
 /*	for (handlers::iterator i= _handlers.begin(); i!= _handlers.end(); i++)
 		(*i)->append(_out, t);
 	_out<<std::endl;

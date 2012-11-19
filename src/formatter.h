@@ -321,6 +321,11 @@ private:
 	std::string _command, _user;
 };
 
+class stream_listener
+{
+public:
+    virtual void on_print(void) = 0;
+};
 
 class stream : public shared_obj<stream>, public tcp_stream
 {
@@ -329,7 +334,7 @@ public:
     timeval opening_time;
     unsigned tot_requests;
     void copy_tcp_stream(tcp_stream* pstream);
-	stream(handler_factories::iterator _begin, handler_factories::iterator _end, printer* printer);
+	stream(stream_listener*, handler_factories::iterator _begin, handler_factories::iterator _end, printer* printer);
 	virtual void onOpening(tcp_stream* pstream, const timeval* t);
 	virtual void onOpen(tcp_stream* pstream, const timeval* t);
 	virtual void onClose(tcp_stream* pstream, const timeval* t,unsigned char* packet);
@@ -344,6 +349,7 @@ public:
 private:
 	status_enum status;
 	printer* _printer;
+    stream_listener* _pStream_listener;
     handler_factories::iterator begin, end;
 	static int id;
     int _id;
@@ -371,7 +377,7 @@ static bool init_module()\
 bool initresult = init_module();
 
 
-class parser
+class parser: public stream_listener
 {
 public:
 	typedef std::map< std::string , parse_element::ptr> parse_elements;
@@ -385,10 +391,12 @@ public:
 	void parse(const char* format);
 	virtual ~parser(){theOnlyParser = NULL;};
 	void set_printer(printer* printer){_printer=printer;}
+    void set_max_lines(int max_lines){_max_lines = max_lines;}
     void set_handle_truncated(bool value){handle_truncated=value;}
     void set_default_not_found( const std::string& default_not_found) {_default_not_found = default_not_found;}
     void add_parse_element(const std::string& key, parse_element::ptr);
 	static void register_module(Module* module);
+    virtual void on_print(void);
 
 private:
     bool handle_truncated;
@@ -403,6 +411,7 @@ private:
 	void process_end_data(tcp_stream *ts);
 	static parser* theOnlyParser;
     static modules _modules;
+    int _max_lines, _counter;
 	parse_elements elements;
 	streams connections;
 	handler_factories factories;

@@ -76,16 +76,18 @@ const char* max_fragmented_ip_hosts = "max-fragmented-ip";
 const char* version_cmd = "version";
 const char* uprintable_cmd = "unprintable";
 const char* uprintable_cmd_ext = "hex-encode";
-const char* handle_truncated_cmd ="truncated";
-const char* raw_cmd= "raw";
-const char* not_found_string="not-found";
-const char* execute_cmd="execute";
+const char* handle_truncated_cmd = "truncated";
+const char* raw_cmd = "raw";
+const char* not_found_string = "not-found";
+const char* execute_cmd = "execute";
 const char* new_line_cmd = "new-line";
-const char* default_packet_filter ="";
-const char* default_format= "%source.ip - - [%request.timestamp(%d/%b/%Y:%T %z)] \"%request.line\" %response.code %response.header.content-length(0) \"%request.header.referer()\" \"%request.header.user-agent()\"";
-const char* raw_format= "%request%response";
-const char* default_not_found="-";
+const char* default_packet_filter = "";
+const char* default_format = "%source.ip - - [%request.timestamp(%d/%b/%Y:%T %z)] \"%request.line\" %response.code %response.header.content-length(0) \"%request.header.referer()\" \"%request.header.user-agent()\"";
+const char* raw_format = "%request%response";
+const char* default_not_found = "-";
 const char* force_read_pcap = "force-read-pcap";
+const char* max_line_cmd = "max-log-number";
+const char* python_cmd = "python";
 
 typedef vector<string>::const_iterator args_type;
 bool check_conflicts( const po::variables_map &vm, const vector<string>& arguments)
@@ -125,6 +127,7 @@ static map<string, const char*> _new_line_map;
 int main(int argc, char*argv [])
 {
     parser p;
+    int max_lines;
     _new_line_map["LF"]="\x0A";
     _new_line_map["CR+LF"]="\x0D\x0A";
     _new_line_map["LF+CR"]="\x0A\x0D";
@@ -136,6 +139,7 @@ int main(int argc, char*argv [])
 			(help_cmd, "command line description")
 			(string(version_cmd).append(",V").c_str(), "version")
 			(string(new_line_cmd).append(",T").c_str(), po::value<string>()->default_value("AUTO"), "the trailing newline [LF|CR+LF|LF+CR|CR|NONE|AUTO]")
+			(string(max_line_cmd).append(",C").c_str(), po::value<int>(&max_lines)->default_value(-1), "max log (lines) number, than exit")
 			(string(filecap_cmd).append(",f").c_str(), po::value<string>(), "input file in 'tcpdump capture file format' (e.g. produced by tshark or tcpdump)")
 			(string(interface_cmd).append(",i").c_str(), po::value<string>(), "network interface to listen on (e.g. eth0, en1, etc.) 'all' for all interfaces")
 			(string(logformat_cmd).append(",l").c_str(), po::value<string>(), string("log format (see FORMAT KEYWORDS). If missing the CommonLog (apache access log) format will ne used. See man page for further infos\nIt is equivalent to \n").append(default_format).c_str())
@@ -152,6 +156,7 @@ int main(int argc, char*argv [])
             (string(max_concurrent_tcp_stream).append(",s").c_str(), po::value<int>(&max_concurrent_tcp_stream_v)->default_value(65536), "Max concurrent tcp streams")
             (string(max_fragmented_ip_hosts).append(",d").c_str(), po::value<int>(&max_fragmented_ip_hosts_v)->default_value(65536), "Max concurrent fragmented ip host")
 			(string(force_read_pcap).append(",F").c_str(), "force the reading of the pcap file ignoring the snaplen value. WARNING: could give unexpected results")
+			(string(python_cmd).append(",P").c_str(), po::value<string>(), "python file and class: <filename>#<handler_name>. Example: -P my_script.py#MyHandler")
 		;
 
 		po::variables_map vm;        
@@ -269,6 +274,8 @@ int main(int argc, char*argv [])
 			return -1;
         }
         string new_line=_new_line_map[unew_line_arg];
+        if (vm.count(python_cmd))
+            new_line="";
 		printer::ptr _printer;
 		if (execute_cmd_arg.empty())
 			_printer = printer::ptr(new outstream_printer(out, new_line));
@@ -283,7 +290,7 @@ int main(int argc, char*argv [])
 		p.set_printer(_printer.get());
         
         p.set_handle_truncated(vm.count(handle_truncated_cmd));
-		
+		p.set_max_lines(max_lines);
 		p.set_default_not_found(vm[not_found_string].as<string>());
 		// parse output format specifications
 		po::variable_value raw_arg = vm[raw_cmd];
@@ -293,11 +300,18 @@ int main(int argc, char*argv [])
 		args.push_back(raw_cmd);
 		args.push_back(logformat_cmd);
 		args.push_back(append_logformat_cmd);
+        args.push_back(python_cmd);
 		if (check_conflicts(vm, args))
 			return -1;
 
 		if (vm.count(append_logformat_cmd))
 			p.parse(string(default_format).append(append_logformat_arg.as<string>()).c_str());
+		else if (vm.count(python_cmd))
+        {
+            po::variable_value python_handler= vm[python_cmd];
+            string python_handler_str = python_handler.as<string>();
+			p.parse((string("%python(")+python_handler_str+string(")")).c_str());
+        }
 		else if (vm.count(raw_cmd))
 			p.parse(raw_format);
 		else
