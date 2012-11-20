@@ -170,6 +170,8 @@ void InitPython()
     }
 }
 
+static python::object exit_handler;
+
 python::object get_python_class(const std::string& filename, const std::string& classname)
 {
     START_PYTHON_CALL
@@ -179,15 +181,16 @@ python::object get_python_class(const std::string& filename, const std::string& 
         if (!filenames.count(filename))
         {
             python::object main = python::import("__main__");
-            python::object global(main.attr("__dict__"));
+            python::dict global(main.attr("__dict__"));
             python::object result = python::exec_file(filename.c_str(), global, global);
             filenames[filename] = global;
             
         }
-        python::object global = filenames[filename];
+        python::dict global(filenames[filename]);
         python::object py_base_class = global[classname];
         classes[key]=py_base_class;
-        
+        if (global.has_key("on_exit"))
+            exit_handler = global["on_exit"];
     }
     return classes[key];
     END_PYTHON_CALL
@@ -197,6 +200,7 @@ python::object get_python_class(const std::string& filename, const std::string& 
 
 python_handler::python_handler(const string& python_ref)
 {
+    START_PYTHON_CALL
     InitPython();
     std::stringstream ss(python_ref);
     std::string filename, classname;
@@ -206,6 +210,7 @@ python_handler::python_handler(const string& python_ref)
     py_base= py_base_class();
     BaseHandler& py = python::extract<BaseHandler&>(py_base) BOOST_EXTRACT_WORKAROUND;
     __handler = &py;
+    END_PYTHON_CALL
 }
 
 void python_handler::append(std::basic_ostream<char>& out, const timeval* t)
@@ -248,6 +253,11 @@ class PythonModule: public Module
 public:
     virtual void init(parser* p) { 
         p->add_parse_element("python", pelem(new keyword_params<handler_factory_t_arg<string, python_handler> >()));
+    }
+    virtual void on_exit(void)
+    {
+        if (!exit_handler.is_none())
+            exit_handler();
     }
 };
 

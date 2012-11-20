@@ -366,6 +366,7 @@ class Module
 {
 public:
     virtual void init(parser*) = 0;
+    virtual void on_exit(){};
 };
 
 #define REGISTER_MODULE(name) static name module;\
@@ -396,6 +397,7 @@ public:
     void set_default_not_found( const std::string& default_not_found) {_default_not_found = default_not_found;}
     void add_parse_element(const std::string& key, parse_element::ptr);
 	static void register_module(Module* module);
+    static void on_exit();
     virtual void on_print(void);
 
 private:

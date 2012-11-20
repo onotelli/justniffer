@@ -1,5 +1,6 @@
 import justniffer
-    
+import base
+
 class PythonDerived(justniffer.BaseHandler):
     def __init__(self):
         justniffer.BaseHandler.__init__(self)
@@ -179,3 +180,10 @@ class PythonDerived2(justniffer.BaseHandler):
         return encoder
         
 #handler = PythonDerived()
+
+class Test(justniffer.BaseHandler):
+    def append(self,outstream, time):
+        print "ok"
+        
+def on_exit():
+    print "on_exit"

@@ -46,6 +46,15 @@ parser::parser(printer* printer):_printer(printer)
     theOnlyParser=this;
 }
 
+void parser::on_exit()
+{
+    for (modules::iterator it = _modules.begin(); it != _modules.end(); it++)
+    {
+        Module* module = *it;
+        module->on_exit();
+    }
+}
+
 void parser::register_module(Module* module)
 {
     _modules.push_back(module);

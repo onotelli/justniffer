@@ -12,6 +12,8 @@
 */
 
 #include "config.h"
+#include <exception>
+#include <csignal>
 #include <boost/program_options.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/algorithm/string.hpp>
@@ -124,9 +126,24 @@ static int max_fragmented_ip_hosts_v;
 
 static map<string, const char*> _new_line_map;
 
+
+void at_exit_handler () {
+  parser::on_exit();
+  //cerr << "terminate handler called\n";
+  //abort();  // forces abnormal termination
+}
+
+void sig_int_handler (int param)
+{
+  exit(1);
+}
+
 int main(int argc, char*argv [])
 {
     parser p;
+    atexit(at_exit_handler);
+    signal (SIGINT,sig_int_handler);
+    signal (SIGTERM,sig_int_handler);
     int max_lines;
     _new_line_map["LF"]="\x0A";
     _new_line_map["CR+LF"]="\x0D\x0A";
