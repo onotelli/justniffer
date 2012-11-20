@@ -366,7 +366,7 @@ class Module
 {
 public:
     virtual void init(parser*) = 0;
-    virtual void on_exit(){};
+    virtual void on_exit(void){};
 };
 
 #define REGISTER_MODULE(name) static name module;\

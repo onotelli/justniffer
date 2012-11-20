@@ -12,7 +12,7 @@ AC_PREREQ(2.68)
 AC_COPYRIGHT(2007-2012 (c) Plecno s.r.l)
 AC_INIT(justniffer, [0.9.0], info@plecno.com)
 AC_DEFINE(JUSTNIFFER_VERSION, ["0.9.0"], [justniffer version])
-
+LT_INIT([dlopen])
 AM_INIT_AUTOMAKE
 AC_DEFINE([HAVE_LIB_PCAP], [], [has not libcap])
 AM_CONFIG_HEADER(include/config.h)

@@ -125,8 +125,13 @@ public:
     }
 }; 
 
+void read_file(string filename, string capture_string)
+{
+} 
+
 BOOST_PYTHON_MODULE(justniffer)
 {
+  python::def("read_file", read_file);
   python::class_<BaseHandlerWrap, boost::noncopyable> basehandler("BaseHandler");
   python::class_<TCPStream, boost::noncopyable> stream("TCPStream", python::no_init);
   python::class_<OUTStream, boost::noncopyable> out("OUTStream", python::no_init);
