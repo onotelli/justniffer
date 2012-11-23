@@ -127,7 +127,7 @@ public:
 }; 
 
 
-BOOST_PYTHON_MODULE(justniffer)
+BOOST_PYTHON_MODULE(_justniffer)
 {
   //python::def("read_file", read_file);
   python::class_<BaseHandlerWrap, boost::noncopyable> basehandler("BaseHandler");
@@ -160,15 +160,21 @@ static map<std::string, python::object> classes;
 static map<std::string, python::object> filenames;
 
 static bool _inited_python(false);
+
+bool hasattr(python::object obj, string const &attrName) {
+  return PyObject_HasAttrString(obj.ptr(), attrName.c_str());
+}
+
 void InitPython()
 {
     if (!_inited_python)
     {
         Py_Initialize();
         // Register the module with the interpreter
-        if (PyImport_AppendInittab("justniffer", initjustniffer) == -1)
+        if (PyImport_AppendInittab("_justniffer", init_justniffer) == -1)
             throw std::runtime_error("Failed to add embedded_hello to the interpreter's "
                          "builtin modules");
+            
         _inited_python= true;
     }
 }
@@ -192,8 +198,8 @@ python::object get_python_class(const std::string& filename, const std::string& 
         python::dict global(filenames[filename]);
         python::object py_base_class = global[classname];
         classes[key]=py_base_class;
-        if (global.has_key("on_exit"))
-            exit_handler = global["on_exit"];
+        if (hasattr(py_base_class, "on_exit"))
+            exit_handler = py_base_class.attr("on_exit");
     }
     return classes[key];
     END_PYTHON_CALL

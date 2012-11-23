@@ -1,8 +1,18 @@
-import justniffer
-from webob import Request
+import sys
+sys.argv=["justiffer"]
+
+import _justniffer
 from collections import OrderedDict
-from plecnoutils import dict_object
-class BaseHandler(justniffer.BaseHandler):
+
+class dict_object(dict):
+    def __getattr__(self, name):
+        return self[name]
+    
+    def __dir__(self):
+        return self.keys()
+
+BaseHandler = _justniffer.BaseHandler
+class BaseImpl(BaseHandler):
 
     def __calc_time(self, time1, time0):
             values = self.values
@@ -27,7 +37,7 @@ class BaseHandler(justniffer.BaseHandler):
             values[name]+=value
         
     def __init__(self):
-        justniffer.BaseHandler.__init__(self)
+        BaseHandler.__init__(self)
         self.values = dict_object()
         self.req_resp = dict_object()
         self.__onRequest_start_time=None
@@ -121,6 +131,10 @@ class BaseHandler(justniffer.BaseHandler):
             type_="unknown"
         return type_
 
+    @classmethod
+    def on_exit(cls):
+        pass
+        
     od = OrderedDict
     attributes = od((
         ("response_size",__get_val_size),
@@ -145,7 +159,7 @@ class BaseHandler(justniffer.BaseHandler):
     def _on_complete(self, values, time):
         pass
 
-class Test(BaseHandler):
+class Test(BaseImpl):
     def _on_complete(self, values, time):
         print values
     

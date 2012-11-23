@@ -1,46 +1,9 @@
-import justniffer
-import base
+from _justniffer import BaseImpl
 
-class PythonDerived(justniffer.BaseHandler):
-    def __init__(self):
-        justniffer.BaseHandler.__init__(self)
-        self.time1 = 0
-        self.time2 = 0
-        self.request =""
-        self.response=""
-        #s.write()
+class PythonDerived(BaseImpl):
+    def _on_complete(self, values, time):
+        print values
     
-    def onOpening(self, tcp_stream, time):
-        self.tcp_stream = tcp_stream
-        
-    def onOpen(self, tcp_stream, time):
-        self.tcp_stream = tcp_stream
-        
-    def onRequest(self, tcp_stream, time):
-        if self.time1 == 0:
-            self.time1 = time
-        self.tcp_stream = tcp_stream
-        request_data  = tcp_stream.client_data
-        self.request += request_data 
-    
-    def onResponse(self, tcp_stream, time):
-        if self.time2 == 0:
-            self.time2 = time
-        self.tcp_stream = tcp_stream
-        self.response += tcp_stream.server_data
-        
-    def onClose(self, tcp_stream, time):
-        self.tcp_stream = tcp_stream
-        
-    def append(self, s, i):
-        t2 = self.time2 or self.time1
-        t1 = self.time1 or self.time2
-        tcp_stream = self.tcp_stream 
-        s.write("{time:.2f}\t{src_ip}:{src_port}\t{dst_ip}:{dst_port}\t{len}".format(time=t2-t1, 
-                                                                        src_ip=tcp_stream.src_ip,
-                                                                        src_port=tcp_stream.src_port,
-                                                                        dst_ip=tcp_stream.dst_ip,
-                                                                        dst_port=tcp_stream.dst_port, len=self.request.splitlines()[0] ))
 
 
 from webob import Response, Request
@@ -76,11 +39,11 @@ def gzip_encoder(body):
     unzipped_body = gzipped_body.read()
     return unzipped_body
     
-class PythonDerived2(justniffer.BaseHandler):
+class PythonDerived2(BaseHandler):
     __encoders={"gzip":gzip_encoder, None:default_encoder}
     
     def __init__(self):
-        justniffer.BaseHandler.__init__(self)
+        BaseHandler.__init__(self)
         self.request =""
         self.response=""
     
@@ -181,7 +144,7 @@ class PythonDerived2(justniffer.BaseHandler):
         
 #handler = PythonDerived()
 
-class Test(justniffer.BaseHandler):
+class Test(BaseHandler):
     def append(self,outstream, time):
         print "ok"
         
