@@ -7,7 +7,7 @@ justniffer_CPPFLAGS = $(AM_CPPFLAGS)
      
 #lib_LTLIBRARIES = libjustniffer.la
 #libjustniffer_la_SOURCES =  formatter.cpp utilities.cpp regex.cpp python.cpp read_file.cpp
-#libjustniffer_la_LIBADD= $(LDADD)
+#libjustniffer_la_LIBADD= $(LDADD) 
 #libjustniffer_la_CPPFLAGS = $(AM_CPPFLAGS)
 
 if HAVE_PYTHON_MODULES

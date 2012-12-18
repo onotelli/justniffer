@@ -47,9 +47,19 @@ class BaseImpl(BaseHandler):
         self.values["close_end_time"] = time
         
     def onOpening(self, stream, time):
+        values = self.values
+        values["source_ip"] = stream.src_ip
+        values["source_port"] = stream.src_port
+        values["dest_ip"] = stream.dst_ip
+        values["dest_port"] = stream.dst_port
         self.values["opening_end_time"] = time
         
     def onOpen(self, stream, time):
+        values = self.values
+        values["source_ip"] = stream.src_ip
+        values["source_port"] = stream.src_port
+        values["dest_ip"] = stream.dst_ip
+        values["dest_port"] = stream.dst_port
         self.values["open_end_time"] = time
         
     def onExit(self, stream):
@@ -80,12 +90,14 @@ class BaseImpl(BaseHandler):
             val = None
         return val
         
-    def __get_val_size(self, name, time):        
-        if self.values.has_key(name):
-            val = len(self.values[name])
-        else:
-            val = 0
-        return val
+    def __get_reqrep_size(name):        
+        def __call__(self, name_, time):
+            if self.req_resp.has_key(name):
+                val = len(self.req_resp[name])
+            else:
+                val = 0
+            return val
+        return __call__
         
     def __get_protocol(self, name, time):
         values = self.req_resp
@@ -137,8 +149,8 @@ class BaseImpl(BaseHandler):
         
     od = OrderedDict
     attributes = od((
-        ("response_size",__get_val_size),
-        ("request_size",__get_val_size),
+        ("response_size",__get_reqrep_size("response")),
+        ("request_size",__get_reqrep_size("request")),
         ("protocol",__get_protocol),
         ("response_time",__ct("response_end_time" ,"request_end_time")),
         ("connection_time",__ct ("open_end_time" , "opening_end_time")),

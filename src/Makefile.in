@@ -38,7 +38,7 @@ bin_PROGRAMS = justniffer$(EXEEXT)
 
 #lib_LTLIBRARIES = libjustniffer.la
 #libjustniffer_la_SOURCES =  formatter.cpp utilities.cpp regex.cpp python.cpp read_file.cpp
-#libjustniffer_la_LIBADD= $(LDADD)
+#libjustniffer_la_LIBADD= $(LDADD) 
 #libjustniffer_la_CPPFLAGS = $(AM_CPPFLAGS)
 @HAVE_PYTHON_MODULES_TRUE@am__append_1 = python.cpp 
 subdir = src
@@ -133,6 +133,7 @@ LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
+LIBTOOL_DEPS = @LIBTOOL_DEPS@
 LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
