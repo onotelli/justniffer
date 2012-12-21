@@ -239,15 +239,8 @@ int main(int argc, char*argv [])
 		else
 		{
 			pcap_filename = pcapfile_arg.as<string>();
-            try{
+            if (!vm.count(force_read_pcap))
                 check_pcap_file(pcap_filename);
-            }
-            catch(invalid_pcap_file& e)
-            {
-                if (!vm.count(force_read_pcap))
-                    throw e;
-                print_warning("you're forcing the reading of a file with potentially incomplete packets\n");
-            }
 			nids_params.filename=(char*)pcap_filename.c_str();
 		}
 
