@@ -14,6 +14,7 @@
 #include <map>
 #include <ostream>
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <nids2.h>
 #include <boost/shared_ptr.hpp>
@@ -774,7 +775,7 @@ public:
 protected:
 	virtual void print_out_time_stamp(out_type out)
 	{
-	  out <<time.tv_sec << "." << time.tv_usec;
+	  out << std::setiosflags(std::ios::fixed) <<std::setprecision(6) << double(time.tv_sec)+ (double(time.tv_usec)/1000000);
 	}
 };
 
