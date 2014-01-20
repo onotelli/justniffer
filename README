@@ -1,14 +1,5 @@
-********************************************************
-* Copyright (c) Plecno s.r.l. All Rights Reserved 
-* info@plecno.com
-* via Giovio 8, 20144 Milano, Italy
-*
-* Released under the terms of the GPLv3 or later
-*
-* Author: Oreste Notelli <oreste.notelli@plecno.com>	
-********************************************************
 
-Justniffer
+Justniffer (Project page: http://justniffer.sourceforge.net/)  
 
 Network TCP Packet Sniffer
 
@@ -50,3 +41,4 @@ Reliable TCP flow rebuilding: it can reorder, reassemble tcp segments and ip fra
 Logging text mode can be customized
 Extensibility by any executable, such as bash, python, perl scripts, ELF executable, etc.
 Performance measurement it can collect many information on performances: connection time, close time, request time , response time, close time, etc.
+
