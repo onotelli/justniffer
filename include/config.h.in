@@ -1,16 +1,19 @@
-/* include/config.h.in.  Generated from configure.in by autoheader.  */
+/* include/config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* define if the Boost library is available */
+/* Defined if the requested minimum BOOST version is satisfied */
 #undef HAVE_BOOST
 
-/* define if the Boost::IOStreams library is available */
-#undef HAVE_BOOST_IOSTREAMS
+/* Define to 1 if you have <boost/iostreams/device/file_descriptor.hpp> */
+#undef HAVE_BOOST_IOSTREAMS_DEVICE_FILE_DESCRIPTOR_HPP
 
-/* define if the Boost::PROGRAM_OPTIONS library is available */
-#undef HAVE_BOOST_PROGRAM_OPTIONS
+/* Define to 1 if you have <boost/program_options.hpp> */
+#undef HAVE_BOOST_PROGRAM_OPTIONS_HPP
 
-/* define if the Boost::Regex library is available */
-#undef HAVE_BOOST_REGEX
+/* Define to 1 if you have <boost/regex.hpp> */
+#undef HAVE_BOOST_REGEX_HPP
+
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#undef HAVE_DLFCN_H
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
@@ -56,6 +59,10 @@
 
 /* justniffer version */
 #undef JUSTNIFFER_VERSION
+
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#undef LT_OBJDIR
 
 /* Name of package */
 #undef PACKAGE

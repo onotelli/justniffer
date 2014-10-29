@@ -36,13 +36,14 @@
 .SH TRACKING PERFORMANCES
 
  The main feature of \fBjustniffer\fP is to analize network traffic to monitor performances. The perfomance related keywords are:
-  %connection.time
-  %idle.time.0
-  %request.time
-  %response.time
-    %response.time.begin
-    %response.time.end
-  %idle.time.1
+  %session.time
+    %connection.time
+    %idle.time.0
+    %request.time
+    %response.time
+        %response.time.begin
+        %response.time.end
+    %idle.time.1
 
  +---------+                           +---------+
  |         |                           |         |
@@ -50,42 +51,42 @@
  |         |                           |         |
  +---------+                           +---------+
       |                                     |
-      |  -----   connect syn   -------->    |----+
-      |                                     |    |
-      |  <------   syn/ack    --------->    |    | %connection.time
-      |                                     |    |
-      |  -------     ack     ---------->    |    |
-      |           ESTABLISHED               |----+
-      |                                     |    | %idle.time.0 
-      |                                     |    |(after connection, before 
-      |                                     |    | request)
-      |                                     |    |
-      |  ---  request/first packet  --->    |----+
-      |  <------     ack     -----------    |    |
-      |                                     |    |
-      |  ---  request/....          --->    |    | %request.time
-      |  <------     ack     -----------    |    |
-      |                                     |    |
-      |  ---   request/last packet  --->    |    |
-      |  <------     ack     -----------    |----+--------------------+
-      |                                     |    |                    |
-      |                                     |    |                    |
-      |                                     |    |%reponse.time.begin |   
-      |                                     |    |                    |
-      |  <--  response/first packet ----    |----+                    | reponse 
-      |  -------     ack     ---------->    |    |                    | time
-      |                                     |    |                    |
-      |  <--  response/....         ----    |    |%reponse.time.end   |
-      |  -------     ack     ---------->    |    |                    |
-      |                                     |    |                    |
-      |  <--  response/last packet  ----    |    |                    |
-      |  -------     ack     ---------->    |----+--------------------+
-      |                                     |    |
-      |                                     |    |
-      |                                     |    | %idle.time.1 (after response, 
-      |                                     |    | before new request or close)
-      |                                     |    |
-      |  <------   close      --------->    |----+
+      |  -----   connect syn   -------->    |----+--------------------------------------+
+      |                                     |    |                                      |
+      |  <------   syn/ack    --------->    |    | %connection.time                     |
+      |                                     |    |                                      |
+      |  -------     ack     ---------->    |    |                                      |
+      |           ESTABLISHED               |----+                                      |
+      |                                     |    | %idle.time.0                         |
+      |                                     |    |(after connection, before             |
+      |                                     |    | request)                             |
+      |                                     |    |                                      |
+      |  ---  request/first packet  --->    |----+--------------------------------------+
+      |                                     |    |                                      |
+      |                                     |    |                                      |
+      |  ---  request/....          --->    |    | %request.time                        |
+      |  <------     ack     -----------    |    |                                      |
+      |                                     |    |                                      |
+      |  ---   request/last packet  --->    |    |                                      | 
+      |  <------     ack     -----------    |----+--------------------+-----------------+ %session.time
+      |                                     |    |                    |                 |
+      |                                     |    |                    |                 |
+      |                                     |    |%reponse.time.begin |                 |
+      |                                     |    |                    |                 |
+      |  <--  response/first packet ----    |----+                    | reponse         |
+      |  -------     ack     ---------->    |    |                    | time            |
+      |                                     |    |                    |                 |
+      |  <--  response/....         ----    |    |%reponse.time.end   |                 |
+      |  -------     ack     ---------->    |    |                    |                 |
+      |                                     |    |                    |                 |
+      |  <--  response/last packet  ----    |    |                    |                 |
+      |  -------     ack     ---------->    |----+--------------------+-----------------+
+      |                                     |    |                                      |
+      |                                     |    |                                      |
+      |                                     |    | %idle.time.1 (after response,        |
+      |                                     |    | before new request or close)         |
+      |                                     |    |                                      |
+      |  <------   close      --------->    |----+--------------------+-----------------+
       |                                     |    |
       |                                     |    |
 

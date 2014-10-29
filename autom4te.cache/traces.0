@@ -1,21 +1,21 @@
-m4trace:/usr/share/aclocal-1.11/amversion.m4:14: -1- AC_DEFUN([AM_AUTOMAKE_VERSION], [am__api_version='1.11'
+m4trace:/usr/share/aclocal-1.14/amversion.m4:14: -1- AC_DEFUN([AM_AUTOMAKE_VERSION], [am__api_version='1.14'
 dnl Some users find AM_AUTOMAKE_VERSION and mistake it for a way to
 dnl require some minimum version.  Point them to the right macro.
-m4_if([$1], [1.11.1], [],
+m4_if([$1], [1.14.1], [],
       [AC_FATAL([Do not call $0, use AM_INIT_AUTOMAKE([$1]).])])dnl
 ])
-m4trace:/usr/share/aclocal-1.11/amversion.m4:33: -1- AC_DEFUN([AM_SET_CURRENT_AUTOMAKE_VERSION], [AM_AUTOMAKE_VERSION([1.11.1])dnl
+m4trace:/usr/share/aclocal-1.14/amversion.m4:33: -1- AC_DEFUN([AM_SET_CURRENT_AUTOMAKE_VERSION], [AM_AUTOMAKE_VERSION([1.14.1])dnl
 m4_ifndef([AC_AUTOCONF_VERSION],
   [m4_copy([m4_PACKAGE_VERSION], [AC_AUTOCONF_VERSION])])dnl
 _AM_AUTOCONF_VERSION(m4_defn([AC_AUTOCONF_VERSION]))])
-m4trace:/usr/share/aclocal-1.11/auxdir.m4:47: -1- AC_DEFUN([AM_AUX_DIR_EXPAND], [dnl Rely on autoconf to set up CDPATH properly.
+m4trace:/usr/share/aclocal-1.14/auxdir.m4:47: -1- AC_DEFUN([AM_AUX_DIR_EXPAND], [dnl Rely on autoconf to set up CDPATH properly.
 AC_PREREQ([2.50])dnl
 # expand $ac_aux_dir to an absolute path
 am_aux_dir=`cd $ac_aux_dir && pwd`
 ])
-m4trace:/usr/share/aclocal-1.11/cond.m4:15: -1- AC_DEFUN([AM_CONDITIONAL], [AC_PREREQ(2.52)dnl
- ifelse([$1], [TRUE],  [AC_FATAL([$0: invalid condition: $1])],
-	[$1], [FALSE], [AC_FATAL([$0: invalid condition: $1])])dnl
+m4trace:/usr/share/aclocal-1.14/cond.m4:12: -1- AC_DEFUN([AM_CONDITIONAL], [AC_PREREQ([2.52])dnl
+ m4_if([$1], [TRUE],  [AC_FATAL([$0: invalid condition: $1])],
+       [$1], [FALSE], [AC_FATAL([$0: invalid condition: $1])])dnl
 AC_SUBST([$1_TRUE])dnl
 AC_SUBST([$1_FALSE])dnl
 _AM_SUBST_NOTMAKE([$1_TRUE])dnl
@@ -33,17 +33,18 @@ AC_CONFIG_COMMANDS_PRE(
   AC_MSG_ERROR([[conditional "$1" was never defined.
 Usually this means the macro was only invoked conditionally.]])
 fi])])
-m4trace:/usr/share/aclocal-1.11/depend.m4:28: -1- AC_DEFUN([_AM_DEPENDENCIES], [AC_REQUIRE([AM_SET_DEPDIR])dnl
+m4trace:/usr/share/aclocal-1.14/depend.m4:26: -1- AC_DEFUN([_AM_DEPENDENCIES], [AC_REQUIRE([AM_SET_DEPDIR])dnl
 AC_REQUIRE([AM_OUTPUT_DEPENDENCY_COMMANDS])dnl
 AC_REQUIRE([AM_MAKE_INCLUDE])dnl
 AC_REQUIRE([AM_DEP_TRACK])dnl
 
-ifelse([$1], CC,   [depcc="$CC"   am_compiler_list=],
-       [$1], CXX,  [depcc="$CXX"  am_compiler_list=],
-       [$1], OBJC, [depcc="$OBJC" am_compiler_list='gcc3 gcc'],
-       [$1], UPC,  [depcc="$UPC"  am_compiler_list=],
-       [$1], GCJ,  [depcc="$GCJ"  am_compiler_list='gcc3 gcc'],
-                   [depcc="$$1"   am_compiler_list=])
+m4_if([$1], [CC],   [depcc="$CC"   am_compiler_list=],
+      [$1], [CXX],  [depcc="$CXX"  am_compiler_list=],
+      [$1], [OBJC], [depcc="$OBJC" am_compiler_list='gcc3 gcc'],
+      [$1], [OBJCXX], [depcc="$OBJCXX" am_compiler_list='gcc3 gcc'],
+      [$1], [UPC],  [depcc="$UPC"  am_compiler_list=],
+      [$1], [GCJ],  [depcc="$GCJ"  am_compiler_list='gcc3 gcc'],
+                    [depcc="$$1"   am_compiler_list=])
 
 AC_CACHE_CHECK([dependency style of $depcc],
                [am_cv_$1_dependencies_compiler_type],
@@ -51,8 +52,9 @@ AC_CACHE_CHECK([dependency style of $depcc],
   # We make a subdir and do the tests there.  Otherwise we can end up
   # making bogus files that we don't know about and never remove.  For
   # instance it was reported that on HP-UX the gcc test will end up
-  # making a dummy file named `D' -- because `-MD' means `put the output
-  # in D'.
+  # making a dummy file named 'D' -- because '-MD' means "put the output
+  # in D".
+  rm -rf conftest.dir
   mkdir conftest.dir
   # Copy depcomp to subdir because otherwise we won't find it if we're
   # using a relative directory.
@@ -91,16 +93,16 @@ AC_CACHE_CHECK([dependency style of $depcc],
     : > sub/conftest.c
     for i in 1 2 3 4 5 6; do
       echo '#include "conftst'$i'.h"' >> sub/conftest.c
-      # Using `: > sub/conftst$i.h' creates only sub/conftst1.h with
-      # Solaris 8's {/usr,}/bin/sh.
-      touch sub/conftst$i.h
+      # Using ": > sub/conftst$i.h" creates only sub/conftst1.h with
+      # Solaris 10 /bin/sh.
+      echo '/* dummy */' > sub/conftst$i.h
     done
     echo "${am__include} ${am__quote}sub/conftest.Po${am__quote}" > confmf
 
-    # We check with `-c' and `-o' for the sake of the "dashmstdout"
+    # We check with '-c' and '-o' for the sake of the "dashmstdout"
     # mode.  It turns out that the SunPro C++ compiler does not properly
-    # handle `-M -o', and we need to detect this.  Also, some Intel
-    # versions had trouble with output in subdirs
+    # handle '-M -o', and we need to detect this.  Also, some Intel
+    # versions had trouble with output in subdirs.
     am__obj=sub/conftest.${OBJEXT-o}
     am__minus_obj="-o $am__obj"
     case $depmode in
@@ -109,16 +111,16 @@ AC_CACHE_CHECK([dependency style of $depcc],
       test "$am__universal" = false || continue
       ;;
     nosideeffect)
-      # after this tag, mechanisms are not by side-effect, so they'll
-      # only be used when explicitly requested
+      # After this tag, mechanisms are not by side-effect, so they'll
+      # only be used when explicitly requested.
       if test "x$enable_dependency_tracking" = xyes; then
 	continue
       else
 	break
       fi
       ;;
-    msvisualcpp | msvcmsys)
-      # This compiler won't grok `-c -o', but also, the minuso test has
+    msvc7 | msvc7msys | msvisualcpp | msvcmsys)
+      # This compiler won't grok '-c -o', but also, the minuso test has
       # not run yet.  These depmodes are late enough in the game, and
       # so weak that their functioning should not be impacted.
       am__obj=conftest.${OBJEXT-o}
@@ -161,22 +163,29 @@ AM_CONDITIONAL([am__fastdep$1], [
   test "x$enable_dependency_tracking" != xno \
   && test "$am_cv_$1_dependencies_compiler_type" = gcc3])
 ])
-m4trace:/usr/share/aclocal-1.11/depend.m4:163: -1- AC_DEFUN([AM_SET_DEPDIR], [AC_REQUIRE([AM_SET_LEADING_DOT])dnl
+m4trace:/usr/share/aclocal-1.14/depend.m4:163: -1- AC_DEFUN([AM_SET_DEPDIR], [AC_REQUIRE([AM_SET_LEADING_DOT])dnl
 AC_SUBST([DEPDIR], ["${am__leading_dot}deps"])dnl
 ])
-m4trace:/usr/share/aclocal-1.11/depend.m4:171: -1- AC_DEFUN([AM_DEP_TRACK], [AC_ARG_ENABLE(dependency-tracking,
-[  --disable-dependency-tracking  speeds up one-time build
-  --enable-dependency-tracking   do not reject slow dependency extractors])
+m4trace:/usr/share/aclocal-1.14/depend.m4:171: -1- AC_DEFUN([AM_DEP_TRACK], [AC_ARG_ENABLE([dependency-tracking], [dnl
+AS_HELP_STRING(
+  [--enable-dependency-tracking],
+  [do not reject slow dependency extractors])
+AS_HELP_STRING(
+  [--disable-dependency-tracking],
+  [speeds up one-time build])])
 if test "x$enable_dependency_tracking" != xno; then
   am_depcomp="$ac_aux_dir/depcomp"
   AMDEPBACKSLASH='\'
+  am__nodep='_no'
 fi
 AM_CONDITIONAL([AMDEP], [test "x$enable_dependency_tracking" != xno])
 AC_SUBST([AMDEPBACKSLASH])dnl
 _AM_SUBST_NOTMAKE([AMDEPBACKSLASH])dnl
+AC_SUBST([am__nodep])dnl
+_AM_SUBST_NOTMAKE([am__nodep])dnl
 ])
-m4trace:/usr/share/aclocal-1.11/depout.m4:14: -1- AC_DEFUN([_AM_OUTPUT_DEPENDENCY_COMMANDS], [{
-  # Autoconf 2.62 quotes --file arguments for eval, but not when files
+m4trace:/usr/share/aclocal-1.14/depout.m4:12: -1- AC_DEFUN([_AM_OUTPUT_DEPENDENCY_COMMANDS], [{
+  # Older Autoconf quotes --file arguments for eval, but not when files
   # are listed without --file.  Let's play safe and only enable the eval
   # if we detect the quoting.
   case $CONFIG_FILES in
@@ -189,7 +198,7 @@ m4trace:/usr/share/aclocal-1.11/depout.m4:14: -1- AC_DEFUN([_AM_OUTPUT_DEPENDENC
     # Strip MF so we end up with the name of the file.
     mf=`echo "$mf" | sed -e 's/:.*$//'`
     # Check whether this is an Automake generated Makefile or not.
-    # We used to match only the files named `Makefile.in', but
+    # We used to match only the files named 'Makefile.in', but
     # some people rename them; so instead we look at the file content.
     # Grep'ing the first line is not enough: some people post-process
     # each Makefile.in and add a new line on top of each file to say so.
@@ -201,21 +210,19 @@ m4trace:/usr/share/aclocal-1.11/depout.m4:14: -1- AC_DEFUN([_AM_OUTPUT_DEPENDENC
       continue
     fi
     # Extract the definition of DEPDIR, am__include, and am__quote
-    # from the Makefile without running `make'.
+    # from the Makefile without running 'make'.
     DEPDIR=`sed -n 's/^DEPDIR = //p' < "$mf"`
     test -z "$DEPDIR" && continue
     am__include=`sed -n 's/^am__include = //p' < "$mf"`
-    test -z "am__include" && continue
+    test -z "$am__include" && continue
     am__quote=`sed -n 's/^am__quote = //p' < "$mf"`
-    # When using ansi2knr, U may be empty or an underscore; expand it
-    U=`sed -n 's/^U = //p' < "$mf"`
     # Find all dependency output files, they are included files with
     # $(DEPDIR) in their names.  We invoke sed twice because it is the
     # simplest approach to changing $(DEPDIR) to its actual value in the
     # expansion.
     for file in `sed -n "
       s/^$am__include $am__quote\(.*(DEPDIR).*\)$am__quote"'$/\1/p' <"$mf" | \
-	 sed -e 's/\$(DEPDIR)/'"$DEPDIR"'/g' -e 's/\$U/'"$U"'/g'`; do
+	 sed -e 's/\$(DEPDIR)/'"$DEPDIR"'/g'`; do
       # Make sure the directory exists.
       test -f "$dirpart/$file" && continue
       fdir=`AS_DIRNAME(["$file"])`
@@ -226,15 +233,11 @@ m4trace:/usr/share/aclocal-1.11/depout.m4:14: -1- AC_DEFUN([_AM_OUTPUT_DEPENDENC
   done
 }
 ])
-m4trace:/usr/share/aclocal-1.11/depout.m4:75: -1- AC_DEFUN([AM_OUTPUT_DEPENDENCY_COMMANDS], [AC_CONFIG_COMMANDS([depfiles],
+m4trace:/usr/share/aclocal-1.14/depout.m4:71: -1- AC_DEFUN([AM_OUTPUT_DEPENDENCY_COMMANDS], [AC_CONFIG_COMMANDS([depfiles],
      [test x"$AMDEP_TRUE" != x"" || _AM_OUTPUT_DEPENDENCY_COMMANDS],
      [AMDEP_TRUE="$AMDEP_TRUE" ac_aux_dir="$ac_aux_dir"])
 ])
-m4trace:/usr/share/aclocal-1.11/header.m4:12: -1- AU_DEFUN([AM_CONFIG_HEADER], [AC_CONFIG_HEADERS($@)])
-m4trace:/usr/share/aclocal-1.11/header.m4:12: -1- AC_DEFUN([AM_CONFIG_HEADER], [AC_DIAGNOSE([obsolete], [The macro `AM_CONFIG_HEADER' is obsolete.
-You should run autoupdate.])dnl
-AC_CONFIG_HEADERS($@)])
-m4trace:/usr/share/aclocal-1.11/init.m4:26: -1- AC_DEFUN([AM_INIT_AUTOMAKE], [AC_PREREQ([2.62])dnl
+m4trace:/usr/share/aclocal-1.14/init.m4:29: -1- AC_DEFUN([AM_INIT_AUTOMAKE], [AC_PREREQ([2.65])dnl
 dnl Autoconf wants to disallow AM_ names.  We explicitly allow
 dnl the ones we care about.
 m4_pattern_allow([^AM_[A-Z]+FLAGS$])dnl
@@ -263,31 +266,40 @@ AC_SUBST([CYGPATH_W])
 # Define the identity of the package.
 dnl Distinguish between old-style and new-style calls.
 m4_ifval([$2],
-[m4_ifval([$3], [_AM_SET_OPTION([no-define])])dnl
+[AC_DIAGNOSE([obsolete],
+             [$0: two- and three-arguments forms are deprecated.])
+m4_ifval([$3], [_AM_SET_OPTION([no-define])])dnl
  AC_SUBST([PACKAGE], [$1])dnl
  AC_SUBST([VERSION], [$2])],
 [_AM_SET_OPTIONS([$1])dnl
 dnl Diagnose old-style AC_INIT with new-style AM_AUTOMAKE_INIT.
-m4_if(m4_ifdef([AC_PACKAGE_NAME], 1)m4_ifdef([AC_PACKAGE_VERSION], 1), 11,,
+m4_if(
+  m4_ifdef([AC_PACKAGE_NAME], [ok]):m4_ifdef([AC_PACKAGE_VERSION], [ok]),
+  [ok:ok],,
   [m4_fatal([AC_INIT should be called with package and version arguments])])dnl
  AC_SUBST([PACKAGE], ['AC_PACKAGE_TARNAME'])dnl
  AC_SUBST([VERSION], ['AC_PACKAGE_VERSION'])])dnl
 
 _AM_IF_OPTION([no-define],,
-[AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of package])
- AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version number of package])])dnl
+[AC_DEFINE_UNQUOTED([PACKAGE], ["$PACKAGE"], [Name of package])
+ AC_DEFINE_UNQUOTED([VERSION], ["$VERSION"], [Version number of package])])dnl
 
 # Some tools Automake needs.
 AC_REQUIRE([AM_SANITY_CHECK])dnl
 AC_REQUIRE([AC_ARG_PROGRAM])dnl
-AM_MISSING_PROG(ACLOCAL, aclocal-${am__api_version})
-AM_MISSING_PROG(AUTOCONF, autoconf)
-AM_MISSING_PROG(AUTOMAKE, automake-${am__api_version})
-AM_MISSING_PROG(AUTOHEADER, autoheader)
-AM_MISSING_PROG(MAKEINFO, makeinfo)
+AM_MISSING_PROG([ACLOCAL], [aclocal-${am__api_version}])
+AM_MISSING_PROG([AUTOCONF], [autoconf])
+AM_MISSING_PROG([AUTOMAKE], [automake-${am__api_version}])
+AM_MISSING_PROG([AUTOHEADER], [autoheader])
+AM_MISSING_PROG([MAKEINFO], [makeinfo])
 AC_REQUIRE([AM_PROG_INSTALL_SH])dnl
 AC_REQUIRE([AM_PROG_INSTALL_STRIP])dnl
-AC_REQUIRE([AM_PROG_MKDIR_P])dnl
+AC_REQUIRE([AC_PROG_MKDIR_P])dnl
+# For better backward compatibility.  To be removed once Automake 1.9.x
+# dies out for good.  For more background, see:
+# <http://lists.gnu.org/archive/html/automake/2012-07/msg00001.html>
+# <http://lists.gnu.org/archive/html/automake/2012-07/msg00014.html>
+AC_SUBST([mkdir_p], ['$(MKDIR_P)'])
 # We need awk for the "check" target.  The system "awk" is bad on
 # some platforms.
 AC_REQUIRE([AC_PROG_AWK])dnl
@@ -298,27 +310,73 @@ _AM_IF_OPTION([tar-ustar], [_AM_PROG_TAR([ustar])],
 			     [_AM_PROG_TAR([v7])])])
 _AM_IF_OPTION([no-dependencies],,
 [AC_PROVIDE_IFELSE([AC_PROG_CC],
-		  [_AM_DEPENDENCIES(CC)],
-		  [define([AC_PROG_CC],
-			  defn([AC_PROG_CC])[_AM_DEPENDENCIES(CC)])])dnl
+		  [_AM_DEPENDENCIES([CC])],
+		  [m4_define([AC_PROG_CC],
+			     m4_defn([AC_PROG_CC])[_AM_DEPENDENCIES([CC])])])dnl
 AC_PROVIDE_IFELSE([AC_PROG_CXX],
-		  [_AM_DEPENDENCIES(CXX)],
-		  [define([AC_PROG_CXX],
-			  defn([AC_PROG_CXX])[_AM_DEPENDENCIES(CXX)])])dnl
+		  [_AM_DEPENDENCIES([CXX])],
+		  [m4_define([AC_PROG_CXX],
+			     m4_defn([AC_PROG_CXX])[_AM_DEPENDENCIES([CXX])])])dnl
 AC_PROVIDE_IFELSE([AC_PROG_OBJC],
-		  [_AM_DEPENDENCIES(OBJC)],
-		  [define([AC_PROG_OBJC],
-			  defn([AC_PROG_OBJC])[_AM_DEPENDENCIES(OBJC)])])dnl
+		  [_AM_DEPENDENCIES([OBJC])],
+		  [m4_define([AC_PROG_OBJC],
+			     m4_defn([AC_PROG_OBJC])[_AM_DEPENDENCIES([OBJC])])])dnl
+AC_PROVIDE_IFELSE([AC_PROG_OBJCXX],
+		  [_AM_DEPENDENCIES([OBJCXX])],
+		  [m4_define([AC_PROG_OBJCXX],
+			     m4_defn([AC_PROG_OBJCXX])[_AM_DEPENDENCIES([OBJCXX])])])dnl
 ])
-_AM_IF_OPTION([silent-rules], [AC_REQUIRE([AM_SILENT_RULES])])dnl
-dnl The `parallel-tests' driver may need to know about EXEEXT, so add the
-dnl `am__EXEEXT' conditional if _AM_COMPILER_EXEEXT was seen.  This macro
-dnl is hooked onto _AC_COMPILER_EXEEXT early, see below.
+AC_REQUIRE([AM_SILENT_RULES])dnl
+dnl The testsuite driver may need to know about EXEEXT, so add the
+dnl 'am__EXEEXT' conditional if _AM_COMPILER_EXEEXT was seen.  This
+dnl macro is hooked onto _AC_COMPILER_EXEEXT early, see below.
 AC_CONFIG_COMMANDS_PRE(dnl
 [m4_provide_if([_AM_COMPILER_EXEEXT],
   [AM_CONDITIONAL([am__EXEEXT], [test -n "$EXEEXT"])])])dnl
+
+# POSIX will say in a future version that running "rm -f" with no argument
+# is OK; and we want to be able to make that assumption in our Makefile
+# recipes.  So use an aggressive probe to check that the usage we want is
+# actually supported "in the wild" to an acceptable degree.
+# See automake bug#10828.
+# To make any issue more visible, cause the running configure to be aborted
+# by default if the 'rm' program in use doesn't match our expectations; the
+# user can still override this though.
+if rm -f && rm -fr && rm -rf; then : OK; else
+  cat >&2 <<'END'
+Oops!
+
+Your 'rm' program seems unable to run without file operands specified
+on the command line, even when the '-f' option is present.  This is contrary
+to the behaviour of most rm programs out there, and not conforming with
+the upcoming POSIX standard: <http://austingroupbugs.net/view.php?id=542>
+
+Please tell bug-automake@gnu.org about your system, including the value
+of your $PATH and any error possibly output before this message.  This
+can help us improve future automake versions.
+
+END
+  if test x"$ACCEPT_INFERIOR_RM_PROGRAM" = x"yes"; then
+    echo 'Configuration will proceed anyway, since you have set the' >&2
+    echo 'ACCEPT_INFERIOR_RM_PROGRAM variable to "yes"' >&2
+    echo >&2
+  else
+    cat >&2 <<'END'
+Aborting the configuration process, to ensure you take notice of the issue.
+
+You can download and install GNU coreutils to get an 'rm' implementation
+that behaves properly: <http://www.gnu.org/software/coreutils/>.
+
+If you want to complete the configuration process using your problematic
+'rm' anyway, export the environment variable ACCEPT_INFERIOR_RM_PROGRAM
+to "yes", and re-run configure.
+
+END
+    AC_MSG_ERROR([Your 'rm' program is bad, sorry.])
+  fi
+fi
 ])
-m4trace:/usr/share/aclocal-1.11/init.m4:126: -1- AC_DEFUN([_AC_AM_CONFIG_HEADER_HOOK], [# Compute $1's index in $config_headers.
+m4trace:/usr/share/aclocal-1.14/init.m4:183: -1- AC_DEFUN([_AC_AM_CONFIG_HEADER_HOOK], [# Compute $1's index in $config_headers.
 _am_arg=$1
 _am_stamp_count=1
 for _am_header in $config_headers :; do
@@ -330,7 +388,7 @@ for _am_header in $config_headers :; do
   esac
 done
 echo "timestamp for $_am_arg" >`AS_DIRNAME(["$_am_arg"])`/stamp-h[]$_am_stamp_count])
-m4trace:/usr/share/aclocal-1.11/install-sh.m4:11: -1- AC_DEFUN([AM_PROG_INSTALL_SH], [AC_REQUIRE([AM_AUX_DIR_EXPAND])dnl
+m4trace:/usr/share/aclocal-1.14/install-sh.m4:11: -1- AC_DEFUN([AM_PROG_INSTALL_SH], [AC_REQUIRE([AM_AUX_DIR_EXPAND])dnl
 if test x"${install_sh}" != xset; then
   case $am_aux_dir in
   *\ * | *\	*)
@@ -339,8 +397,8 @@ if test x"${install_sh}" != xset; then
     install_sh="\${SHELL} $am_aux_dir/install-sh"
   esac
 fi
-AC_SUBST(install_sh)])
-m4trace:/usr/share/aclocal-1.11/lead-dot.m4:12: -1- AC_DEFUN([AM_SET_LEADING_DOT], [rm -rf .tst 2>/dev/null
+AC_SUBST([install_sh])])
+m4trace:/usr/share/aclocal-1.14/lead-dot.m4:10: -1- AC_DEFUN([AM_SET_LEADING_DOT], [rm -rf .tst 2>/dev/null
 mkdir .tst 2>/dev/null
 if test -d .tst; then
   am__leading_dot=.
@@ -349,7 +407,7 @@ else
 fi
 rmdir .tst 2>/dev/null
 AC_SUBST([am__leading_dot])])
-m4trace:/usr/share/aclocal-1.11/make.m4:14: -1- AC_DEFUN([AM_MAKE_INCLUDE], [am_make=${MAKE-make}
+m4trace:/usr/share/aclocal-1.14/make.m4:12: -1- AC_DEFUN([AM_MAKE_INCLUDE], [am_make=${MAKE-make}
 cat > confinc << 'END'
 am__doit:
 	@echo this is the am__doit target
@@ -362,7 +420,7 @@ am__quote=
 _am_result=none
 # First try GNU make style include.
 echo "include confinc" > confmf
-# Ignore all kinds of additional output from `make'.
+# Ignore all kinds of additional output from 'make'.
 case `$am_make -s -f confmf 2> /dev/null` in #(
 *the\ am__doit\ target*)
   am__include=include
@@ -386,10 +444,10 @@ AC_SUBST([am__quote])
 AC_MSG_RESULT([$_am_result])
 rm -f confinc confmf
 ])
-m4trace:/usr/share/aclocal-1.11/missing.m4:14: -1- AC_DEFUN([AM_MISSING_PROG], [AC_REQUIRE([AM_MISSING_HAS_RUN])
+m4trace:/usr/share/aclocal-1.14/missing.m4:11: -1- AC_DEFUN([AM_MISSING_PROG], [AC_REQUIRE([AM_MISSING_HAS_RUN])
 $1=${$1-"${am_missing_run}$2"}
 AC_SUBST($1)])
-m4trace:/usr/share/aclocal-1.11/missing.m4:24: -1- AC_DEFUN([AM_MISSING_HAS_RUN], [AC_REQUIRE([AM_AUX_DIR_EXPAND])dnl
+m4trace:/usr/share/aclocal-1.14/missing.m4:20: -1- AC_DEFUN([AM_MISSING_HAS_RUN], [AC_REQUIRE([AM_AUX_DIR_EXPAND])dnl
 AC_REQUIRE_AUX_FILE([missing])dnl
 if test x"${MISSING+set}" != xset; then
   case $am_aux_dir in
@@ -400,205 +458,72 @@ if test x"${MISSING+set}" != xset; then
   esac
 fi
 # Use eval to expand $SHELL
-if eval "$MISSING --run true"; then
-  am_missing_run="$MISSING --run "
+if eval "$MISSING --is-lightweight"; then
+  am_missing_run="$MISSING "
 else
   am_missing_run=
-  AC_MSG_WARN([`missing' script is too old or missing])
+  AC_MSG_WARN(['missing' script is too old or missing])
 fi
 ])
-m4trace:/usr/share/aclocal-1.11/mkdirp.m4:11: -1- AC_DEFUN([AM_PROG_MKDIR_P], [AC_PREREQ([2.60])dnl
-AC_REQUIRE([AC_PROG_MKDIR_P])dnl
-dnl Automake 1.8 to 1.9.6 used to define mkdir_p.  We now use MKDIR_P,
-dnl while keeping a definition of mkdir_p for backward compatibility.
-dnl @MKDIR_P@ is magic: AC_OUTPUT adjusts its value for each Makefile.
-dnl However we cannot define mkdir_p as $(MKDIR_P) for the sake of
-dnl Makefile.ins that do not define MKDIR_P, so we do our own
-dnl adjustment using top_builddir (which is defined more often than
-dnl MKDIR_P).
-AC_SUBST([mkdir_p], ["$MKDIR_P"])dnl
-case $mkdir_p in
-  [[\\/$]]* | ?:[[\\/]]*) ;;
-  */*) mkdir_p="\$(top_builddir)/$mkdir_p" ;;
-esac
-])
-m4trace:/usr/share/aclocal-1.11/options.m4:13: -1- AC_DEFUN([_AM_MANGLE_OPTION], [[_AM_OPTION_]m4_bpatsubst($1, [[^a-zA-Z0-9_]], [_])])
-m4trace:/usr/share/aclocal-1.11/options.m4:19: -1- AC_DEFUN([_AM_SET_OPTION], [m4_define(_AM_MANGLE_OPTION([$1]), 1)])
-m4trace:/usr/share/aclocal-1.11/options.m4:25: -1- AC_DEFUN([_AM_SET_OPTIONS], [m4_foreach_w([_AM_Option], [$1], [_AM_SET_OPTION(_AM_Option)])])
-m4trace:/usr/share/aclocal-1.11/options.m4:31: -1- AC_DEFUN([_AM_IF_OPTION], [m4_ifset(_AM_MANGLE_OPTION([$1]), [$2], [$3])])
-m4trace:/usr/share/aclocal-1.11/python.m4:35: -1- AC_DEFUN([AM_PATH_PYTHON], [
-  dnl Find a Python interpreter.  Python versions prior to 2.0 are not
-  dnl supported. (2.0 was released on October 16, 2000).
-  m4_define_default([_AM_PYTHON_INTERPRETER_LIST],
-                    [python python2 python3 python3.2 python3.1 python3.0 python2.7 python2.6 python2.5 python2.4 python2.3 python2.2 dnl
-python2.1 python2.0])
-
-  m4_if([$1],[],[
-    dnl No version check is needed.
-    # Find any Python interpreter.
-    if test -z "$PYTHON"; then
-      AC_PATH_PROGS([PYTHON], _AM_PYTHON_INTERPRETER_LIST, :)
-    fi
-    am_display_PYTHON=python
-  ], [
-    dnl A version check is needed.
-    if test -n "$PYTHON"; then
-      # If the user set $PYTHON, use it and don't search something else.
-      AC_MSG_CHECKING([whether $PYTHON version >= $1])
-      AM_PYTHON_CHECK_VERSION([$PYTHON], [$1],
-			      [AC_MSG_RESULT(yes)],
-			      [AC_MSG_ERROR(too old)])
-      am_display_PYTHON=$PYTHON
+m4trace:/usr/share/aclocal-1.14/obsolete.m4:11: -1- AC_DEFUN([AM_CONFIG_HEADER], [AC_DIAGNOSE([obsolete],
+['$0': this macro is obsolete.
+You should use the 'AC][_CONFIG_HEADERS' macro instead.])dnl
+AC_CONFIG_HEADERS($@)])
+m4trace:/usr/share/aclocal-1.14/obsolete.m4:17: -1- AC_DEFUN([AM_PROG_CC_STDC], [AC_PROG_CC
+am_cv_prog_cc_stdc=$ac_cv_prog_cc_stdc
+AC_DIAGNOSE([obsolete],
+['$0': this macro is obsolete.
+You should simply use the 'AC][_PROG_CC' macro instead.
+Also, your code should no longer depend upon 'am_cv_prog_cc_stdc',
+but upon 'ac_cv_prog_cc_stdc'.])])
+m4trace:/usr/share/aclocal-1.14/obsolete.m4:26: -1- AC_DEFUN([AM_C_PROTOTYPES], [AC_FATAL([automatic de-ANSI-fication support has been removed])])
+m4trace:/usr/share/aclocal-1.14/obsolete.m4:28: -1- AU_DEFUN([fp_C_PROTOTYPES], [AM_C_PROTOTYPES])
+m4trace:/usr/share/aclocal-1.14/obsolete.m4:28: -1- AC_DEFUN([fp_C_PROTOTYPES], [AC_DIAGNOSE([obsolete], [The macro `fp_C_PROTOTYPES' is obsolete.
+You should run autoupdate.])dnl
+AM_C_PROTOTYPES])
+m4trace:/usr/share/aclocal-1.14/options.m4:11: -1- AC_DEFUN([_AM_MANGLE_OPTION], [[_AM_OPTION_]m4_bpatsubst($1, [[^a-zA-Z0-9_]], [_])])
+m4trace:/usr/share/aclocal-1.14/options.m4:17: -1- AC_DEFUN([_AM_SET_OPTION], [m4_define(_AM_MANGLE_OPTION([$1]), [1])])
+m4trace:/usr/share/aclocal-1.14/options.m4:23: -1- AC_DEFUN([_AM_SET_OPTIONS], [m4_foreach_w([_AM_Option], [$1], [_AM_SET_OPTION(_AM_Option)])])
+m4trace:/usr/share/aclocal-1.14/options.m4:29: -1- AC_DEFUN([_AM_IF_OPTION], [m4_ifset(_AM_MANGLE_OPTION([$1]), [$2], [$3])])
+m4trace:/usr/share/aclocal-1.14/prog-cc-c-o.m4:12: -1- AC_DEFUN([_AM_PROG_CC_C_O], [AC_REQUIRE([AM_AUX_DIR_EXPAND])dnl
+AC_REQUIRE_AUX_FILE([compile])dnl
+AC_LANG_PUSH([C])dnl
+AC_CACHE_CHECK(
+  [whether $CC understands -c and -o together],
+  [am_cv_prog_cc_c_o],
+  [AC_LANG_CONFTEST([AC_LANG_PROGRAM([])])
+  # Make sure it works both with $CC and with simple cc.
+  # Following AC_PROG_CC_C_O, we do the test twice because some
+  # compilers refuse to overwrite an existing .o file with -o,
+  # though they will create one.
+  am_cv_prog_cc_c_o=yes
+  for am_i in 1 2; do
+    if AM_RUN_LOG([$CC -c conftest.$ac_ext -o conftest2.$ac_objext]) \
+         && test -f conftest2.$ac_objext; then
+      : OK
     else
-      # Otherwise, try each interpreter until we find one that satisfies
-      # VERSION.
-      AC_CACHE_CHECK([for a Python interpreter with version >= $1],
-	[am_cv_pathless_PYTHON],[
-	for am_cv_pathless_PYTHON in _AM_PYTHON_INTERPRETER_LIST none; do
-	  test "$am_cv_pathless_PYTHON" = none && break
-	  AM_PYTHON_CHECK_VERSION([$am_cv_pathless_PYTHON], [$1], [break])
-	done])
-      # Set $PYTHON to the absolute path of $am_cv_pathless_PYTHON.
-      if test "$am_cv_pathless_PYTHON" = none; then
-	PYTHON=:
-      else
-        AC_PATH_PROG([PYTHON], [$am_cv_pathless_PYTHON])
-      fi
-      am_display_PYTHON=$am_cv_pathless_PYTHON
+      am_cv_prog_cc_c_o=no
+      break
     fi
-  ])
-
-  if test "$PYTHON" = :; then
-  dnl Run any user-specified action, or abort.
-    m4_default([$3], [AC_MSG_ERROR([no suitable Python interpreter found])])
-  else
-
-  dnl Query Python for its version number.  Getting [:3] seems to be
-  dnl the best way to do this; it's what "site.py" does in the standard
-  dnl library.
-
-  AC_CACHE_CHECK([for $am_display_PYTHON version], [am_cv_python_version],
-    [am_cv_python_version=`$PYTHON -c "import sys; sys.stdout.write(sys.version[[:3]])"`])
-  AC_SUBST([PYTHON_VERSION], [$am_cv_python_version])
-
-  dnl Use the values of $prefix and $exec_prefix for the corresponding
-  dnl values of PYTHON_PREFIX and PYTHON_EXEC_PREFIX.  These are made
-  dnl distinct variables so they can be overridden if need be.  However,
-  dnl general consensus is that you shouldn't need this ability.
-
-  AC_SUBST([PYTHON_PREFIX], ['${prefix}'])
-  AC_SUBST([PYTHON_EXEC_PREFIX], ['${exec_prefix}'])
-
-  dnl At times (like when building shared libraries) you may want
-  dnl to know which OS platform Python thinks this is.
-
-  AC_CACHE_CHECK([for $am_display_PYTHON platform], [am_cv_python_platform],
-    [am_cv_python_platform=`$PYTHON -c "import sys; sys.stdout.write(sys.platform)"`])
-  AC_SUBST([PYTHON_PLATFORM], [$am_cv_python_platform])
-
-
-  dnl Set up 4 directories:
-
-  dnl pythondir -- where to install python scripts.  This is the
-  dnl   site-packages directory, not the python standard library
-  dnl   directory like in previous automake betas.  This behavior
-  dnl   is more consistent with lispdir.m4 for example.
-  dnl Query distutils for this directory.  distutils does not exist in
-  dnl Python 1.5, so we fall back to the hardcoded directory if it
-  dnl doesn't work.
-  AC_CACHE_CHECK([for $am_display_PYTHON script directory],
-    [am_cv_python_pythondir],
-    [if test "x$prefix" = xNONE
-     then
-       am_py_prefix=$ac_default_prefix
-     else
-       am_py_prefix=$prefix
-     fi
-     am_cv_python_pythondir=`$PYTHON -c "import sys; from distutils import sysconfig; sys.stdout.write(sysconfig.get_python_lib(0,0,prefix='$am_py_prefix'))" 2>/dev/null ||
-     echo "$PYTHON_PREFIX/lib/python$PYTHON_VERSION/site-packages"`
-     case $am_cv_python_pythondir in
-     $am_py_prefix*)
-       am__strip_prefix=`echo "$am_py_prefix" | sed 's|.|.|g'`
-       am_cv_python_pythondir=`echo "$am_cv_python_pythondir" | sed "s,^$am__strip_prefix,$PYTHON_PREFIX,"`
-       ;;
-     *)
-       case $am_py_prefix in
-         /usr|/System*) ;;
-         *)
-	  am_cv_python_pythondir=$PYTHON_PREFIX/lib/python$PYTHON_VERSION/site-packages
-	  ;;
-       esac
-       ;;
-     esac
-    ])
-  AC_SUBST([pythondir], [$am_cv_python_pythondir])
-
-  dnl pkgpythondir -- $PACKAGE directory under pythondir.  Was
-  dnl   PYTHON_SITE_PACKAGE in previous betas, but this naming is
-  dnl   more consistent with the rest of automake.
-
-  AC_SUBST([pkgpythondir], [\${pythondir}/$PACKAGE])
-
-  dnl pyexecdir -- directory for installing python extension modules
-  dnl   (shared libraries)
-  dnl Query distutils for this directory.  distutils does not exist in
-  dnl Python 1.5, so we fall back to the hardcoded directory if it
-  dnl doesn't work.
-  AC_CACHE_CHECK([for $am_display_PYTHON extension module directory],
-    [am_cv_python_pyexecdir],
-    [if test "x$exec_prefix" = xNONE
-     then
-       am_py_exec_prefix=$am_py_prefix
-     else
-       am_py_exec_prefix=$exec_prefix
-     fi
-     am_cv_python_pyexecdir=`$PYTHON -c "import sys; from distutils import sysconfig; sys.stdout.write(sysconfig.get_python_lib(1,0,prefix='$am_py_exec_prefix'))" 2>/dev/null ||
-     echo "$PYTHON_EXEC_PREFIX/lib/python$PYTHON_VERSION/site-packages"`
-     case $am_cv_python_pyexecdir in
-     $am_py_exec_prefix*)
-       am__strip_prefix=`echo "$am_py_exec_prefix" | sed 's|.|.|g'`
-       am_cv_python_pyexecdir=`echo "$am_cv_python_pyexecdir" | sed "s,^$am__strip_prefix,$PYTHON_EXEC_PREFIX,"`
-       ;;
-     *)
-       case $am_py_exec_prefix in
-         /usr|/System*) ;;
-         *)
-	   am_cv_python_pyexecdir=$PYTHON_EXEC_PREFIX/lib/python$PYTHON_VERSION/site-packages
-	   ;;
-       esac
-       ;;
-     esac
-    ])
-  AC_SUBST([pyexecdir], [$am_cv_python_pyexecdir])
-
-  dnl pkgpyexecdir -- $(pyexecdir)/$(PACKAGE)
-
-  AC_SUBST([pkgpyexecdir], [\${pyexecdir}/$PACKAGE])
-
-  dnl Run any user-specified action.
-  $2
-  fi
-
-])
-m4trace:/usr/share/aclocal-1.11/python.m4:199: -1- AC_DEFUN([AM_PYTHON_CHECK_VERSION], [prog="import sys
-# split strings by '.' and convert to numeric.  Append some zeros
-# because we need at least 4 digits for the hex conversion.
-# map returns an iterator in Python 3.0 and a list in 2.x
-minver = list(map(int, '$2'.split('.'))) + [[0, 0, 0]]
-minverhex = 0
-# xrange is not present in Python 3.0 and range returns an iterator
-for i in list(range(0, 4)): minverhex = (minverhex << 8) + minver[[i]]
-sys.exit(sys.hexversion < minverhex)"
-  AS_IF([AM_RUN_LOG([$1 -c "$prog"])], [$3], [$4])])
-m4trace:/usr/share/aclocal-1.11/runlog.m4:12: -1- AC_DEFUN([AM_RUN_LOG], [{ echo "$as_me:$LINENO: $1" >&AS_MESSAGE_LOG_FD
+  done
+  rm -f core conftest*
+  unset am_i])
+if test "$am_cv_prog_cc_c_o" != yes; then
+   # Losing compiler, so override with the script.
+   # FIXME: It is wrong to rewrite CC.
+   # But if we don't then we get into trouble of one sort or another.
+   # A longer-term fix would be to have automake use am__CC in this case,
+   # and then we could set am__CC="\$(top_srcdir)/compile \$(CC)"
+   CC="$am_aux_dir/compile $CC"
+fi
+AC_LANG_POP([C])])
+m4trace:/usr/share/aclocal-1.14/prog-cc-c-o.m4:47: -1- AC_DEFUN_ONCE([AM_PROG_CC_C_O], [AC_REQUIRE([AC_PROG_CC])])
+m4trace:/usr/share/aclocal-1.14/runlog.m4:12: -1- AC_DEFUN([AM_RUN_LOG], [{ echo "$as_me:$LINENO: $1" >&AS_MESSAGE_LOG_FD
    ($1) >&AS_MESSAGE_LOG_FD 2>&AS_MESSAGE_LOG_FD
    ac_status=$?
    echo "$as_me:$LINENO: \$? = $ac_status" >&AS_MESSAGE_LOG_FD
    (exit $ac_status); }])
-m4trace:/usr/share/aclocal-1.11/sanity.m4:14: -1- AC_DEFUN([AM_SANITY_CHECK], [AC_MSG_CHECKING([whether build environment is sane])
-# Just in case
-sleep 1
-echo timestamp > conftest.file
+m4trace:/usr/share/aclocal-1.14/sanity.m4:11: -1- AC_DEFUN([AM_SANITY_CHECK], [AC_MSG_CHECKING([whether build environment is sane])
 # Reject unsafe characters in $srcdir or the absolute working directory
 # name.  Accept space and tab only in the latter.
 am_lf='
@@ -609,32 +534,40 @@ case `pwd` in
 esac
 case $srcdir in
   *[[\\\"\#\$\&\'\`$am_lf\ \	]]*)
-    AC_MSG_ERROR([unsafe srcdir value: `$srcdir']);;
+    AC_MSG_ERROR([unsafe srcdir value: '$srcdir']);;
 esac
 
-# Do `set' in a subshell so we don't clobber the current shell's
+# Do 'set' in a subshell so we don't clobber the current shell's
 # arguments.  Must try -L first in case configure is actually a
 # symlink; some systems play weird games with the mod time of symlinks
 # (eg FreeBSD returns the mod time of the symlink's containing
 # directory).
 if (
-   set X `ls -Lt "$srcdir/configure" conftest.file 2> /dev/null`
-   if test "$[*]" = "X"; then
-      # -L didn't work.
-      set X `ls -t "$srcdir/configure" conftest.file`
-   fi
-   rm -f conftest.file
-   if test "$[*]" != "X $srcdir/configure conftest.file" \
-      && test "$[*]" != "X conftest.file $srcdir/configure"; then
+   am_has_slept=no
+   for am_try in 1 2; do
+     echo "timestamp, slept: $am_has_slept" > conftest.file
+     set X `ls -Lt "$srcdir/configure" conftest.file 2> /dev/null`
+     if test "$[*]" = "X"; then
+	# -L didn't work.
+	set X `ls -t "$srcdir/configure" conftest.file`
+     fi
+     if test "$[*]" != "X $srcdir/configure conftest.file" \
+	&& test "$[*]" != "X conftest.file $srcdir/configure"; then
 
-      # If neither matched, then we have a broken ls.  This can happen
-      # if, for instance, CONFIG_SHELL is bash and it inherits a
-      # broken ls alias from the environment.  This has actually
-      # happened.  Such a system could not be considered "sane".
-      AC_MSG_ERROR([ls -t appears to fail.  Make sure there is not a broken
-alias in your environment])
-   fi
-
+	# If neither matched, then we have a broken ls.  This can happen
+	# if, for instance, CONFIG_SHELL is bash and it inherits a
+	# broken ls alias from the environment.  This has actually
+	# happened.  Such a system could not be considered "sane".
+	AC_MSG_ERROR([ls -t appears to fail.  Make sure there is not a broken
+  alias in your environment])
+     fi
+     if test "$[2]" = conftest.file || test $am_try -eq 2; then
+       break
+     fi
+     # Just in case.
+     sleep 1
+     am_has_slept=yes
+   done
    test "$[2]" = conftest.file
    )
 then
@@ -644,528 +577,687 @@ else
    AC_MSG_ERROR([newly created file is older than distributed files!
 Check your system clock])
 fi
-AC_MSG_RESULT(yes)])
-m4trace:/usr/share/aclocal-1.11/silent.m4:14: -1- AC_DEFUN([AM_SILENT_RULES], [AC_ARG_ENABLE([silent-rules],
-[  --enable-silent-rules          less verbose build output (undo: `make V=1')
-  --disable-silent-rules         verbose build output (undo: `make V=0')])
-case $enable_silent_rules in
-yes) AM_DEFAULT_VERBOSITY=0;;
-no)  AM_DEFAULT_VERBOSITY=1;;
-*)   AM_DEFAULT_VERBOSITY=m4_if([$1], [yes], [0], [1]);;
+AC_MSG_RESULT([yes])
+# If we didn't sleep, we still need to ensure time stamps of config.status and
+# generated files are strictly newer.
+am_sleep_pid=
+if grep 'slept: no' conftest.file >/dev/null 2>&1; then
+  ( sleep 1 ) &
+  am_sleep_pid=$!
+fi
+AC_CONFIG_COMMANDS_PRE(
+  [AC_MSG_CHECKING([that generated files are newer than configure])
+   if test -n "$am_sleep_pid"; then
+     # Hide warnings about reused PIDs.
+     wait $am_sleep_pid 2>/dev/null
+   fi
+   AC_MSG_RESULT([done])])
+rm -f conftest.file
+])
+m4trace:/usr/share/aclocal-1.14/silent.m4:12: -1- AC_DEFUN([AM_SILENT_RULES], [AC_ARG_ENABLE([silent-rules], [dnl
+AS_HELP_STRING(
+  [--enable-silent-rules],
+  [less verbose build output (undo: "make V=1")])
+AS_HELP_STRING(
+  [--disable-silent-rules],
+  [verbose build output (undo: "make V=0")])dnl
+])
+case $enable_silent_rules in @%:@ (((
+  yes) AM_DEFAULT_VERBOSITY=0;;
+   no) AM_DEFAULT_VERBOSITY=1;;
+    *) AM_DEFAULT_VERBOSITY=m4_if([$1], [yes], [0], [1]);;
 esac
+dnl
+dnl A few 'make' implementations (e.g., NonStop OS and NextStep)
+dnl do not support nested variable expansions.
+dnl See automake bug#9928 and bug#10237.
+am_make=${MAKE-make}
+AC_CACHE_CHECK([whether $am_make supports nested variables],
+   [am_cv_make_support_nested_variables],
+   [if AS_ECHO([['TRUE=$(BAR$(V))
+BAR0=false
+BAR1=true
+V=1
+am__doit:
+	@$(TRUE)
+.PHONY: am__doit']]) | $am_make -f - >/dev/null 2>&1; then
+  am_cv_make_support_nested_variables=yes
+else
+  am_cv_make_support_nested_variables=no
+fi])
+if test $am_cv_make_support_nested_variables = yes; then
+  dnl Using '$V' instead of '$(V)' breaks IRIX make.
+  AM_V='$(V)'
+  AM_DEFAULT_V='$(AM_DEFAULT_VERBOSITY)'
+else
+  AM_V=$AM_DEFAULT_VERBOSITY
+  AM_DEFAULT_V=$AM_DEFAULT_VERBOSITY
+fi
+AC_SUBST([AM_V])dnl
+AM_SUBST_NOTMAKE([AM_V])dnl
+AC_SUBST([AM_DEFAULT_V])dnl
+AM_SUBST_NOTMAKE([AM_DEFAULT_V])dnl
 AC_SUBST([AM_DEFAULT_VERBOSITY])dnl
 AM_BACKSLASH='\'
 AC_SUBST([AM_BACKSLASH])dnl
 _AM_SUBST_NOTMAKE([AM_BACKSLASH])dnl
 ])
-m4trace:/usr/share/aclocal-1.11/strip.m4:17: -1- AC_DEFUN([AM_PROG_INSTALL_STRIP], [AC_REQUIRE([AM_PROG_INSTALL_SH])dnl
-# Installed binaries are usually stripped using `strip' when the user
-# run `make install-strip'.  However `strip' might not be the right
+m4trace:/usr/share/aclocal-1.14/strip.m4:17: -1- AC_DEFUN([AM_PROG_INSTALL_STRIP], [AC_REQUIRE([AM_PROG_INSTALL_SH])dnl
+# Installed binaries are usually stripped using 'strip' when the user
+# run "make install-strip".  However 'strip' might not be the right
 # tool to use in cross-compilation environments, therefore Automake
-# will honor the `STRIP' environment variable to overrule this program.
-dnl Don't test for $cross_compiling = yes, because it might be `maybe'.
+# will honor the 'STRIP' environment variable to overrule this program.
+dnl Don't test for $cross_compiling = yes, because it might be 'maybe'.
 if test "$cross_compiling" != no; then
   AC_CHECK_TOOL([STRIP], [strip], :)
 fi
 INSTALL_STRIP_PROGRAM="\$(install_sh) -c -s"
 AC_SUBST([INSTALL_STRIP_PROGRAM])])
-m4trace:/usr/share/aclocal-1.11/substnot.m4:14: -1- AC_DEFUN([_AM_SUBST_NOTMAKE])
-m4trace:/usr/share/aclocal-1.11/substnot.m4:19: -1- AC_DEFUN([AM_SUBST_NOTMAKE], [_AM_SUBST_NOTMAKE($@)])
-m4trace:/usr/share/aclocal-1.11/tar.m4:24: -1- AC_DEFUN([_AM_PROG_TAR], [# Always define AMTAR for backward compatibility.
-AM_MISSING_PROG([AMTAR], [tar])
-m4_if([$1], [v7],
-     [am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'],
-     [m4_case([$1], [ustar],, [pax],,
-              [m4_fatal([Unknown tar format])])
-AC_MSG_CHECKING([how to create a $1 tar archive])
-# Loop over all known methods to create a tar archive until one works.
+m4trace:/usr/share/aclocal-1.14/substnot.m4:12: -1- AC_DEFUN([_AM_SUBST_NOTMAKE])
+m4trace:/usr/share/aclocal-1.14/substnot.m4:17: -1- AC_DEFUN([AM_SUBST_NOTMAKE], [_AM_SUBST_NOTMAKE($@)])
+m4trace:/usr/share/aclocal-1.14/tar.m4:23: -1- AC_DEFUN([_AM_PROG_TAR], [# Always define AMTAR for backward compatibility.  Yes, it's still used
+# in the wild :-(  We should find a proper way to deprecate it ...
+AC_SUBST([AMTAR], ['$${TAR-tar}'])
+
+# We'll loop over all known methods to create a tar archive until one works.
 _am_tools='gnutar m4_if([$1], [ustar], [plaintar]) pax cpio none'
-_am_tools=${am_cv_prog_tar_$1-$_am_tools}
-# Do not fold the above two line into one, because Tru64 sh and
-# Solaris sh will not grok spaces in the rhs of `-'.
-for _am_tool in $_am_tools
-do
-  case $_am_tool in
-  gnutar)
-    for _am_tar in tar gnutar gtar;
-    do
-      AM_RUN_LOG([$_am_tar --version]) && break
-    done
-    am__tar="$_am_tar --format=m4_if([$1], [pax], [posix], [$1]) -chf - "'"$$tardir"'
-    am__tar_="$_am_tar --format=m4_if([$1], [pax], [posix], [$1]) -chf - "'"$tardir"'
-    am__untar="$_am_tar -xf -"
-    ;;
-  plaintar)
-    # Must skip GNU tar: if it does not support --format= it doesn't create
-    # ustar tarball either.
-    (tar --version) >/dev/null 2>&1 && continue
-    am__tar='tar chf - "$$tardir"'
-    am__tar_='tar chf - "$tardir"'
-    am__untar='tar xf -'
-    ;;
-  pax)
-    am__tar='pax -L -x $1 -w "$$tardir"'
-    am__tar_='pax -L -x $1 -w "$tardir"'
-    am__untar='pax -r'
-    ;;
-  cpio)
-    am__tar='find "$$tardir" -print | cpio -o -H $1 -L'
-    am__tar_='find "$tardir" -print | cpio -o -H $1 -L'
-    am__untar='cpio -i -H $1 -d'
-    ;;
-  none)
-    am__tar=false
-    am__tar_=false
-    am__untar=false
-    ;;
-  esac
 
-  # If the value was cached, stop now.  We just wanted to have am__tar
-  # and am__untar set.
-  test -n "${am_cv_prog_tar_$1}" && break
+m4_if([$1], [v7],
+  [am__tar='$${TAR-tar} chof - "$$tardir"' am__untar='$${TAR-tar} xf -'],
 
-  # tar/untar a dummy directory, and stop if the command works
+  [m4_case([$1],
+    [ustar],
+     [# The POSIX 1988 'ustar' format is defined with fixed-size fields.
+      # There is notably a 21 bits limit for the UID and the GID.  In fact,
+      # the 'pax' utility can hang on bigger UID/GID (see automake bug#8343
+      # and bug#13588).
+      am_max_uid=2097151 # 2^21 - 1
+      am_max_gid=$am_max_uid
+      # The $UID and $GID variables are not portable, so we need to resort
+      # to the POSIX-mandated id(1) utility.  Errors in the 'id' calls
+      # below are definitely unexpected, so allow the users to see them
+      # (that is, avoid stderr redirection).
+      am_uid=`id -u || echo unknown`
+      am_gid=`id -g || echo unknown`
+      AC_MSG_CHECKING([whether UID '$am_uid' is supported by ustar format])
+      if test $am_uid -le $am_max_uid; then
+         AC_MSG_RESULT([yes])
+      else
+         AC_MSG_RESULT([no])
+         _am_tools=none
+      fi
+      AC_MSG_CHECKING([whether GID '$am_gid' is supported by ustar format])
+      if test $am_gid -le $am_max_gid; then
+         AC_MSG_RESULT([yes])
+      else
+        AC_MSG_RESULT([no])
+        _am_tools=none
+      fi],
+
+  [pax],
+    [],
+
+  [m4_fatal([Unknown tar format])])
+
+  AC_MSG_CHECKING([how to create a $1 tar archive])
+
+  # Go ahead even if we have the value already cached.  We do so because we
+  # need to set the values for the 'am__tar' and 'am__untar' variables.
+  _am_tools=${am_cv_prog_tar_$1-$_am_tools}
+
+  for _am_tool in $_am_tools; do
+    case $_am_tool in
+    gnutar)
+      for _am_tar in tar gnutar gtar; do
+        AM_RUN_LOG([$_am_tar --version]) && break
+      done
+      am__tar="$_am_tar --format=m4_if([$1], [pax], [posix], [$1]) -chf - "'"$$tardir"'
+      am__tar_="$_am_tar --format=m4_if([$1], [pax], [posix], [$1]) -chf - "'"$tardir"'
+      am__untar="$_am_tar -xf -"
+      ;;
+    plaintar)
+      # Must skip GNU tar: if it does not support --format= it doesn't create
+      # ustar tarball either.
+      (tar --version) >/dev/null 2>&1 && continue
+      am__tar='tar chf - "$$tardir"'
+      am__tar_='tar chf - "$tardir"'
+      am__untar='tar xf -'
+      ;;
+    pax)
+      am__tar='pax -L -x $1 -w "$$tardir"'
+      am__tar_='pax -L -x $1 -w "$tardir"'
+      am__untar='pax -r'
+      ;;
+    cpio)
+      am__tar='find "$$tardir" -print | cpio -o -H $1 -L'
+      am__tar_='find "$tardir" -print | cpio -o -H $1 -L'
+      am__untar='cpio -i -H $1 -d'
+      ;;
+    none)
+      am__tar=false
+      am__tar_=false
+      am__untar=false
+      ;;
+    esac
+
+    # If the value was cached, stop now.  We just wanted to have am__tar
+    # and am__untar set.
+    test -n "${am_cv_prog_tar_$1}" && break
+
+    # tar/untar a dummy directory, and stop if the command works.
+    rm -rf conftest.dir
+    mkdir conftest.dir
+    echo GrepMe > conftest.dir/file
+    AM_RUN_LOG([tardir=conftest.dir && eval $am__tar_ >conftest.tar])
+    rm -rf conftest.dir
+    if test -s conftest.tar; then
+      AM_RUN_LOG([$am__untar <conftest.tar])
+      AM_RUN_LOG([cat conftest.dir/file])
+      grep GrepMe conftest.dir/file >/dev/null 2>&1 && break
+    fi
+  done
   rm -rf conftest.dir
-  mkdir conftest.dir
-  echo GrepMe > conftest.dir/file
-  AM_RUN_LOG([tardir=conftest.dir && eval $am__tar_ >conftest.tar])
-  rm -rf conftest.dir
-  if test -s conftest.tar; then
-    AM_RUN_LOG([$am__untar <conftest.tar])
-    grep GrepMe conftest.dir/file >/dev/null 2>&1 && break
-  fi
-done
-rm -rf conftest.dir
 
-AC_CACHE_VAL([am_cv_prog_tar_$1], [am_cv_prog_tar_$1=$_am_tool])
-AC_MSG_RESULT([$am_cv_prog_tar_$1])])
+  AC_CACHE_VAL([am_cv_prog_tar_$1], [am_cv_prog_tar_$1=$_am_tool])
+  AC_MSG_RESULT([$am_cv_prog_tar_$1])])
+
 AC_SUBST([am__tar])
 AC_SUBST([am__untar])
 ])
-m4trace:acinclude.m4:1: -1- AC_DEFUN([AX_BOOST_BASE], [
+m4trace:acinclude.m4:48: -1- m4_pattern_forbid([^_?(BOOST|Boost)_])
+m4trace:acinclude.m4:96: -1- AC_DEFUN([BOOST_REQUIRE], [AC_REQUIRE([AC_PROG_CXX])dnl
+AC_REQUIRE([AC_PROG_GREP])dnl
+echo "$as_me: this is boost.m4[]_BOOST_SERIAL" >&AS_MESSAGE_LOG_FD
+boost_save_IFS=$IFS
+boost_version_req=$1
+IFS=.
+set x $boost_version_req 0 0 0
+IFS=$boost_save_IFS
+shift
+boost_version_req=`expr "$[1]" '*' 100000 + "$[2]" '*' 100 + "$[3]"`
+boost_version_req_string=$[1].$[2].$[3]
 AC_ARG_WITH([boost],
-        AS_HELP_STRING([--with-boost@<:@=DIR@:>@], [use boost (default is yes) - it is possible to specify the root directory for boost (optional)]),
-        [
-    if test "$withval" = "no"; then
-                want_boost="no"
-    elif test "$withval" = "yes"; then
-        want_boost="yes"
-        ac_boost_path=""
-    else
-            want_boost="yes"
-        ac_boost_path="$withval"
-        fi
-    ],
-    [want_boost="yes"])
-
-
-AC_ARG_WITH([boost-libdir],
-        AS_HELP_STRING([--with-boost-libdir=LIB_DIR],
-        [Force given directory for boost libraries. Note that this will overwrite library path detection, so use this parameter only if default library detection fails and you know exactly where your boost libraries are located.]),
-        [
-        if test -d $withval
-        then
-                ac_boost_lib_path="$withval"
-        else
-                AC_MSG_ERROR(--with-boost-libdir expected directory name)
-        fi
-        ],
-        [ac_boost_lib_path=""]
-)
-
-if test "x$want_boost" = "xyes"; then
-        boost_lib_version_req=ifelse([$1], ,1.20.0,$1)
-        boost_lib_version_req_shorten=`expr $boost_lib_version_req : '\([[0-9]]*\.[[0-9]]*\)'`
-        boost_lib_version_req_major=`expr $boost_lib_version_req : '\([[0-9]]*\)'`
-        boost_lib_version_req_minor=`expr $boost_lib_version_req : '[[0-9]]*\.\([[0-9]]*\)'`
-        boost_lib_version_req_sub_minor=`expr $boost_lib_version_req : '[[0-9]]*\.[[0-9]]*\.\([[0-9]]*\)'`
-        if test "x$boost_lib_version_req_sub_minor" = "x" ; then
-                boost_lib_version_req_sub_minor="0"
-        fi
-        WANT_BOOST_VERSION=`expr $boost_lib_version_req_major \* 100000 \+  $boost_lib_version_req_minor \* 100 \+ $boost_lib_version_req_sub_minor`
-        AC_MSG_CHECKING(for boostlib >= $boost_lib_version_req)
-        succeeded=no
-
-        dnl first we check the system location for boost libraries
-        dnl this location ist chosen if boost libraries are installed with the --layout=system option
-        dnl or if you install boost with RPM
-        if test "$ac_boost_path" != ""; then
-                BOOST_LDFLAGS="-L$ac_boost_path/lib"
-                BOOST_CPPFLAGS="-I$ac_boost_path/include"
-        else
-                for ac_boost_path_tmp in /usr /usr/local /opt /opt/local ; do
-                        if test -d "$ac_boost_path_tmp/include/boost" && test -r "$ac_boost_path_tmp/include/boost"; then
-                                BOOST_LDFLAGS="-L$ac_boost_path_tmp/lib"
-                                BOOST_CPPFLAGS="-I$ac_boost_path_tmp/include"
-                                break;
-                        fi
-                done
-        fi
-
-    dnl overwrite ld flags if we have required special directory with
-    dnl --with-boost-libdir parameter
-    if test "$ac_boost_lib_path" != ""; then
-       BOOST_LDFLAGS="-L$ac_boost_lib_path"
-    fi
-
-        CPPFLAGS_SAVED="$CPPFLAGS"
-        CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
-        export CPPFLAGS
-
-        LDFLAGS_SAVED="$LDFLAGS"
-        LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
-        export LDFLAGS
-
-        AC_LANG_PUSH(C++)
-        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-        @%:@include <boost/version.hpp>
-        ]], [[
-        #if BOOST_VERSION >= $WANT_BOOST_VERSION
-        // Everything is okay
-        #else
-        #  error Boost version is too old
-        #endif
-        ]])],[
-        AC_MSG_RESULT(yes)
-        succeeded=yes
-        found_system=yes
-        ],[
-        ])
-        AC_LANG_POP([C++])
-
-
-
-        dnl if we found no boost with system layout we search for boost libraries
-        dnl built and installed without the --layout=system option or for a staged(not installed) version
-        if test "x$succeeded" != "xyes"; then
-                _version=0
-                if test "$ac_boost_path" != ""; then
-                        if test -d "$ac_boost_path" && test -r "$ac_boost_path"; then
-                                for i in `ls -d $ac_boost_path/include/boost-* 2>/dev/null`; do
-                                        _version_tmp=`echo $i | sed "s#$ac_boost_path##" | sed 's/\/include\/boost-//' | sed 's/_/./'`
-                                        V_CHECK=`expr $_version_tmp \> $_version`
-                                        if test "$V_CHECK" = "1" ; then
-                                                _version=$_version_tmp
-                                        fi
-                                        VERSION_UNDERSCORE=`echo $_version | sed 's/\./_/'`
-                                        BOOST_CPPFLAGS="-I$ac_boost_path/include/boost-$VERSION_UNDERSCORE"
-                                done
-                        fi
-                else
-                        for ac_boost_path in /usr /usr/local /opt /opt/local ; do
-                                if test -d "$ac_boost_path" && test -r "$ac_boost_path"; then
-                                        for i in `ls -d $ac_boost_path/include/boost-* 2>/dev/null`; do
-                                                _version_tmp=`echo $i | sed "s#$ac_boost_path##" | sed 's/\/include\/boost-//' | sed 's/_/./'`
-                                                V_CHECK=`expr $_version_tmp \> $_version`
-                                                if test "$V_CHECK" = "1" ; then
-                                                        _version=$_version_tmp
-                                                        best_path=$ac_boost_path
-                                                fi
-                                        done
-                                fi
-                        done
-
-                        VERSION_UNDERSCORE=`echo $_version | sed 's/\./_/'`
-                        BOOST_CPPFLAGS="-I$best_path/include/boost-$VERSION_UNDERSCORE"
-            if test "$ac_boost_lib_path" = ""
-            then
-               BOOST_LDFLAGS="-L$best_path/lib"
-            fi
-
-                        if test "x$BOOST_ROOT" != "x"; then
-                                if test -d "$BOOST_ROOT" && test -r "$BOOST_ROOT" && test -d "$BOOST_ROOT/stage/lib" && test -r "$BOOST_ROOT/stage/lib"; then
-                                        version_dir=`expr //$BOOST_ROOT : '.*/\(.*\)'`
-                                        stage_version=`echo $version_dir | sed 's/boost_//' | sed 's/_/./g'`
-                                        stage_version_shorten=`expr $stage_version : '\([[0-9]]*\.[[0-9]]*\)'`
-                                        V_CHECK=`expr $stage_version_shorten \>\= $_version`
-                    if test "$V_CHECK" = "1" -a "$ac_boost_lib_path" = "" ; then
-                                                AC_MSG_NOTICE(We will use a staged boost library from $BOOST_ROOT)
-                                                BOOST_CPPFLAGS="-I$BOOST_ROOT"
-                                                BOOST_LDFLAGS="-L$BOOST_ROOT/stage/lib"
-                                        fi
-                                fi
-                        fi
-                fi
-
-                CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
-                export CPPFLAGS
-                LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
-                export LDFLAGS
-
-                AC_LANG_PUSH(C++)
-                AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-                @%:@include <boost/version.hpp>
-                ]], [[
-                #if BOOST_VERSION >= $WANT_BOOST_VERSION
-                // Everything is okay
-                #else
-                #  error Boost version is too old
-                #endif
-                ]])],[
-                AC_MSG_RESULT(yes)
-                succeeded=yes
-                found_system=yes
-                ],[
-                ])
-                AC_LANG_POP([C++])
-        fi
-
-        if test "$succeeded" != "yes" ; then
-                if test "$_version" = "0" ; then
-                        AC_MSG_ERROR([[We could not detect the boost libraries (version $boost_lib_version_req_shorten or higher). If you have a staged boost library (still not installed) please specify \$BOOST_ROOT in your environment and do not give a PATH to --with-boost option.  If you are sure you have boost installed, then check your version number looking in <boost/version.hpp>. See http://randspringer.de/boost for more documentation.]])
-                else
-                        AC_MSG_NOTICE([Your boost libraries seems to old (version $_version).])
-                fi
-        else
-                AC_SUBST(BOOST_CPPFLAGS)
-                AC_SUBST(BOOST_LDFLAGS)
-                AC_DEFINE(HAVE_BOOST,,[define if the Boost library is available])
-        fi
-
-        CPPFLAGS="$CPPFLAGS_SAVED"
-        LDFLAGS="$LDFLAGS_SAVED"
+   [AS_HELP_STRING([--with-boost=DIR],
+                   [prefix of Boost $1 @<:@guess@:>@])])dnl
+AC_ARG_VAR([BOOST_ROOT],[Location of Boost installation])dnl
+# If BOOST_ROOT is set and the user has not provided a value to
+# --with-boost, then treat BOOST_ROOT as if it the user supplied it.
+if test x"$BOOST_ROOT" != x; then
+  if test x"$with_boost" = x; then
+    AC_MSG_NOTICE([Detected BOOST_ROOT; continuing with --with-boost=$BOOST_ROOT])
+    with_boost=$BOOST_ROOT
+  else
+    AC_MSG_NOTICE([Detected BOOST_ROOT=$BOOST_ROOT, but overridden by --with-boost=$with_boost])
+  fi
 fi
-
-])
-m4trace:acinclude.m4:188: -1- AC_DEFUN([AX_BOOST_REGEX], [
-        AC_ARG_WITH([boost-regex],
-        AS_HELP_STRING([--with-boost-regex@<:@=special-lib@:>@],
-                   [use the Regex library from boost - it is possible to specify a certain library for the linker
-                        e.g. --with-boost-regex=boost_regex-gcc-mt-d-1_33_1 ]),
-        [
-        if test "$withval" = "no"; then
-                        want_boost="no"
-        elif test "$withval" = "yes"; then
-            want_boost="yes"
-            ax_boost_user_regex_lib=""
-        else
-                    want_boost="yes"
-                ax_boost_user_regex_lib="$withval"
-                fi
-        ],
-        [want_boost="yes"]
-        )
-
-        if test "x$want_boost" = "xyes"; then
-        AC_REQUIRE([AC_PROG_CC])
-                CPPFLAGS_SAVED="$CPPFLAGS"
-                CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
-                export CPPFLAGS
-
-                LDFLAGS_SAVED="$LDFLAGS"
-                LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
-                export LDFLAGS
-
-        AC_CACHE_CHECK(whether the Boost::Regex library is available,
-                                           ax_cv_boost_regex,
-        [AC_LANG_PUSH([C++])
-                         AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[@%:@include <boost/regex.hpp>
-                                                                                                ]],
-                                   [[boost::regex r(); return 0;]]),
-                   ax_cv_boost_regex=yes, ax_cv_boost_regex=no)
-         AC_LANG_POP([C++])
-                ])
-                if test "x$ax_cv_boost_regex" = "xyes"; then
-                        AC_DEFINE(HAVE_BOOST_REGEX,,[define if the Boost::Regex library is available])
-            BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
-            if test "x$ax_boost_user_regex_lib" = "x"; then
-                for libextension in `ls $BOOSTLIBDIR/libboost_regex*.{so,a}* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^lib\(boost_regex.*\)\.so.*$;\1;' -e 's;^lib\(boost_regex.*\)\.a*$;\1;'` ; do
-                     ax_lib=${libextension}
-                                    AC_CHECK_LIB($ax_lib, exit,
-                                 [BOOST_REGEX_LIB="-l$ax_lib"; AC_SUBST(BOOST_REGEX_LIB) link_regex="yes"; break],
-                                    echo "ax_lib=$ax_lib"
-				    [link_regex="no"])
-                                done
-                if test "x$link_regex" != "xyes"; then
-                for libextension in `ls $BOOSTLIBDIR/boost_regex*.{dll,a}* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^\(boost_regex.*\)\.dll.*$;\1;' -e 's;^\(boost_regex.*\)\.a*$;\1;'` ; do
-                     ax_lib=${libextension}
-                                    AC_CHECK_LIB($ax_lib, exit,
-                                 [BOOST_REGEX_LIB="-l$ax_lib"; AC_SUBST(BOOST_REGEX_LIB) link_regex="yes"; break],
-                                 [link_regex="no"])
-                                done
-                fi
-
-            else
-               for ax_lib in $ax_boost_user_regex_lib boost_regex-$ax_boost_user_regex_lib; do
-                                      AC_CHECK_LIB($ax_lib, main,
-                                   [BOOST_REGEX_LIB="-l$ax_lib"; AC_SUBST(BOOST_REGEX_LIB) link_regex="yes"; break],
-                                   [link_regex="no"])
-               done
-            fi
-                        if test "x$link_regex" != "xyes"; then
-                                AC_MSG_ERROR(Could not link against $ax_lib !)
-                        fi
-                fi
-
-                CPPFLAGS="$CPPFLAGS_SAVED"
-        LDFLAGS="$LDFLAGS_SAVED"
+AC_SUBST([DISTCHECK_CONFIGURE_FLAGS],
+         ["$DISTCHECK_CONFIGURE_FLAGS '--with-boost=$with_boost'"])dnl
+boost_save_CPPFLAGS=$CPPFLAGS
+  AC_CACHE_CHECK([for Boost headers version >= $boost_version_req_string],
+    [boost_cv_inc_path],
+    [boost_cv_inc_path=no
+AC_LANG_PUSH([C++])dnl
+m4_pattern_allow([^BOOST_VERSION$])dnl
+    AC_LANG_CONFTEST([AC_LANG_PROGRAM([[#include <boost/version.hpp>
+#if !defined BOOST_VERSION
+# error BOOST_VERSION is not defined
+#elif BOOST_VERSION < $boost_version_req
+# error Boost headers version < $boost_version_req
+#endif
+]])])
+    # If the user provided a value to --with-boost, use it and only it.
+    case $with_boost in #(
+      ''|yes) set x '' /opt/local/include /usr/local/include /opt/include \
+                 /usr/include C:/Boost/include;; #(
+      *)      set x "$with_boost/include" "$with_boost";;
+    esac
+    shift
+    for boost_dir
+    do
+    # Without --layout=system, Boost (or at least some versions) installs
+    # itself in <prefix>/include/boost-<version>.  This inner loop helps to
+    # find headers in such directories.
+    #
+    # Any ${boost_dir}/boost-x_xx directories are searched in reverse version
+    # order followed by ${boost_dir}.  The final '.' is a sentinel for
+    # searching $boost_dir" itself.  Entries are whitespace separated.
+    #
+    # I didn't indent this loop on purpose (to avoid over-indented code)
+    boost_layout_system_search_list=`cd "$boost_dir" 2>/dev/null \
+        && ls -1 | "${GREP}" '^boost-' | sort -rn -t- -k2 \
+        && echo .`
+    for boost_inc in $boost_layout_system_search_list
+    do
+      if test x"$boost_inc" != x.; then
+        boost_inc="$boost_dir/$boost_inc"
+      else
+        boost_inc="$boost_dir" # Uses sentinel in boost_layout_system_search_list
+      fi
+      if test x"$boost_inc" != x; then
+        # We are going to check whether the version of Boost installed
+        # in $boost_inc is usable by running a compilation that
+        # #includes it.  But if we pass a -I/some/path in which Boost
+        # is not installed, the compiler will just skip this -I and
+        # use other locations (either from CPPFLAGS, or from its list
+        # of system include directories).  As a result we would use
+        # header installed on the machine instead of the /some/path
+        # specified by the user.  So in that precise case (trying
+        # $boost_inc), make sure the version.hpp exists.
+        #
+        # Use test -e as there can be symlinks.
+        test -e "$boost_inc/boost/version.hpp" || continue
+        CPPFLAGS="$CPPFLAGS -I$boost_inc"
+      fi
+      AC_COMPILE_IFELSE([], [boost_cv_inc_path=yes], [boost_cv_version=no])
+      if test x"$boost_cv_inc_path" = xyes; then
+        if test x"$boost_inc" != x; then
+          boost_cv_inc_path=$boost_inc
         fi
+        break 2
+      fi
+    done
+    done
+AC_LANG_POP([C++])dnl
+    ])
+    case $boost_cv_inc_path in #(
+      no)
+        boost_errmsg="cannot find Boost headers version >= $boost_version_req_string"
+        m4_if([$2], [],  [AC_MSG_ERROR([$boost_errmsg])],
+                        [AC_MSG_NOTICE([$boost_errmsg])])
+        $2
+        ;;#(
+      yes)
+        BOOST_CPPFLAGS=
+        ;;#(
+      *)
+        AC_SUBST([BOOST_CPPFLAGS], ["-I$boost_cv_inc_path"])dnl
+        ;;
+    esac
+  if test x"$boost_cv_inc_path" != xno; then
+  AC_DEFINE([HAVE_BOOST], [1],
+            [Defined if the requested minimum BOOST version is satisfied])
+  AC_CACHE_CHECK([for Boost's header version],
+    [boost_cv_lib_version],
+    [m4_pattern_allow([^BOOST_LIB_VERSION$])dnl
+     _BOOST_SED_CPP([/^boost-lib-version = /{s///;s/\"//g;p;q;}],
+                    [#include <boost/version.hpp>
+boost-lib-version = BOOST_LIB_VERSION],
+    [boost_cv_lib_version=`cat conftest.i`])])
+    # e.g. "134" for 1_34_1 or "135" for 1_35
+    boost_major_version=`echo "$boost_cv_lib_version" | sed 's/_//;s/_.*//'`
+    case $boost_major_version in #(
+      '' | *[[!0-9]]*)
+        AC_MSG_ERROR([invalid value: boost_major_version=$boost_major_version])
+        ;;
+    esac
+fi
+CPPFLAGS=$boost_save_CPPFLAGS
 ])
-m4trace:acinclude.m4:264: -1- AC_DEFUN([AX_BOOST_PROGRAM_OPTIONS], [
-        AC_ARG_WITH([boost-program-options],
-                AS_HELP_STRING([--with-boost-program-options@<:@=special-lib@:>@],
-                       [use the program options library from boost - it is possible to specify a certain library for the linker
-                        e.g. --with-boost-program-options=boost_program_options-gcc-mt-1_33_1 ]),
-        [
-        if test "$withval" = "no"; then
-                        want_boost="no"
-        elif test "$withval" = "yes"; then
-            want_boost="yes"
-            ax_boost_user_program_options_lib=""
-        else
-                    want_boost="yes"
-                ax_boost_user_program_options_lib="$withval"
-                fi
-        ],
-        [want_boost="yes"]
-        )
-
-        if test "x$want_boost" = "xyes"; then
-        AC_REQUIRE([AC_PROG_CC])
-            export want_boost
-                CPPFLAGS_SAVED="$CPPFLAGS"
-                CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
-                export CPPFLAGS
-                LDFLAGS_SAVED="$LDFLAGS"
-                LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
-                export LDFLAGS
-                AC_CACHE_CHECK([whether the Boost::Program_Options library is available],
-                                           ax_cv_boost_program_options,
-                                           [AC_LANG_PUSH(C++)
-                                AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[@%:@include <boost/program_options.hpp>
-                                                          ]],
-                                  [[boost::program_options::options_description generic("Generic options");
-                                   return 0;]]),
-                           ax_cv_boost_program_options=yes, ax_cv_boost_program_options=no)
-                                        AC_LANG_POP([C++])
-                ])
-                if test "$ax_cv_boost_program_options" = yes; then
-                                AC_DEFINE(HAVE_BOOST_PROGRAM_OPTIONS,,[define if the Boost::PROGRAM_OPTIONS library is available])
-                  BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
-                if test "x$ax_boost_user_program_options_lib" = "x"; then
-                for libextension in `ls $BOOSTLIBDIR/libboost_program_options*.{so,a}* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^lib\(boost_program_options.*\)\.so.*$;\1;' -e 's;^lib\(boost_program_options.*\)\.a*$;\1;'` ; do
-                     ax_lib=${libextension}
-                                    AC_CHECK_LIB($ax_lib, exit,
-                                 [BOOST_PROGRAM_OPTIONS_LIB="-l$ax_lib"; AC_SUBST(BOOST_PROGRAM_OPTIONS_LIB) link_program_options="yes"; break],
-                                 [link_program_options="no"])
-                                done
-                if test "x$link_program_options" != "xyes"; then
-                for libextension in `ls $BOOSTLIBDIR/boost_program_options*.{dll,a}* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^\(boost_program_options.*\)\.dll.*$;\1;' -e 's;^\(boost_program_options.*\)\.a*$;\1;'` ; do
-                     ax_lib=${libextension}
-                                    AC_CHECK_LIB($ax_lib, exit,
-                                 [BOOST_PROGRAM_OPTIONS_LIB="-l$ax_lib"; AC_SUBST(BOOST_PROGRAM_OPTIONS_LIB) link_program_options="yes"; break],
-                                 [link_program_options="no"])
-                                done
-                fi
-                else
-                  for ax_lib in $ax_boost_user_program_options_lib boost_program_options-$ax_boost_user_program_options_lib; do
-                                      AC_CHECK_LIB($ax_lib, main,
-                                   [BOOST_PROGRAM_OPTIONS_LIB="-l$ax_lib"; AC_SUBST(BOOST_PROGRAM_OPTIONS_LIB) link_program_options="yes"; break],
-                                   [link_program_options="no"])
-                  done
-                fi
-                                if test "x$link_program_options" != "xyes"; then
-                                        AC_MSG_ERROR([Could not link against [$ax_lib] !])
-                                fi
-                fi
-                CPPFLAGS="$CPPFLAGS_SAVED"
-        LDFLAGS="$LDFLAGS_SAVED"
-        fi
+m4trace:acinclude.m4:231: -1- AC_DEFUN([BOOST_STATIC], [AC_ARG_ENABLE([static-boost],
+     [AS_HELP_STRING([--enable-static-boost],
+               [Prefer the static boost libraries over the shared ones [no]])],
+     [enable_static_boost=yes],
+     [enable_static_boost=no])])
+m4trace:acinclude.m4:253: -1- AC_DEFUN([BOOST_FIND_HEADER], [AC_REQUIRE([BOOST_REQUIRE])dnl
+if test x"$boost_cv_inc_path" = xno; then
+  m4_default([$2], [AC_MSG_NOTICE([Boost not available, not searching for $1])])
+else
+AC_LANG_PUSH([C++])dnl
+boost_save_CPPFLAGS=$CPPFLAGS
+CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+AC_CHECK_HEADER([$1],
+  [m4_default([$3], [AC_DEFINE(AS_TR_CPP([HAVE_$1]), [1],
+                               [Define to 1 if you have <$1>])])],
+  [m4_default([$2], [AC_MSG_ERROR([cannot find $1])])])
+CPPFLAGS=$boost_save_CPPFLAGS
+AC_LANG_POP([C++])dnl
+fi
 ])
-m4trace:acinclude.m4:337: -1- AC_DEFUN([AX_BOOST_IOSTREAMS], [
-        AC_ARG_WITH([boost-iostreams],
-        AS_HELP_STRING([--with-boost-iostreams@<:@=special-lib@:>@],
-                   [use the IOStreams library from boost - it is possible to specify a certain library for the linker
-                        e.g. --with-boost-iostreams=boost_iostreams-gcc-mt-d-1_33_1 ]),
-        [
-        if test "$withval" = "no"; then
-                        want_boost="no"
-        elif test "$withval" = "yes"; then
-            want_boost="yes"
-            ax_boost_user_iostreams_lib=""
-        else
-                    want_boost="yes"
-                ax_boost_user_iostreams_lib="$withval"
-                fi
-        ],
-        [want_boost="yes"]
-        )
-
-        if test "x$want_boost" = "xyes"; then
-        AC_REQUIRE([AC_PROG_CC])
-                CPPFLAGS_SAVED="$CPPFLAGS"
-                CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
-                export CPPFLAGS
-
-                LDFLAGS_SAVED="$LDFLAGS"
-                LDFLAGS="$LDFLAGS $BOOST_LDFLAGS"
-                export LDFLAGS
-
-        AC_CACHE_CHECK(whether the Boost::IOStreams library is available,
-                                           ax_cv_boost_iostreams,
-        [AC_LANG_PUSH([C++])
-                 AC_COMPILE_IFELSE(AC_LANG_PROGRAM([[@%:@include <boost/iostreams/filtering_stream.hpp>
-                                                                                         @%:@include <boost/range/iterator_range.hpp>
-                                                                                        ]],
-                                  [[std::string  input = "Hello World!";
-                                                                 namespace io = boost::iostreams;
-                                                                         io::filtering_istream  in(boost::make_iterator_range(input));
-                                                                         return 0;
-                                   ]]),
-                             ax_cv_boost_iostreams=yes, ax_cv_boost_iostreams=no)
-         AC_LANG_POP([C++])
-                ])
-                if test "x$ax_cv_boost_iostreams" = "xyes"; then
-                        AC_DEFINE(HAVE_BOOST_IOSTREAMS,,[define if the Boost::IOStreams library is available])
-            BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/@<:@^\/@:>@*//'`
-            if test "x$ax_boost_user_iostreams_lib" = "x"; then
-                for libextension in `ls $BOOSTLIBDIR/libboost_iostreams*.{so,a}* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^lib\(boost_iostreams.*\)\.so.*$;\1;' -e 's;^lib\(boost_iostreams.*\)\.a*$;\1;'` ; do
-                     ax_lib=${libextension}
-                                    AC_CHECK_LIB($ax_lib, exit,
-                                 [BOOST_IOSTREAMS_LIB="-l$ax_lib"; AC_SUBST(BOOST_IOSTREAMS_LIB) link_iostreams="yes"; break],
-                                 [link_iostreams="no"])
-                                done
-                if test "x$link_iostreams" != "xyes"; then
-                for libextension in `ls $BOOSTLIBDIR/boost_iostreams*.{dll,a}* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^\(boost_iostreams.*\)\.dll.*$;\1;' -e 's;^\(boost_iostreams.*\)\.a*$;\1;'` ; do
-                     ax_lib=${libextension}
-                                    AC_CHECK_LIB($ax_lib, exit,
-                                 [BOOST_IOSTREAMS_LIB="-l$ax_lib"; AC_SUBST(BOOST_IOSTREAMS_LIB) link_iostreams="yes"; break],
-                                 [link_iostreams="no"])
-                                done
-                fi
-
-            else
-               for ax_lib in $ax_boost_user_iostreams_lib boost_iostreams-$ax_boost_user_iostreams_lib; do
-                                      AC_CHECK_LIB($ax_lib, main,
-                                   [BOOST_IOSTREAMS_LIB="-l$ax_lib"; AC_SUBST(BOOST_IOSTREAMS_LIB) link_iostreams="yes"; break],
-                                   [link_iostreams="no"])
-                  done
-
-            fi
-                        if test "x$link_iostreams" != "xyes"; then
-                                AC_MSG_ERROR(Could not link against $ax_lib !)
-                        fi
-                fi
-
-                CPPFLAGS="$CPPFLAGS_SAVED"
-        LDFLAGS="$LDFLAGS_SAVED"
-        fi
+m4trace:acinclude.m4:294: -1- AC_DEFUN([BOOST_FIND_LIBS], [AC_REQUIRE([BOOST_REQUIRE])dnl
+AC_REQUIRE([_BOOST_FIND_COMPILER_TAG])dnl
+AC_REQUIRE([BOOST_STATIC])dnl
+AC_REQUIRE([_BOOST_GUESS_WHETHER_TO_USE_MT])dnl
+if test x"$boost_cv_inc_path" = xno; then
+  AC_MSG_NOTICE([Boost not available, not searching for the Boost $1 library])
+else
+dnl The else branch is huge and wasn't intended on purpose.
+AC_LANG_PUSH([C++])dnl
+AS_VAR_PUSHDEF([Boost_lib], [boost_cv_lib_$1])dnl
+AS_VAR_PUSHDEF([Boost_lib_LDFLAGS], [boost_cv_lib_$1_LDFLAGS])dnl
+AS_VAR_PUSHDEF([Boost_lib_LDPATH], [boost_cv_lib_$1_LDPATH])dnl
+AS_VAR_PUSHDEF([Boost_lib_LIBS], [boost_cv_lib_$1_LIBS])dnl
+BOOST_FIND_HEADER([$4])
+boost_save_CPPFLAGS=$CPPFLAGS
+CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+AC_CACHE_CHECK([for the Boost $1 library], [Boost_lib],
+               [_BOOST_FIND_LIBS($@)])
+case $Boost_lib in #(
+  (no) _AC_MSG_LOG_CONFTEST
+    AC_MSG_ERROR([cannot find the flags to link with Boost $1])
+    ;;
+esac
+AC_SUBST(AS_TR_CPP([BOOST_$1_LDFLAGS]), [$Boost_lib_LDFLAGS])dnl
+AC_SUBST(AS_TR_CPP([BOOST_$1_LDPATH]), [$Boost_lib_LDPATH])dnl
+AC_SUBST([BOOST_LDPATH], [$Boost_lib_LDPATH])dnl
+AC_SUBST(AS_TR_CPP([BOOST_$1_LIBS]), [$Boost_lib_LIBS])dnl
+CPPFLAGS=$boost_save_CPPFLAGS
+AS_VAR_POPDEF([Boost_lib])dnl
+AS_VAR_POPDEF([Boost_lib_LDFLAGS])dnl
+AS_VAR_POPDEF([Boost_lib_LDPATH])dnl
+AS_VAR_POPDEF([Boost_lib_LIBS])dnl
+AC_LANG_POP([C++])dnl
+fi
 ])
-m4trace:acinclude.m4:418: -1- AC_DEFUN([AX_PYTHON], [
-        AC_ARG_ENABLE(python, AS_HELP_STRING([--enable-python],[install python-scripts (default is yes)]) ,
-        [
-	 if test "$enableval" == "yes"; then
-	    AX_PYTHON_ENABLED="enabled"
-	 else
-	    AX_PYTHON_ENABLED="disabled"
-	 fi
-	],
-	[
-	  AX_PYTHON_ENABLED="enabled"	
-	])
-	if test "$AX_PYTHON_ENABLED" == "enabled";then
-	  AM_PATH_PYTHON(2.4, , [AC_MSG_NOTICE([your need python >=2.4, disabling python feature]) ; AX_PYTHON_ENABLED="disabled"])
-	fi
+m4trace:acinclude.m4:337: -1- AC_DEFUN([BOOST_FIND_LIB], [BOOST_FIND_LIBS([$1], $@)])
+m4trace:acinclude.m4:355: -1- AC_DEFUN([_BOOST_FIND_LIBS], [Boost_lib=no
+  case "$3" in #(
+    (mt | mt-) boost_mt=-mt; boost_rtopt=;; #(
+    (mt* | mt-*) boost_mt=-mt; boost_rtopt=`expr "X$3" : 'Xmt-*\(.*\)'`;; #(
+    (*) boost_mt=; boost_rtopt=$3;;
+  esac
+  if test $enable_static_boost = yes; then
+    boost_rtopt="s$boost_rtopt"
+  fi
+  # Find the proper debug variant depending on what we've been asked to find.
+  case $boost_rtopt in #(
+    (*d*) boost_rt_d=$boost_rtopt;; #(
+    (*[[sgpn]]*) # Insert the `d' at the right place (in between `sg' and `pn')
+      boost_rt_d=`echo "$boost_rtopt" | sed 's/\(s*g*\)\(p*n*\)/\1\2/'`;; #(
+    (*) boost_rt_d='-d';;
+  esac
+  # If the PREFERRED-RT-OPT are not empty, prepend a `-'.
+  test -n "$boost_rtopt" && boost_rtopt="-$boost_rtopt"
+  $boost_guess_use_mt && boost_mt=-mt
+  # Look for the abs path the static archive.
+  # $libext is computed by Libtool but let's make sure it's non empty.
+  test -z "$libext" &&
+    AC_MSG_ERROR([the libext variable is empty, did you invoke Libtool?])
+  boost_save_ac_objext=$ac_objext
+  # Generate the test file.
+  AC_LANG_CONFTEST([AC_LANG_PROGRAM([#include <$4>
+$6], [$5])])
+dnl Optimization hacks: compiling C++ is slow, especially with Boost.  What
+dnl we're trying to do here is guess the right combination of link flags
+dnl (LIBS / LDFLAGS) to use a given library.  This can take several
+dnl iterations before it succeeds and is thus *very* slow.  So what we do
+dnl instead is that we compile the code first (and thus get an object file,
+dnl typically conftest.o).  Then we try various combinations of link flags
+dnl until we succeed to link conftest.o in an executable.  The problem is
+dnl that the various TRY_LINK / COMPILE_IFELSE macros of Autoconf always
+dnl remove all the temporary files including conftest.o.  So the trick here
+dnl is to temporarily change the value of ac_objext so that conftest.o is
+dnl preserved accross tests.  This is obviously fragile and I will burn in
+dnl hell for not respecting Autoconf's documented interfaces, but in the
+dnl mean time, it optimizes the macro by a factor of 5 to 30.
+dnl Another small optimization: the first argument of AC_COMPILE_IFELSE left
+dnl empty because the test file is generated only once above (before we
+dnl start the for loops).
+  AC_COMPILE_IFELSE([],
+    [ac_objext=do_not_rm_me_plz],
+    [AC_MSG_ERROR([cannot compile a test that uses Boost $1])])
+  ac_objext=$boost_save_ac_objext
+  boost_failed_libs=
+# Don't bother to ident the following nested for loops, only the 2
+# innermost ones matter.
+for boost_lib_ in $2; do
+for boost_tag_ in -$boost_cv_lib_tag ''; do
+for boost_ver_ in -$boost_cv_lib_version ''; do
+for boost_mt_ in $boost_mt -mt ''; do
+for boost_rtopt_ in $boost_rtopt '' -d; do
+  for boost_lib in \
+    boost_$boost_lib_$boost_tag_$boost_mt_$boost_rtopt_$boost_ver_ \
+    boost_$boost_lib_$boost_tag_$boost_rtopt_$boost_ver_ \
+    boost_$boost_lib_$boost_tag_$boost_mt_$boost_ver_ \
+    boost_$boost_lib_$boost_tag_$boost_ver_
+  do
+    # Avoid testing twice the same lib
+    case $boost_failed_libs in #(
+      (*@$boost_lib@*) continue;;
+    esac
+    # If with_boost is empty, we'll search in /lib first, which is not quite
+    # right so instead we'll try to a location based on where the headers are.
+    boost_tmp_lib=$with_boost
+    test x"$with_boost" = x && boost_tmp_lib=${boost_cv_inc_path%/include}
+    for boost_ldpath in "$boost_tmp_lib/lib" '' \
+             /opt/local/lib* /usr/local/lib* /opt/lib* /usr/lib* \
+             "$with_boost" C:/Boost/lib /lib*
+    do
+      # Don't waste time with directories that don't exist.
+      if test x"$boost_ldpath" != x && test ! -e "$boost_ldpath"; then
+        continue
+      fi
+      boost_save_LDFLAGS=$LDFLAGS
+      # Are we looking for a static library?
+      case $boost_ldpath:$boost_rtopt_ in #(
+        (*?*:*s*) # Yes (Non empty boost_ldpath + s in rt opt)
+          Boost_lib_LIBS="$boost_ldpath/lib$boost_lib.$libext"
+          test -e "$Boost_lib_LIBS" || continue;; #(
+        (*) # No: use -lboost_foo to find the shared library.
+          Boost_lib_LIBS="-l$boost_lib";;
+      esac
+      boost_save_LIBS=$LIBS
+      LIBS="$Boost_lib_LIBS $LIBS"
+      test x"$boost_ldpath" != x && LDFLAGS="$LDFLAGS -L$boost_ldpath"
+dnl First argument of AC_LINK_IFELSE left empty because the test file is
+dnl generated only once above (before we start the for loops).
+      _BOOST_AC_LINK_IFELSE([],
+                            [Boost_lib=yes], [Boost_lib=no])
+      ac_objext=$boost_save_ac_objext
+      LDFLAGS=$boost_save_LDFLAGS
+      LIBS=$boost_save_LIBS
+      if test x"$Boost_lib" = xyes; then
+        # Check or used cached result of whether or not using -R or
+        # -rpath makes sense.  Some implementations of ld, such as for
+        # Mac OSX, require -rpath but -R is the flag known to work on
+        # other systems.  https://github.com/tsuna/boost.m4/issues/19
+        AC_CACHE_VAL([boost_cv_rpath_link_ldflag],
+          [case $boost_ldpath in
+           '') # Nothing to do.
+             boost_cv_rpath_link_ldflag=
+             boost_rpath_link_ldflag_found=yes;;
+           *)
+            for boost_cv_rpath_link_ldflag in -Wl,-R, -Wl,-rpath,; do
+              LDFLAGS="$boost_save_LDFLAGS -L$boost_ldpath $boost_cv_rpath_link_ldflag$boost_ldpath"
+              LIBS="$boost_save_LIBS $Boost_lib_LIBS"
+              _BOOST_AC_LINK_IFELSE([],
+                [boost_rpath_link_ldflag_found=yes
+                break],
+                [boost_rpath_link_ldflag_found=no])
+            done
+            ;;
+          esac
+          AS_IF([test "x$boost_rpath_link_ldflag_found" != "xyes"],
+            [AC_MSG_ERROR([Unable to determine whether to use -R or -rpath])])
+          LDFLAGS=$boost_save_LDFLAGS
+          LIBS=$boost_save_LIBS
+          ])
+        test x"$boost_ldpath" != x &&
+          Boost_lib_LDFLAGS="-L$boost_ldpath $boost_cv_rpath_link_ldflag$boost_ldpath"
+        Boost_lib_LDPATH="$boost_ldpath"
+        break 7
+      else
+        boost_failed_libs="$boost_failed_libs@$boost_lib@"
+      fi
+    done
+  done
+done
+done
+done
+done
+done # boost_lib_
+rm -f conftest.$ac_objext
+])
+m4trace:acinclude.m4:989: -1- AU_DEFUN([BOOST_THREADS], [m4_if($#, 0, [BOOST_THREAD], [BOOST_THREAD($@)])])
+m4trace:acinclude.m4:989: -1- AC_DEFUN([BOOST_THREADS], [AC_DIAGNOSE([obsolete], [The macro `BOOST_THREADS' is obsolete.
+You should run autoupdate.])dnl
+m4_if($#, 0, [BOOST_THREAD], [BOOST_THREAD($@)])])
+m4trace:acinclude.m4:1099: -1- AC_DEFUN([_BOOST_PTHREAD_FLAG], [AC_REQUIRE([AC_PROG_CXX])dnl
+AC_REQUIRE([AC_CANONICAL_HOST])dnl
+AC_LANG_PUSH([C++])dnl
+AC_CACHE_CHECK([for the flags needed to use pthreads], [boost_cv_pthread_flag],
+[ boost_cv_pthread_flag=
+  # The ordering *is* (sometimes) important.  Some notes on the
+  # individual items follow:
+  # (none): in case threads are in libc; should be tried before -Kthread and
+  #       other compiler flags to prevent continual compiler warnings
+  # -lpthreads: AIX (must check this before -lpthread)
+  # -Kthread: Sequent (threads in libc, but -Kthread needed for pthread.h)
+  # -kthread: FreeBSD kernel threads (preferred to -pthread since SMP-able)
+  # -llthread: LinuxThreads port on FreeBSD (also preferred to -pthread)
+  # -pthread: GNU Linux/GCC (kernel threads), BSD/GCC (userland threads)
+  # -pthreads: Solaris/GCC
+  # -mthreads: MinGW32/GCC, Lynx/GCC
+  # -mt: Sun Workshop C (may only link SunOS threads [-lthread], but it
+  #      doesn't hurt to check since this sometimes defines pthreads too;
+  #      also defines -D_REENTRANT)
+  #      ... -mt is also the pthreads flag for HP/aCC
+  # -lpthread: GNU Linux, etc.
+  # --thread-safe: KAI C++
+  case $host_os in #(
+    *solaris*)
+      # On Solaris (at least, for some versions), libc contains stubbed
+      # (non-functional) versions of the pthreads routines, so link-based
+      # tests will erroneously succeed.  (We need to link with -pthreads/-mt/
+      # -lpthread.)  (The stubs are missing pthread_cleanup_push, or rather
+      # a function called by this macro, so we could check for that, but
+      # who knows whether they'll stub that too in a future libc.)  So,
+      # we'll just look for -pthreads and -lpthread first:
+      boost_pthread_flags="-pthreads -lpthread -mt -pthread";; #(
+    *)
+      boost_pthread_flags="-lpthreads -Kthread -kthread -llthread -pthread \
+                           -pthreads -mthreads -lpthread --thread-safe -mt";;
+  esac
+  # Generate the test file.
+  AC_LANG_CONFTEST([AC_LANG_PROGRAM([#include <pthread.h>],
+    [pthread_t th; pthread_join(th, 0);
+    pthread_attr_init(0); pthread_cleanup_push(0, 0);
+    pthread_create(0,0,0,0); pthread_cleanup_pop(0);])])
+  for boost_pthread_flag in '' $boost_pthread_flags; do
+    boost_pthread_ok=false
+dnl Re-use the test file already generated.
+    boost_pthreads__save_LIBS=$LIBS
+    LIBS="$LIBS $boost_pthread_flag"
+    AC_LINK_IFELSE([],
+      [if grep ".*$boost_pthread_flag" conftest.err; then
+         echo "This flag seems to have triggered warnings" >&AS_MESSAGE_LOG_FD
+       else
+         boost_pthread_ok=:; boost_cv_pthread_flag=$boost_pthread_flag
+       fi])
+    LIBS=$boost_pthreads__save_LIBS
+    $boost_pthread_ok && break
+  done
+])
+AC_LANG_POP([C++])dnl
+])
+m4trace:acinclude.m4:1180: -1- AC_DEFUN([_BOOST_FIND_COMPILER_TAG], [AC_REQUIRE([AC_PROG_CXX])dnl
+AC_REQUIRE([AC_CANONICAL_HOST])dnl
+AC_CACHE_CHECK([for the toolset name used by Boost for $CXX],
+               [boost_cv_lib_tag],
+[boost_cv_lib_tag=unknown
+if test x$boost_cv_inc_path != xno; then
+  AC_LANG_PUSH([C++])dnl
+  # The following tests are mostly inspired by boost/config/auto_link.hpp
+  # The list is sorted to most recent/common to oldest compiler (in order
+  # to increase the likelihood of finding the right compiler with the
+  # least number of compilation attempt).
+  # Beware that some tests are sensible to the order (for instance, we must
+  # look for MinGW before looking for GCC3).
+  # I used one compilation test per compiler with a #error to recognize
+  # each compiler so that it works even when cross-compiling (let me know
+  # if you know a better approach).
+  # Known missing tags (known from Boost's tools/build/v2/tools/common.jam):
+  #   como, edg, kcc, bck, mp, sw, tru, xlc
+  # I'm not sure about my test for `il' (be careful: Intel's ICC pre-defines
+  # the same defines as GCC's).
+  for i in \
+    _BOOST_mingw_test(4, 10) \
+    _BOOST_gcc_test(4, 10) \
+    _BOOST_mingw_test(4, 9) \
+    _BOOST_gcc_test(4, 9) \
+    _BOOST_mingw_test(4, 8) \
+    _BOOST_gcc_test(4, 8) \
+    _BOOST_mingw_test(4, 7) \
+    _BOOST_gcc_test(4, 7) \
+    _BOOST_mingw_test(4, 6) \
+    _BOOST_gcc_test(4, 6) \
+    _BOOST_mingw_test(4, 5) \
+    _BOOST_gcc_test(4, 5) \
+    _BOOST_mingw_test(4, 4) \
+    _BOOST_gcc_test(4, 4) \
+    _BOOST_mingw_test(4, 3) \
+    _BOOST_gcc_test(4, 3) \
+    _BOOST_mingw_test(4, 2) \
+    _BOOST_gcc_test(4, 2) \
+    _BOOST_mingw_test(4, 1) \
+    _BOOST_gcc_test(4, 1) \
+    _BOOST_mingw_test(4, 0) \
+    _BOOST_gcc_test(4, 0) \
+    "defined __GNUC__ && __GNUC__ == 3 && !defined __ICC \
+     && (defined WIN32 || defined WINNT || defined _WIN32 || defined __WIN32 \
+         || defined __WIN32__ || defined __WINNT || defined __WINNT__) @ mgw" \
+    _BOOST_gcc_test(3, 4) \
+    _BOOST_gcc_test(3, 3) \
+    "defined _MSC_VER && _MSC_VER >= 1500 @ vc90" \
+    "defined _MSC_VER && _MSC_VER == 1400 @ vc80" \
+    _BOOST_gcc_test(3, 2) \
+    "defined _MSC_VER && _MSC_VER == 1310 @ vc71" \
+    _BOOST_gcc_test(3, 1) \
+    _BOOST_gcc_test(3, 0) \
+    "defined __BORLANDC__ @ bcb" \
+    "defined __ICC && (defined __unix || defined __unix__) @ il" \
+    "defined __ICL @ iw" \
+    "defined _MSC_VER && _MSC_VER == 1300 @ vc7" \
+    _BOOST_gcc_test(2, 95) \
+    "defined __MWERKS__ && __MWERKS__ <= 0x32FF @ cw9" \
+    "defined _MSC_VER && _MSC_VER < 1300 && !defined UNDER_CE @ vc6" \
+    "defined _MSC_VER && _MSC_VER < 1300 && defined UNDER_CE @ evc4" \
+    "defined __MWERKS__ && __MWERKS__ <= 0x31FF @ cw8"
+  do
+    boost_tag_test=`expr "X$i" : 'X\([[^@]]*\) @ '`
+    boost_tag=`expr "X$i" : 'X[[^@]]* @ \(.*\)'`
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#if $boost_tag_test
+/* OK */
+#else
+# error $boost_tag_test
+#endif
+]])], [boost_cv_lib_tag=$boost_tag; break], [])
+  done
+AC_LANG_POP([C++])dnl
+  case $boost_cv_lib_tag in #(
+    # Some newer (>= 1.35?) versions of Boost seem to only use "gcc" as opposed
+    # to "gcc41" for instance.
+    *-gcc | *'-gcc ') :;; #(  Don't re-add -gcc: it's already in there.
+    gcc*)
+      boost_tag_x=
+      case $host_os in #(
+        darwin*)
+          if test $boost_major_version -ge 136; then
+            # The `x' added in r46793 of Boost.
+            boost_tag_x=x
+          fi;;
+      esac
+      # We can specify multiple tags in this variable because it's used by
+      # BOOST_FIND_LIB that does a `for tag in -$boost_cv_lib_tag' ...
+      boost_cv_lib_tag="$boost_tag_x$boost_cv_lib_tag -${boost_tag_x}gcc"
+      ;; #(
+    unknown)
+      AC_MSG_WARN([[could not figure out which toolset name to use for $CXX]])
+      boost_cv_lib_tag=
+      ;;
+  esac
+fi])dnl end of AC_CACHE_CHECK
+])
+m4trace:acinclude.m4:1286: -1- AC_DEFUN([_BOOST_GUESS_WHETHER_TO_USE_MT], [# Check whether we do better use `mt' even though we weren't ask to.
+AC_LANG_PUSH([C++])dnl
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#if defined _REENTRANT || defined _MT || defined __MT__
+/* use -mt */
+#else
+# error MT not needed
+#endif
+]])], [boost_guess_use_mt=:], [boost_guess_use_mt=false])
+AC_LANG_POP([C++])dnl
 ])
 m4trace:configure.in:13: -1- m4_pattern_forbid([^_?A[CHUM]_])
 m4trace:configure.in:13: -1- m4_pattern_forbid([_AC_])
@@ -1222,8 +1314,8 @@ m4trace:configure.in:14: -1- m4_pattern_allow([^JUSTNIFFER_VERSION$])
 m4trace:configure.in:16: -1- AM_INIT_AUTOMAKE
 m4trace:configure.in:16: -1- m4_pattern_allow([^AM_[A-Z]+FLAGS$])
 m4trace:configure.in:16: -1- AM_SET_CURRENT_AUTOMAKE_VERSION
-m4trace:configure.in:16: -1- AM_AUTOMAKE_VERSION([1.11.1])
-m4trace:configure.in:16: -1- _AM_AUTOCONF_VERSION([2.67])
+m4trace:configure.in:16: -1- AM_AUTOMAKE_VERSION([1.14.1])
+m4trace:configure.in:16: -1- _AM_AUTOCONF_VERSION([2.69])
 m4trace:configure.in:16: -1- m4_pattern_allow([^INSTALL_PROGRAM$])
 m4trace:configure.in:16: -1- m4_pattern_allow([^INSTALL_SCRIPT$])
 m4trace:configure.in:16: -1- m4_pattern_allow([^INSTALL_DATA$])
@@ -1233,8 +1325,8 @@ m4trace:configure.in:16: -1- m4_pattern_allow([^CYGPATH_W$])
 m4trace:configure.in:16: -1- _AM_SET_OPTIONS([])
 m4trace:configure.in:16: -1- m4_pattern_allow([^PACKAGE$])
 m4trace:configure.in:16: -1- m4_pattern_allow([^VERSION$])
-m4trace:configure.in:16: -1- _AM_IF_OPTION([no-define], [], [AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of package])
- AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version number of package])])
+m4trace:configure.in:16: -1- _AM_IF_OPTION([no-define], [], [AC_DEFINE_UNQUOTED([PACKAGE], ["$PACKAGE"], [Name of package])
+ AC_DEFINE_UNQUOTED([VERSION], ["$VERSION"], [Version number of package])])
 m4trace:configure.in:16: -2- _AM_MANGLE_OPTION([no-define])
 m4trace:configure.in:16: -1- m4_pattern_allow([^PACKAGE$])
 m4trace:configure.in:16: -1- m4_pattern_allow([^VERSION$])
@@ -1256,7 +1348,6 @@ m4trace:configure.in:16: -1- m4_pattern_allow([^install_sh$])
 m4trace:configure.in:16: -1- AM_PROG_INSTALL_STRIP
 m4trace:configure.in:16: -1- m4_pattern_allow([^STRIP$])
 m4trace:configure.in:16: -1- m4_pattern_allow([^INSTALL_STRIP_PROGRAM$])
-m4trace:configure.in:16: -1- AM_PROG_MKDIR_P
 m4trace:configure.in:16: -1- m4_pattern_allow([^MKDIR_P$])
 m4trace:configure.in:16: -1- m4_pattern_allow([^mkdir_p$])
 m4trace:configure.in:16: -1- m4_pattern_allow([^AWK$])
@@ -1269,30 +1360,41 @@ m4trace:configure.in:16: -2- _AM_MANGLE_OPTION([tar-ustar])
 m4trace:configure.in:16: -1- _AM_IF_OPTION([tar-pax], [_AM_PROG_TAR([pax])], [_AM_PROG_TAR([v7])])
 m4trace:configure.in:16: -2- _AM_MANGLE_OPTION([tar-pax])
 m4trace:configure.in:16: -1- _AM_PROG_TAR([v7])
-m4trace:configure.in:16: -1- AM_MISSING_PROG([AMTAR], [tar])
 m4trace:configure.in:16: -1- m4_pattern_allow([^AMTAR$])
 m4trace:configure.in:16: -1- m4_pattern_allow([^am__tar$])
 m4trace:configure.in:16: -1- m4_pattern_allow([^am__untar$])
 m4trace:configure.in:16: -1- _AM_IF_OPTION([no-dependencies], [], [AC_PROVIDE_IFELSE([AC_PROG_CC],
-		  [_AM_DEPENDENCIES(CC)],
-		  [define([AC_PROG_CC],
-			  defn([AC_PROG_CC])[_AM_DEPENDENCIES(CC)])])dnl
+		  [_AM_DEPENDENCIES([CC])],
+		  [m4_define([AC_PROG_CC],
+			     m4_defn([AC_PROG_CC])[_AM_DEPENDENCIES([CC])])])dnl
 AC_PROVIDE_IFELSE([AC_PROG_CXX],
-		  [_AM_DEPENDENCIES(CXX)],
-		  [define([AC_PROG_CXX],
-			  defn([AC_PROG_CXX])[_AM_DEPENDENCIES(CXX)])])dnl
+		  [_AM_DEPENDENCIES([CXX])],
+		  [m4_define([AC_PROG_CXX],
+			     m4_defn([AC_PROG_CXX])[_AM_DEPENDENCIES([CXX])])])dnl
 AC_PROVIDE_IFELSE([AC_PROG_OBJC],
-		  [_AM_DEPENDENCIES(OBJC)],
-		  [define([AC_PROG_OBJC],
-			  defn([AC_PROG_OBJC])[_AM_DEPENDENCIES(OBJC)])])dnl
+		  [_AM_DEPENDENCIES([OBJC])],
+		  [m4_define([AC_PROG_OBJC],
+			     m4_defn([AC_PROG_OBJC])[_AM_DEPENDENCIES([OBJC])])])dnl
+AC_PROVIDE_IFELSE([AC_PROG_OBJCXX],
+		  [_AM_DEPENDENCIES([OBJCXX])],
+		  [m4_define([AC_PROG_OBJCXX],
+			     m4_defn([AC_PROG_OBJCXX])[_AM_DEPENDENCIES([OBJCXX])])])dnl
 ])
 m4trace:configure.in:16: -2- _AM_MANGLE_OPTION([no-dependencies])
-m4trace:configure.in:16: -1- _AM_IF_OPTION([silent-rules], [AC_REQUIRE([AM_SILENT_RULES])])
-m4trace:configure.in:16: -2- _AM_MANGLE_OPTION([silent-rules])
+m4trace:configure.in:16: -1- AM_SILENT_RULES
+m4trace:configure.in:16: -1- m4_pattern_allow([^AM_V$])
+m4trace:configure.in:16: -1- AM_SUBST_NOTMAKE([AM_V])
+m4trace:configure.in:16: -1- _AM_SUBST_NOTMAKE([AM_V])
+m4trace:configure.in:16: -1- m4_pattern_allow([^AM_DEFAULT_V$])
+m4trace:configure.in:16: -1- AM_SUBST_NOTMAKE([AM_DEFAULT_V])
+m4trace:configure.in:16: -1- _AM_SUBST_NOTMAKE([AM_DEFAULT_V])
+m4trace:configure.in:16: -1- m4_pattern_allow([^AM_DEFAULT_VERBOSITY$])
+m4trace:configure.in:16: -1- m4_pattern_allow([^AM_BACKSLASH$])
+m4trace:configure.in:16: -1- _AM_SUBST_NOTMAKE([AM_BACKSLASH])
 m4trace:configure.in:17: -1- m4_pattern_allow([^HAVE_LIB_PCAP$])
 m4trace:configure.in:18: -1- AM_CONFIG_HEADER([include/config.h])
-m4trace:configure.in:18: -1- _m4_warn([obsolete], [The macro `AM_CONFIG_HEADER' is obsolete.
-You should run autoupdate.], [/usr/share/aclocal-1.11/header.m4:12: AM_CONFIG_HEADER is expanded from...
+m4trace:configure.in:18: -1- _m4_warn([obsolete], ['AM_CONFIG_HEADER': this macro is obsolete.
+You should use the 'AC_CONFIG_HEADERS' macro instead.], [/usr/share/aclocal-1.14/obsolete.m4:11: AM_CONFIG_HEADER is expanded from...
 configure.in:18: the top level])
 m4trace:configure.in:21: -1- AM_INIT_AUTOMAKE([-Wall -Werror])
 m4trace:configure.in:21: -1- m4_pattern_allow([^AM_[A-Z]+FLAGS$])
@@ -1306,8 +1408,8 @@ m4trace:configure.in:21: -1- _AM_SET_OPTION([-Werror])
 m4trace:configure.in:21: -2- _AM_MANGLE_OPTION([-Werror])
 m4trace:configure.in:21: -1- m4_pattern_allow([^PACKAGE$])
 m4trace:configure.in:21: -1- m4_pattern_allow([^VERSION$])
-m4trace:configure.in:21: -1- _AM_IF_OPTION([no-define], [], [AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of package])
- AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version number of package])])
+m4trace:configure.in:21: -1- _AM_IF_OPTION([no-define], [], [AC_DEFINE_UNQUOTED([PACKAGE], ["$PACKAGE"], [Name of package])
+ AC_DEFINE_UNQUOTED([VERSION], ["$VERSION"], [Version number of package])])
 m4trace:configure.in:21: -2- _AM_MANGLE_OPTION([no-define])
 m4trace:configure.in:21: -1- m4_pattern_allow([^PACKAGE$])
 m4trace:configure.in:21: -1- m4_pattern_allow([^VERSION$])
@@ -1321,32 +1423,34 @@ m4trace:configure.in:21: -1- AM_MISSING_PROG([AUTOHEADER], [autoheader])
 m4trace:configure.in:21: -1- m4_pattern_allow([^AUTOHEADER$])
 m4trace:configure.in:21: -1- AM_MISSING_PROG([MAKEINFO], [makeinfo])
 m4trace:configure.in:21: -1- m4_pattern_allow([^MAKEINFO$])
+m4trace:configure.in:21: -1- m4_pattern_allow([^mkdir_p$])
 m4trace:configure.in:21: -1- _AM_IF_OPTION([tar-ustar], [_AM_PROG_TAR([ustar])], [_AM_IF_OPTION([tar-pax], [_AM_PROG_TAR([pax])],
 			     [_AM_PROG_TAR([v7])])])
 m4trace:configure.in:21: -2- _AM_MANGLE_OPTION([tar-ustar])
 m4trace:configure.in:21: -1- _AM_IF_OPTION([tar-pax], [_AM_PROG_TAR([pax])], [_AM_PROG_TAR([v7])])
 m4trace:configure.in:21: -2- _AM_MANGLE_OPTION([tar-pax])
 m4trace:configure.in:21: -1- _AM_PROG_TAR([v7])
-m4trace:configure.in:21: -1- AM_MISSING_PROG([AMTAR], [tar])
 m4trace:configure.in:21: -1- m4_pattern_allow([^AMTAR$])
 m4trace:configure.in:21: -1- m4_pattern_allow([^am__tar$])
 m4trace:configure.in:21: -1- m4_pattern_allow([^am__untar$])
 m4trace:configure.in:21: -1- _AM_IF_OPTION([no-dependencies], [], [AC_PROVIDE_IFELSE([AC_PROG_CC],
-		  [_AM_DEPENDENCIES(CC)],
-		  [define([AC_PROG_CC],
-			  defn([AC_PROG_CC])[_AM_DEPENDENCIES(CC)])])dnl
+		  [_AM_DEPENDENCIES([CC])],
+		  [m4_define([AC_PROG_CC],
+			     m4_defn([AC_PROG_CC])[_AM_DEPENDENCIES([CC])])])dnl
 AC_PROVIDE_IFELSE([AC_PROG_CXX],
-		  [_AM_DEPENDENCIES(CXX)],
-		  [define([AC_PROG_CXX],
-			  defn([AC_PROG_CXX])[_AM_DEPENDENCIES(CXX)])])dnl
+		  [_AM_DEPENDENCIES([CXX])],
+		  [m4_define([AC_PROG_CXX],
+			     m4_defn([AC_PROG_CXX])[_AM_DEPENDENCIES([CXX])])])dnl
 AC_PROVIDE_IFELSE([AC_PROG_OBJC],
-		  [_AM_DEPENDENCIES(OBJC)],
-		  [define([AC_PROG_OBJC],
-			  defn([AC_PROG_OBJC])[_AM_DEPENDENCIES(OBJC)])])dnl
+		  [_AM_DEPENDENCIES([OBJC])],
+		  [m4_define([AC_PROG_OBJC],
+			     m4_defn([AC_PROG_OBJC])[_AM_DEPENDENCIES([OBJC])])])dnl
+AC_PROVIDE_IFELSE([AC_PROG_OBJCXX],
+		  [_AM_DEPENDENCIES([OBJCXX])],
+		  [m4_define([AC_PROG_OBJCXX],
+			     m4_defn([AC_PROG_OBJCXX])[_AM_DEPENDENCIES([OBJCXX])])])dnl
 ])
 m4trace:configure.in:21: -2- _AM_MANGLE_OPTION([no-dependencies])
-m4trace:configure.in:21: -1- _AM_IF_OPTION([silent-rules], [AC_REQUIRE([AM_SILENT_RULES])])
-m4trace:configure.in:21: -2- _AM_MANGLE_OPTION([silent-rules])
 m4trace:configure.in:31: -1- m4_pattern_allow([^NIDS2_INCLUDE$])
 m4trace:configure.in:32: -1- m4_pattern_allow([^NIDS2_LIB$])
 m4trace:configure.in:33: -1- m4_pattern_allow([^PCAP_LIB$])
@@ -1375,6 +1479,8 @@ m4trace:configure.in:42: -1- _AM_SUBST_NOTMAKE([AMDEP_TRUE])
 m4trace:configure.in:42: -1- _AM_SUBST_NOTMAKE([AMDEP_FALSE])
 m4trace:configure.in:42: -1- m4_pattern_allow([^AMDEPBACKSLASH$])
 m4trace:configure.in:42: -1- _AM_SUBST_NOTMAKE([AMDEPBACKSLASH])
+m4trace:configure.in:42: -1- m4_pattern_allow([^am__nodep$])
+m4trace:configure.in:42: -1- _AM_SUBST_NOTMAKE([am__nodep])
 m4trace:configure.in:42: -1- m4_pattern_allow([^CXXDEPMODE$])
 m4trace:configure.in:42: -1- AM_CONDITIONAL([am__fastdepCXX], [
   test "x$enable_dependency_tracking" != xno \
@@ -1402,6 +1508,8 @@ m4trace:configure.in:43: -1- m4_pattern_allow([^CC$])
 m4trace:configure.in:43: -1- m4_pattern_allow([^CC$])
 m4trace:configure.in:43: -1- m4_pattern_allow([^CC$])
 m4trace:configure.in:43: -1- m4_pattern_allow([^ac_ct_CC$])
+m4trace:configure.in:43: -1- _AM_PROG_CC_C_O
+m4trace:configure.in:43: -1- AM_RUN_LOG([$CC -c conftest.$ac_ext -o conftest2.$ac_objext])
 m4trace:configure.in:43: -1- _AM_DEPENDENCIES([CC])
 m4trace:configure.in:43: -1- m4_pattern_allow([^CCDEPMODE$])
 m4trace:configure.in:43: -1- AM_CONDITIONAL([am__fastdepCC], [
@@ -1423,77 +1531,91 @@ m4trace:configure.in:43: -1- _AM_SUBST_NOTMAKE([am__fastdepCC_FALSE])
 m4trace:configure.in:43: -1- m4_pattern_allow([^CPP$])
 m4trace:configure.in:43: -1- m4_pattern_allow([^CPPFLAGS$])
 m4trace:configure.in:43: -1- m4_pattern_allow([^CPP$])
-m4trace:configure.in:44: -1- m4_pattern_allow([^RANLIB$])
-m4trace:configure.in:46: -1- m4_pattern_allow([^GREP$])
-m4trace:configure.in:46: -1- m4_pattern_allow([^EGREP$])
-m4trace:configure.in:46: -1- m4_pattern_allow([^STDC_HEADERS$])
-m4trace:configure.in:46: -1- m4_pattern_allow([^HAVE_SYS_TIME_H$])
-m4trace:configure.in:47: -1- m4_pattern_allow([^const$])
-m4trace:configure.in:49: -1- m4_pattern_allow([^HAVE_STRFTIME$])
-m4trace:configure.in:49: -1- m4_pattern_allow([^HAVE_STRFTIME$])
-m4trace:configure.in:50: -1- m4_pattern_allow([^HAVE__BOOL$])
-m4trace:configure.in:50: -1- m4_pattern_allow([^HAVE_STDBOOL_H$])
-m4trace:configure.in:51: -1- m4_pattern_allow([^TIME_WITH_SYS_TIME$])
-m4trace:configure.in:52: -1- m4_pattern_allow([^TM_IN_SYS_TIME$])
-m4trace:configure.in:56: -2- m4_pattern_allow([^HAVE_LIB_PCAP$])
-m4trace:configure.in:58: -1- AX_BOOST_BASE
-m4trace:configure.in:58: -1- m4_pattern_allow([^BOOST_CPPFLAGS$])
-m4trace:configure.in:58: -1- m4_pattern_allow([^BOOST_LDFLAGS$])
-m4trace:configure.in:58: -1- m4_pattern_allow([^HAVE_BOOST$])
-m4trace:configure.in:64: -1- AX_BOOST_REGEX
-m4trace:configure.in:64: -1- m4_pattern_allow([^HAVE_BOOST_REGEX$])
-m4trace:configure.in:64: -1- m4_pattern_allow([^BOOST_REGEX_LIB$])
-m4trace:configure.in:64: -1- m4_pattern_allow([^BOOST_REGEX_LIB$])
-m4trace:configure.in:64: -1- m4_pattern_allow([^BOOST_REGEX_LIB$])
-m4trace:configure.in:70: -1- AX_BOOST_PROGRAM_OPTIONS
-m4trace:configure.in:70: -1- m4_pattern_allow([^HAVE_BOOST_PROGRAM_OPTIONS$])
-m4trace:configure.in:70: -1- m4_pattern_allow([^BOOST_PROGRAM_OPTIONS_LIB$])
-m4trace:configure.in:70: -1- m4_pattern_allow([^BOOST_PROGRAM_OPTIONS_LIB$])
-m4trace:configure.in:70: -1- m4_pattern_allow([^BOOST_PROGRAM_OPTIONS_LIB$])
-m4trace:configure.in:76: -1- AX_BOOST_IOSTREAMS
-m4trace:configure.in:76: -1- m4_pattern_allow([^HAVE_BOOST_IOSTREAMS$])
-m4trace:configure.in:76: -1- m4_pattern_allow([^BOOST_IOSTREAMS_LIB$])
-m4trace:configure.in:76: -1- m4_pattern_allow([^BOOST_IOSTREAMS_LIB$])
-m4trace:configure.in:76: -1- m4_pattern_allow([^BOOST_IOSTREAMS_LIB$])
-m4trace:configure.in:82: -1- _m4_warn([cross], [cannot check for file existence when cross compiling], [../../lib/autoconf/general.m4:2765: AC_CHECK_FILE is expanded from...
-configure.in:82: the top level])
-m4trace:configure.in:82: -1- m4_pattern_allow([^PATCH$])
-m4trace:configure.in:82: -1- m4_pattern_allow([^TAR$])
-m4trace:configure.in:82: -1- _m4_warn([cross], [cannot check for file existence when cross compiling], [../../lib/autoconf/general.m4:2765: AC_CHECK_FILE is expanded from...
-../../lib/m4sugar/m4sh.m4:598: AS_IF is expanded from...
-../../lib/autoconf/general.m4:2765: AC_CHECK_FILE is expanded from...
-configure.in:82: the top level])
-m4trace:configure.in:98: -1- m4_pattern_allow([^subdirs$])
-m4trace:configure.in:100: -1- AX_PYTHON
-m4trace:configure.in:100: -1- AM_PATH_PYTHON([2.4], [], [AC_MSG_NOTICE([your need python >=2.4, disabling python feature]) ; AX_PYTHON_ENABLED="disabled"])
-m4trace:configure.in:100: -1- AM_PYTHON_CHECK_VERSION([$PYTHON], [2.4], [AC_MSG_RESULT(yes)], [AC_MSG_ERROR(too old)])
-m4trace:configure.in:100: -1- AM_RUN_LOG([$PYTHON -c "$prog"])
-m4trace:configure.in:100: -1- AM_PYTHON_CHECK_VERSION([$am_cv_pathless_PYTHON], [2.4], [break])
-m4trace:configure.in:100: -1- AM_RUN_LOG([$am_cv_pathless_PYTHON -c "$prog"])
-m4trace:configure.in:100: -1- m4_pattern_allow([^PYTHON$])
-m4trace:configure.in:100: -1- m4_pattern_allow([^PYTHON_VERSION$])
-m4trace:configure.in:100: -1- m4_pattern_allow([^PYTHON_PREFIX$])
-m4trace:configure.in:100: -1- m4_pattern_allow([^PYTHON_EXEC_PREFIX$])
-m4trace:configure.in:100: -1- m4_pattern_allow([^PYTHON_PLATFORM$])
-m4trace:configure.in:100: -1- m4_pattern_allow([^pythondir$])
-m4trace:configure.in:100: -1- m4_pattern_allow([^pkgpythondir$])
-m4trace:configure.in:100: -1- m4_pattern_allow([^pyexecdir$])
-m4trace:configure.in:100: -1- m4_pattern_allow([^pkgpyexecdir$])
-m4trace:configure.in:102: -1- m4_pattern_allow([^PYTHONCODEDIR$])
-m4trace:configure.in:107: -1- m4_pattern_allow([^PYTHONSUBDIR$])
-m4trace:configure.in:110: -1- _m4_warn([obsolete], [AC_OUTPUT should be used without arguments.
+m4trace:configure.in:45: -1- m4_pattern_allow([^GREP$])
+m4trace:configure.in:45: -1- m4_pattern_allow([^EGREP$])
+m4trace:configure.in:45: -1- m4_pattern_allow([^STDC_HEADERS$])
+m4trace:configure.in:45: -1- m4_pattern_allow([^HAVE_SYS_TIME_H$])
+m4trace:configure.in:46: -1- m4_pattern_allow([^const$])
+m4trace:configure.in:48: -1- m4_pattern_allow([^HAVE_STRFTIME$])
+m4trace:configure.in:48: -1- m4_pattern_allow([^HAVE_STRFTIME$])
+m4trace:configure.in:49: -1- m4_pattern_allow([^HAVE__BOOL$])
+m4trace:configure.in:49: -1- m4_pattern_allow([^HAVE_STDBOOL_H$])
+m4trace:configure.in:50: -1- m4_pattern_allow([^TIME_WITH_SYS_TIME$])
+m4trace:configure.in:51: -1- m4_pattern_allow([^TM_IN_SYS_TIME$])
+m4trace:configure.in:55: -2- m4_pattern_allow([^HAVE_LIB_PCAP$])
+m4trace:configure.in:57: -1- BOOST_REQUIRE([1.54])
+m4trace:configure.in:57: -1- m4_pattern_allow([^BOOST_ROOT$])
+m4trace:configure.in:57: -1- m4_pattern_allow([^DISTCHECK_CONFIGURE_FLAGS$])
+m4trace:configure.in:57: -1- m4_pattern_allow([^BOOST_VERSION$])
+m4trace:configure.in:57: -1- m4_pattern_allow([^BOOST_CPPFLAGS$])
+m4trace:configure.in:57: -1- m4_pattern_allow([^HAVE_BOOST$])
+m4trace:configure.in:57: -1- m4_pattern_allow([^BOOST_LIB_VERSION$])
+m4trace:configure.in:57: -1- m4_pattern_allow([^CXXCPP$])
+m4trace:configure.in:57: -1- m4_pattern_allow([^CPPFLAGS$])
+m4trace:configure.in:57: -1- m4_pattern_allow([^CXXCPP$])
+m4trace:configure.in:57: -1- m4_pattern_allow([^SED$])
+m4trace:configure.in:59: -1- BOOST_FIND_LIB([regex], [], [boost/regex.hpp], [boost::regex exp("*"); boost::regex_match("foo", exp);])
+m4trace:configure.in:59: -1- BOOST_FIND_LIBS([regex], [regex], [], [boost/regex.hpp], [boost::regex exp("*"); boost::regex_match("foo", exp);])
+m4trace:configure.in:59: -1- _BOOST_FIND_COMPILER_TAG
+m4trace:configure.in:59: -1- m4_pattern_allow([^build$])
+m4trace:configure.in:59: -1- m4_pattern_allow([^build_cpu$])
+m4trace:configure.in:59: -1- m4_pattern_allow([^build_vendor$])
+m4trace:configure.in:59: -1- m4_pattern_allow([^build_os$])
+m4trace:configure.in:59: -1- m4_pattern_allow([^host$])
+m4trace:configure.in:59: -1- m4_pattern_allow([^host_cpu$])
+m4trace:configure.in:59: -1- m4_pattern_allow([^host_vendor$])
+m4trace:configure.in:59: -1- m4_pattern_allow([^host_os$])
+m4trace:configure.in:59: -1- BOOST_STATIC
+m4trace:configure.in:59: -1- _BOOST_GUESS_WHETHER_TO_USE_MT
+m4trace:configure.in:59: -1- BOOST_FIND_HEADER([boost/regex.hpp])
+m4trace:configure.in:59: -1- m4_pattern_allow([^HAVE_BOOST_REGEX_HPP$])
+m4trace:configure.in:59: -1- _BOOST_FIND_LIBS([regex], [regex], [], [boost/regex.hpp], [boost::regex exp("*"); boost::regex_match("foo", exp);])
+m4trace:configure.in:59: -1- m4_pattern_allow([^BOOST_REGEX_LDFLAGS$])
+m4trace:configure.in:59: -1- m4_pattern_allow([^BOOST_REGEX_LDPATH$])
+m4trace:configure.in:59: -1- m4_pattern_allow([^BOOST_LDPATH$])
+m4trace:configure.in:59: -1- m4_pattern_allow([^BOOST_REGEX_LIBS$])
+m4trace:configure.in:60: -1- BOOST_FIND_LIB([program_options], [], [boost/program_options.hpp], [boost::program_options::options_description d("test");])
+m4trace:configure.in:60: -1- BOOST_FIND_LIBS([program_options], [program_options], [], [boost/program_options.hpp], [boost::program_options::options_description d("test");])
+m4trace:configure.in:60: -1- BOOST_FIND_HEADER([boost/program_options.hpp])
+m4trace:configure.in:60: -1- m4_pattern_allow([^HAVE_BOOST_PROGRAM_OPTIONS_HPP$])
+m4trace:configure.in:60: -1- _BOOST_FIND_LIBS([program_options], [program_options], [], [boost/program_options.hpp], [boost::program_options::options_description d("test");])
+m4trace:configure.in:60: -1- m4_pattern_allow([^BOOST_PROGRAM_OPTIONS_LDFLAGS$])
+m4trace:configure.in:60: -1- m4_pattern_allow([^BOOST_PROGRAM_OPTIONS_LDPATH$])
+m4trace:configure.in:60: -1- m4_pattern_allow([^BOOST_LDPATH$])
+m4trace:configure.in:60: -1- m4_pattern_allow([^BOOST_PROGRAM_OPTIONS_LIBS$])
+m4trace:configure.in:61: -1- BOOST_FIND_LIB([iostreams], [], [boost/iostreams/device/file_descriptor.hpp], [boost::iostreams::file_descriptor fd; fd.close();])
+m4trace:configure.in:61: -1- BOOST_FIND_LIBS([iostreams], [iostreams], [], [boost/iostreams/device/file_descriptor.hpp], [boost::iostreams::file_descriptor fd; fd.close();])
+m4trace:configure.in:61: -1- BOOST_FIND_HEADER([boost/iostreams/device/file_descriptor.hpp])
+m4trace:configure.in:61: -1- m4_pattern_allow([^HAVE_BOOST_IOSTREAMS_DEVICE_FILE_DESCRIPTOR_HPP$])
+m4trace:configure.in:61: -1- _BOOST_FIND_LIBS([iostreams], [iostreams], [], [boost/iostreams/device/file_descriptor.hpp], [boost::iostreams::file_descriptor fd; fd.close();])
+m4trace:configure.in:61: -1- m4_pattern_allow([^BOOST_IOSTREAMS_LDFLAGS$])
+m4trace:configure.in:61: -1- m4_pattern_allow([^BOOST_IOSTREAMS_LDPATH$])
+m4trace:configure.in:61: -1- m4_pattern_allow([^BOOST_LDPATH$])
+m4trace:configure.in:61: -1- m4_pattern_allow([^BOOST_IOSTREAMS_LIBS$])
+m4trace:configure.in:63: -1- _m4_warn([cross], [cannot check for file existence when cross compiling], [../../lib/autoconf/general.m4:2777: AC_CHECK_FILE is expanded from...
+configure.in:63: the top level])
+m4trace:configure.in:63: -1- m4_pattern_allow([^PATCH$])
+m4trace:configure.in:63: -1- m4_pattern_allow([^TAR$])
+m4trace:configure.in:63: -1- _m4_warn([cross], [cannot check for file existence when cross compiling], [../../lib/autoconf/general.m4:2777: AC_CHECK_FILE is expanded from...
+../../lib/m4sugar/m4sh.m4:639: AS_IF is expanded from...
+../../lib/autoconf/general.m4:2777: AC_CHECK_FILE is expanded from...
+configure.in:63: the top level])
+m4trace:configure.in:79: -1- m4_pattern_allow([^subdirs$])
+m4trace:configure.in:83: -1- m4_pattern_allow([^PYTHONCODEDIR$])
+m4trace:configure.in:88: -1- m4_pattern_allow([^PYTHONSUBDIR$])
+m4trace:configure.in:91: -1- _m4_warn([obsolete], [AC_OUTPUT should be used without arguments.
 You should run autoupdate.], [])
-m4trace:configure.in:110: -1- m4_pattern_allow([^LIB@&t@OBJS$])
-m4trace:configure.in:110: -1- m4_pattern_allow([^LTLIBOBJS$])
-m4trace:configure.in:110: -1- AM_CONDITIONAL([am__EXEEXT], [test -n "$EXEEXT"])
-m4trace:configure.in:110: -1- m4_pattern_allow([^am__EXEEXT_TRUE$])
-m4trace:configure.in:110: -1- m4_pattern_allow([^am__EXEEXT_FALSE$])
-m4trace:configure.in:110: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_TRUE])
-m4trace:configure.in:110: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_FALSE])
-m4trace:configure.in:110: -1- AM_CONDITIONAL([am__EXEEXT], [test -n "$EXEEXT"])
-m4trace:configure.in:110: -1- m4_pattern_allow([^am__EXEEXT_TRUE$])
-m4trace:configure.in:110: -1- m4_pattern_allow([^am__EXEEXT_FALSE$])
-m4trace:configure.in:110: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_TRUE])
-m4trace:configure.in:110: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_FALSE])
-m4trace:configure.in:110: -1- _AC_AM_CONFIG_HEADER_HOOK(["$ac_file"])
-m4trace:configure.in:110: -1- _AM_OUTPUT_DEPENDENCY_COMMANDS
+m4trace:configure.in:91: -1- m4_pattern_allow([^LIB@&t@OBJS$])
+m4trace:configure.in:91: -1- m4_pattern_allow([^LTLIBOBJS$])
+m4trace:configure.in:91: -1- AM_CONDITIONAL([am__EXEEXT], [test -n "$EXEEXT"])
+m4trace:configure.in:91: -1- m4_pattern_allow([^am__EXEEXT_TRUE$])
+m4trace:configure.in:91: -1- m4_pattern_allow([^am__EXEEXT_FALSE$])
+m4trace:configure.in:91: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_TRUE])
+m4trace:configure.in:91: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_FALSE])
+m4trace:configure.in:91: -1- AM_CONDITIONAL([am__EXEEXT], [test -n "$EXEEXT"])
+m4trace:configure.in:91: -1- m4_pattern_allow([^am__EXEEXT_TRUE$])
+m4trace:configure.in:91: -1- m4_pattern_allow([^am__EXEEXT_FALSE$])
+m4trace:configure.in:91: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_TRUE])
+m4trace:configure.in:91: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_FALSE])
+m4trace:configure.in:91: -1- _AC_AM_CONFIG_HEADER_HOOK(["$ac_file"])
+m4trace:configure.in:91: -1- _AM_OUTPUT_DEPENDENCY_COMMANDS

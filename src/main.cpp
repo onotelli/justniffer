@@ -26,7 +26,7 @@ using namespace std;
 namespace po = boost::program_options;
 namespace pos = boost::iostreams;
 static void show_usage(parser& p);
-static const char* copyrights =  PACKAGE_NAME " " JUSTNIFFER_VERSION "\nWritten by Oreste Notelli <oreste.notelli@plecno.com>\nCopyright (c) 2007-2011 Plecno s.r.l.";
+static const char* copyrights =  PACKAGE_NAME " " JUSTNIFFER_VERSION "\nWritten by Oreste Notelli <oreste.notelli@plecno.com>\nCopyright (c) 2007-2014 Plecno s.r.l.";
 static po::options_description desc(string (copyrights).append("\n\nUsage").c_str());
 static void show_version()
 {
@@ -205,15 +205,8 @@ int main(int argc, char*argv [])
 		else
 		{
 			pcap_filename = pcapfile_arg.as<string>();
-            try{
-                check_pcap_file(pcap_filename);
-            }
-            catch(invalid_pcap_file& e)
-            {
-                if (!vm.count(force_read_pcap))
-                    throw e;
-                print_warning("you're forcing the reading of a file with potentially incomplete packets\n");
-            }
+			if (!vm.count(force_read_pcap))
+			    check_pcap_file(pcap_filename);
 			nids_params.filename=(char*)pcap_filename.c_str();
 		}
 

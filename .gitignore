@@ -1,0 +1,10 @@
+
+# /src/
+/src/justniffer
+/src/.deps
+Makefile
+include/stamp-h1
+*.o
+*.a
+config.*
+lib/libnids-1.21_patched/configure.lineno
