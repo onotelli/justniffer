@@ -6,5 +6,7 @@ Makefile
 include/stamp-h1
 *.o
 *.a
-config.*
+config.log
+config.status
+libtool
 lib/libnids-1.21_patched/configure.lineno
