@@ -674,6 +674,14 @@ is replaced by the response header value (e.g. "%request.header.value(Set-Cookie
 is replaced by the result of the specified regular expression applied on the response header [Perl regular expression syntax, see \fBperlre\fP(1) or \fBperl\fP(1)]. The most nested subgroup is returned (e.g. to obtain the request URL:  "%request.header.grep(^[^\\s]*\\s*([^\\s]*))"
 .TP
 .B
+%session.requests
+is replaced by TCP session request sequence number, since the TCP session started.
+.TP
+.B
+%session.time
+is replaced by the TCP session lifespan
+.TP
+.B
 %tab
 is replaced by a tab
 .TP
