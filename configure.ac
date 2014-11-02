@@ -9,10 +9,10 @@ dnl	Author: Oreste Notelli <oreste.notelli@plecno.com>
 dnl
 
 AC_PREREQ(2.68)
-AC_COPYRIGHT(2007-2012 (c) Plecno s.r.l)
-AC_INIT(justniffer, [0.9.0], info@plecno.com)
-AC_DEFINE(JUSTNIFFER_VERSION, ["0.9.0"], [justniffer version])
-LT_INIT([dlopen])
+AC_COPYRIGHT(2007-2014 (c) Plecno s.r.l)
+AC_INIT(justniffer, [0.5.13], info@plecno.com)
+AC_DEFINE(JUSTNIFFER_VERSION, ["0.5.13"], [justniffer version])
+
 AM_INIT_AUTOMAKE
 AC_DEFINE([HAVE_LIB_PCAP], [], [has not libcap])
 AM_CONFIG_HEADER(include/config.h)
@@ -20,9 +20,9 @@ AM_CONFIG_HEADER(include/config.h)
 
 AM_INIT_AUTOMAKE([-Wall -Werror])
 
-if test "$CXXFLAGS" = ""; then
-CXXFLAGS="-Os -Wall"
-fi
+dnl if test "$CXXFLAGS" = ""; then
+dnl CXXFLAGS="-Os -Wall"
+dnl fi
 
 LIBNIDS="libnids-1.21_patched"
 NIDS2_INCLUDE="-I ../lib/$LIBNIDS/src"
@@ -38,10 +38,9 @@ if test "$BASH_F" != "yes";
 then
   AC_MSG_ERROR(["cannot find bash shell, download and build it: see www.gnu.org/software/bash/"])
 fi
-
+AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_CXX (gcc)
 AC_PROG_CPP
-AC_PROG_RANLIB
 AC_PROG_INSTALL
 AC_CHECK_HEADERS([sys/time.h])
 AC_C_CONST
@@ -52,37 +51,14 @@ AC_HEADER_TIME
 AC_STRUCT_TM
 AC_CHECK_HEADER(netinet/ip.h, , 
   AC_MSG_ERROR(["cannot find netinet/ip.h"]))
-  
+AC_PROG_LIBTOOL  
 AC_CHECK_LIB(pcap, pcap_open_live, AC_DEFINE(HAVE_LIB_PCAP))
 
-
-AX_BOOST_BASE
-if test "$succeeded" != "yes";
-then
-    AC_MSG_ERROR(["cannot find the boost libraries: see http://www.boost.org/"])
-fi
-
-AX_BOOST_REGEX
-if test "$ax_cv_boost_regex" != "yes";
-then
-    AC_MSG_ERROR(["cannot find the boost regex libraries: see http://www.boost.org/"])
-fi
-
-AC_PYTHON_DEVEL
-AX_BOOST_PYTHON
-AM_CONDITIONAL(HAVE_PYTHON_MODULES, [test "$ac_cv_boost_python" == "yes"])
-
-AX_BOOST_PROGRAM_OPTIONS
-if test "$ax_cv_boost_program_options" != "yes";
-then
-    AC_MSG_ERROR(["cannot find the boost program_options libraries: see http://www.boost.org/"])
-fi
-
-AX_BOOST_IOSTREAMS
-if test "$ax_cv_boost_iostreams" != "yes";
-then
-    AC_MSG_ERROR(["cannot find the boost iostreams libraries: see http://www.boost.org/"])
-fi
+BOOST_REQUIRE([1.46])
+ 
+BOOST_REGEX
+BOOST_PROGRAM_OPTIONS
+BOOST_IOSTREAMS
 
 AC_CHECK_FILE(lib/$LIBNIDS/README.original, ,
 [ AC_CHECK_PROG(PATCH, patch, yes, no) 
@@ -101,15 +77,20 @@ AC_CHECK_FILE(lib/$LIBNIDS/README.original, ,
 )
 
 AC_CONFIG_SUBDIRS([lib/libnids-1.21_patched])
-	
+AX_PYTHON
+
 PYTHONCODEDIR=${datarootdir}/justniffer/scripts
 AC_SUBST(PYTHONCODEDIR)
 if test "$ax_python_bin" != "no"; then
   PYTHONSUBDIR="python"
 fi
 
+if test "$ax_python_header" != "no"; then
+  PYTHON_MODULES="python.cpp"
+fi
+
+
 AC_SUBST(PYTHONSUBDIR)
-AC_SUBST(HAVE_PYTHON_MODULES)
 
 	
 AC_OUTPUT(Makefile src/Makefile python/Makefile )

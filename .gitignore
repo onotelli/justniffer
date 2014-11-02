@@ -1,5 +1,14 @@
-
 # /src/
 /src/justniffer
 /src/.deps
 /src/Makefile
+Makefile
+*.o
+*.a
+config.log
+config.status
+include/config.h
+include/stamp-h1
+lib/libnids-1.21_patched/config.log
+lib/libnids-1.21_patched/config.status
+lib/libnids-1.21_patched/src/config.h
