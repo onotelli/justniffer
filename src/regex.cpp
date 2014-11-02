@@ -24,7 +24,7 @@ string regex(const boost::regex& re, const string& text)
 	return result;
 }
 
-void regex_handler_base::append(std::basic_ostream<char>& out, const timeval*)
+void regex_handler_base::append(std::basic_ostream<char>& out, const timeval*,connections_container* pconnections_container)
 {
 	string res = ::regex(_re, get_text());
 	if (res.empty())

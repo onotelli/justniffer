@@ -22,6 +22,12 @@ using namespace std;
 parser* parser::theOnlyParser= NULL;
 const char parser::_key_word_id='%';
 
+int parser::connection_number()
+{
+    return connections.size();
+}
+
+
 void parser::nids_handler(struct tcp_stream *ts, void **yoda, struct timeval* t, unsigned char* packet)
 {
 	check(theOnlyParser != NULL, parser_not_initialized());
@@ -135,6 +141,7 @@ void parser::init_parse_elements()
     elements["dest.port"] = pelem(new keyword<handler_factory_t<dest_port> >());
     elements["source.port"] = pelem(new keyword<handler_factory_t<source_port> >());
 
+    elements["streams"] = pelem(new keyword<handler_factory_t<current_streams> >());
     elements["connection"] = pelem(new keyword<handler_factory_t<connection_handler> >());
     elements["connection.time"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, connection_time_handler> >(_default_not_found));
     elements["connection.timestamp"] = pelem(new keyword_arg_and_optional_params<handler_factory_t_arg2<string, string, connection_timestamp_handler> > (string("%D %T"), string( _default_not_found)));
@@ -240,7 +247,7 @@ void parser::process_opening_connection(tcp_stream *ts, struct timeval* t, unsig
 	streams::const_iterator it = connections.find(ts->addr);
 	if (it == connections.end())
 	{
-		stream::ptr pstream(new stream(factories.begin(), factories.end(), _printer));
+		stream::ptr pstream(new stream(factories.begin(), factories.end(), _printer, this));
 		pstream->onOpening( ts, t);
 		connections[ts->addr]= pstream;
 	}	
@@ -430,7 +437,7 @@ const char* break_keyword_base::parse(const char* cursor, const string& _keyword
 
 
 ///// cmd_execute_printer //////
-void cmd_execute_printer::_execute(handlers::iterator start, handlers::iterator end,const timeval*t)
+void cmd_execute_printer::_execute(handlers::iterator start, handlers::iterator end,const timeval*t,connections_container* pconnections_container)
 {
 	FILE *output  = NULL;
     output = popen (_command.c_str(), "w");
@@ -442,7 +449,7 @@ void cmd_execute_printer::_execute(handlers::iterator start, handlers::iterator 
 		std::ostream _out(&_ob) ;
 		for (handlers::iterator i= start; i!= end; i++)
 		{
-			(*i)->append(_out, t);
+			(*i)->append(_out, t, pconnections_container);
 		}
 		_out.flush();
 		}
@@ -454,22 +461,22 @@ void cmd_execute_printer::_execute(handlers::iterator start, handlers::iterator 
 	pclose(output);
 }
 
-void cmd_execute_printer::doit(handlers::iterator start, handlers::iterator end,const timeval*t)
+void cmd_execute_printer::doit(handlers::iterator start, handlers::iterator end,const timeval*t, connections_container* pconnections_container)
 {
 	signal(SIGPIPE, SIG_IGN);
 	if (!_user.empty())
 	{
 		run_as r (_user);
-		_execute(start, end , t);
+		_execute(start, end , t, pconnections_container);
 	}
 	else
-		_execute(start, end , t);
+		_execute(start, end , t, pconnections_container);
 }
 
-void outstream_printer::doit(handlers::iterator start, handlers::iterator end,const timeval*t)
+void outstream_printer::doit(handlers::iterator start, handlers::iterator end,const timeval*t, connections_container* pconnections_container)
 {
 	for (handlers::iterator i= start; i!= end; i++)
-		(*i)->append(_out, t);
+		(*i)->append(_out, t,pconnections_container);
 	_out<<std::endl<<std::flush;
 	//_out.sync();
 	fflush(stdout);
@@ -479,8 +486,8 @@ void outstream_printer::doit(handlers::iterator start, handlers::iterator end,co
 
 int stream::id = 0;
 
-stream::stream(handler_factories::iterator _begin, handler_factories::iterator _end, printer* printer):
-		begin(_begin), end(_end), status(unknown), _printer(printer), tot_requests(0)
+stream::stream(handler_factories::iterator _begin, handler_factories::iterator _end, printer* printer, connections_container* pconnection_container):
+		begin(_begin), end(_end), status(unknown), _printer(printer), tot_requests(0), _pconnection_container(pconnection_container)
 		{
 		    id++;
 		    _id=id;
@@ -576,7 +583,7 @@ void stream::reinit()
 
 void stream::print(const timeval* t)
 {
-	_printer->doit(_handlers.begin(), _handlers.end(), t);
+	_printer->doit(_handlers.begin(), _handlers.end(), t, _pconnection_container);
 /*	for (handlers::iterator i= _handlers.begin(); i!= _handlers.end(); i++)
 		(*i)->append(_out, t);
 	_out<<std::endl;
@@ -586,7 +593,7 @@ void stream::print(const timeval* t)
 
 /////////////////
 
-void close_originator::append(std::basic_ostream<char>& out, const timeval* t)
+void close_originator::append(std::basic_ostream<char>& out, const timeval* t,connections_container* pconnections_container)
 {
 	if (closed)
 	{

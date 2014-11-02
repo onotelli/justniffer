@@ -58,6 +58,15 @@ public:
       
 };
 
+
+class connections_container
+{
+public:
+    virtual int connection_number() = 0;
+    
+};
+
+
 class handler: public shared_obj<handler>
 {
 public:
@@ -65,14 +74,14 @@ public:
 	virtual void onOpen(tcp_stream* pstream, const timeval* t) = 0 ;
 	virtual void onRequest(tcp_stream* pstream, const timeval* t) = 0 ;
 	virtual void onResponse(tcp_stream* pstream,const  timeval* t) = 0 ;
-	virtual void append(std::basic_ostream<char>& out, const timeval* t) = 0;
+	virtual void append(std::basic_ostream<char>& out, const timeval* t, connections_container* pconnections_container) = 0;
 	virtual void onClose(tcp_stream* pstream, const timeval* ,unsigned char* packet) = 0;
 	virtual ~handler(){}
 };
 
 class basic_handler : public handler
 {
-	virtual void append(std::basic_ostream<char>& out, const timeval* t) {}
+	virtual void append(std::basic_ostream<char>& out, const timeval* t, connections_container* pconnections_container) {}
 	virtual void onOpening(tcp_stream* pstream, const timeval* t){}
 	virtual void onOpen(tcp_stream* pstream, const timeval* t){}
 	virtual void onRequest(tcp_stream* pstream, const timeval* t){}
@@ -289,7 +298,7 @@ private:
 class printer : public shared_obj<printer>
 {
 public:
-	virtual void doit(handlers::iterator start, handlers::iterator end, const timeval*t) = 0;
+	virtual void doit(handlers::iterator start, handlers::iterator end, const timeval*t, connections_container* pconnections_container) = 0;
 	virtual ~printer(){};
 };
 
@@ -299,7 +308,7 @@ public:
 	typedef std::basic_ostream<char>& Out;
 	//typedef T& Out;
 	outstream_printer(Out out): _out(out){_out.setf(ios_base::fixed);}
-	void doit(handlers::iterator start, handlers::iterator end,const timeval*t);
+	void doit(handlers::iterator start, handlers::iterator end,const timeval*t, connections_container* pconnections_container);
 private :
 	Out _out;
 };
@@ -311,9 +320,9 @@ public:
 	typedef std::basic_ostream<char>& Out;
 	cmd_execute_printer(std::string command): _command(command){}
 	cmd_execute_printer(std::string command, std::string user): _command(command), _user(user){}
-	void doit(handlers::iterator start, handlers::iterator end,const timeval*t);
+	void doit(handlers::iterator start, handlers::iterator end,const timeval*t, connections_container* pconnections_container);
 private:
-	void _execute(handlers::iterator start, handlers::iterator end,const timeval*t);
+	void _execute(handlers::iterator start, handlers::iterator end,const timeval*t, connections_container* pconnections_container);
 	std::string _command, _user;
 };
 
@@ -325,7 +334,7 @@ public:
     timeval opening_time;
     unsigned tot_requests;
     void copy_tcp_stream(tcp_stream* pstream);
-	stream(handler_factories::iterator _begin, handler_factories::iterator _end, printer* printer);
+	stream(handler_factories::iterator _begin, handler_factories::iterator _end, printer* printer, connections_container* pconnection_container);
 	virtual void onOpening(tcp_stream* pstream, const timeval* t);
 	virtual void onOpen(tcp_stream* pstream, const timeval* t);
 	virtual void onClose(tcp_stream* pstream, const timeval* t,unsigned char* packet);
@@ -339,6 +348,7 @@ public:
 private:
     static int id;
     int _id;
+    connections_container* _pconnection_container;
 	handler_factories::iterator begin, end;
 	handlers _handlers;
 	status_enum status;
@@ -348,7 +358,7 @@ private:
 typedef std::basic_ostream<char>& Out;
 // typedef std::basic_ostream<char>* pOut;
 
-class parser
+class parser : public connections_container
 {
 public:
 	typedef std::map< std::string , parse_element::ptr> parse_elements;
@@ -375,6 +385,7 @@ public:
 	void set_printer(printer* printer){_printer=printer;}
 	void set_default_not_found( const std::string& default_not_found) {_default_not_found = default_not_found;}
 	bool _already_init;
+        virtual int connection_number();
 private:
 	const char* _parse_element(const char* format);
 	void init_parse_elements();
@@ -470,7 +481,7 @@ class string_handler : public basic_handler
 {
 public:
 	string_handler(const string& str):_str(str){};
-	virtual void append(std::basic_ostream<char>& out, const timeval* ) {out << _str;};
+	virtual void append(std::basic_ostream<char>& out, const timeval* , connections_container* pconnections_container) {out << _str;};
 private:
 	std::string _str;
 };
@@ -493,7 +504,7 @@ class connection_handler : public basic_handler
 public:
 	enum status {unknown, start,cont,last, uniq} stat;
 	connection_handler():stat(unknown){};
-	virtual void append(std::basic_ostream<char>& out, const timeval*  )
+	virtual void append(std::basic_ostream<char>& out, const timeval*, connections_container* pconnections_container)
 	{
 		switch (stat)
 		{
@@ -528,7 +539,7 @@ class ip_base : public basic_handler
 {
 public:
 	ip_base():ip(0){}
-	virtual void append(std::basic_ostream<char>& out, const timeval* ) {out <<ip_to_str(ip);};
+	virtual void append(std::basic_ostream<char>& out, const timeval* , connections_container* pconnections_container) {out <<ip_to_str(ip);};
 protected:
 	u_long ip;
 };
@@ -537,7 +548,7 @@ class port_base : public basic_handler
 {
 public:
 	port_base():port(0){}
-	virtual void append(std::basic_ostream<char>& out, const timeval* ) {out <<int(port);};
+	virtual void append(std::basic_ostream<char>& out, const timeval* , connections_container* pconnections_container) {out <<int(port);};
 protected:
 	u_short port;
 };
@@ -651,9 +662,15 @@ class constant : public basic_handler
 {
 public:
 	constant(const string& constant):_constant(constant){}
-	virtual void append(std::basic_ostream<char>& out, const timeval* ) {out <<_constant;};
+	virtual void append(std::basic_ostream<char>& out, const timeval* , connections_container* pconnections_container) {out <<_constant;};
 protected:
 	string _constant;
+};
+
+class current_streams : public basic_handler
+{
+public:
+        virtual void append(std::basic_ostream<char>& out, const timeval* , connections_container* pconnections_container) {out <<pconnections_container->connection_number();};
 };
 
 template <class base>
@@ -692,12 +709,12 @@ protected:
 
 class request_first_line: public collect_first_line_request<basic_handler>
 {
-	virtual void append(std::basic_ostream<char>& out,const timeval* ) {out <<text;}
+	virtual void append(std::basic_ostream<char>& out,const timeval* , connections_container* pconnections_container) {out <<text;}
 };
 
 class response_first_line: public collect_first_line_response<basic_handler>
 {
-	virtual void append(std::basic_ostream<char>& out,const timeval* ) {out <<text;}
+	virtual void append(std::basic_ostream<char>& out,const timeval* , connections_container* pconnections_container) {out <<text;}
 };
 
 class timestamp_handler_base : public basic_handler
@@ -708,7 +725,7 @@ protected:
 	timestamp_handler_base(){time.tv_sec = 0; time.tv_usec= 0;}
 
 public:
-	virtual void append(out_type out,const timeval* ) 
+	virtual void append(out_type out,const timeval* , connections_container* pconnections_container) 
 	{
 		if ((time.tv_sec == 0)&& (time.tv_usec== 0))
 		  out <<_not_found;
@@ -830,7 +847,7 @@ class response_time_handler : public basic_handler
 {
 public:
 	response_time_handler(const string& not_found){response = false;t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0; _not_found=not_found; }
-	virtual void append(std::basic_ostream<char>& out,const timeval* ) {if (response) out <<to_double(t2-t1);else out<<_not_found;}
+	virtual void append(std::basic_ostream<char>& out,const timeval* , connections_container* pconnections_container) {if (response) out <<to_double(t2-t1);else out<<_not_found;}
 	virtual void onOpen(tcp_stream* pstream, const timeval* t){t1=*t;}
 	virtual void onResponse(tcp_stream* pstream, const timeval* t){response = true;t2=*t;}
 	virtual void onRequest(tcp_stream* pstream, const timeval* t){t1=*t;}
@@ -846,7 +863,7 @@ class request_time_handler : public basic_handler
 {
 public:
 	request_time_handler(const string& not_found){requested_started = false;t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0;_not_found = not_found;}
-	virtual void append(std::basic_ostream<char>& out,const timeval* ) {if (requested_started) out <<to_double(t2-t1);else out <<_not_found;}
+	virtual void append(std::basic_ostream<char>& out,const timeval* , connections_container* pconnections_container) {if (requested_started) out <<to_double(t2-t1);else out <<_not_found;}
 	virtual void onRequest(tcp_stream* pstream, const timeval* t){if (!requested_started) t1=*t; t2=*t;requested_started= true;}
 
 private:
@@ -859,7 +876,7 @@ class idle_time_2 : public basic_handler
 {
 public:
 	idle_time_2(const string& not_found){response=false; t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0;_not_found = not_found;}
-	virtual void append(std::basic_ostream<char>& out,const timeval* t) {t2=*t; if(response) out <<to_double(t2-t1);else out << _not_found;}
+	virtual void append(std::basic_ostream<char>& out,const timeval* t , connections_container* pconnections_container) {t2=*t; if(response) out <<to_double(t2-t1);else out << _not_found;}
 	virtual void onResponse(tcp_stream* pstream, const timeval* t){t1=*t; response = true;}
 
 private:
@@ -873,7 +890,7 @@ class idle_time_1 : public basic_handler
 public:
 	idle_time_1(const string& not_found){open = false; request = false; t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0;_not_found=not_found;}
 	virtual void onOpen(tcp_stream* pstream, const timeval* t){t1=*t;open=true;}
-	virtual void append(std::basic_ostream<char>& out,const timeval* t) {if (open && request) out <<to_double(t2-t1); else out << _not_found;}
+	virtual void append(std::basic_ostream<char>& out,const timeval* t , connections_container* pconnections_container) {if (open && request) out <<to_double(t2-t1); else out << _not_found;}
 	virtual void onRequest(tcp_stream* pstream, const timeval* t){if (!request) t2=*t;request= true;}
 private:
 	timeval t1, t2;
@@ -885,7 +902,7 @@ class response_time_1 : public basic_handler
 {
 public:
 	response_time_1(const string& not_found){response = false;t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0; _not_found=not_found;}
-	virtual void append(std::basic_ostream<char>& out,const timeval* ) {if (response)out <<to_double(t2-t1); else out <<_not_found;}
+	virtual void append(std::basic_ostream<char>& out,const timeval* , connections_container* pconnections_container) {if (response)out <<to_double(t2-t1); else out <<_not_found;}
 	virtual void onRequest(tcp_stream* pstream, const timeval* t){t1=*t;}
 	virtual void onResponse(tcp_stream* pstream, const timeval* t){if (!response)t2=*t;response = true;}
 private:
@@ -898,7 +915,7 @@ class response_time_2 : public basic_handler
 {
 public:
 	response_time_2(const string& not_found){response = false;t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0;_not_found=not_found;}
-	virtual void append(std::basic_ostream<char>& out,const timeval* ) {if (response)out <<to_double(t2-t1);else out <<_not_found;}
+	virtual void append(std::basic_ostream<char>& out,const timeval* , connections_container* pconnections_container) {if (response)out <<to_double(t2-t1);else out <<_not_found;}
 	virtual void onResponse(tcp_stream* pstream, const timeval* t){if (!response)t1=*t;t2=*t;response = true;}
 private:
 	bool response;
@@ -910,7 +927,7 @@ class close_time : public basic_handler
 {
 public:
 	close_time (const string& not_found){response = false; closed=false; t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0; _not_found= not_found;}
-	virtual void append(std::basic_ostream<char>& out, const timeval* ) {if (response && closed) out <<to_double(t2-t1); else out << _not_found;}
+	virtual void append(std::basic_ostream<char>& out, const timeval* , connections_container* pconnections_container) {if (response && closed) out <<to_double(t2-t1); else out << _not_found;}
  	virtual void onOpen(tcp_stream* pstream, const timeval* t){response = true; t1=*t;}
  	virtual void onRequest(tcp_stream* pstream, const timeval* t){response = true; t1=*t;}
  	virtual void onResponse(tcp_stream* pstream, const timeval* t){response = true; t1=*t;}
@@ -925,7 +942,7 @@ class close_originator : public basic_handler
 {
 public:
 	close_originator (const string& not_found){closed=false, ip_originator=0, sip=0, dip=0; _not_found= not_found;}
-	virtual void append(std::basic_ostream<char>& out, const timeval* );
+	virtual void append(std::basic_ostream<char>& out, const timeval* , connections_container* pconnections_container);
 	virtual void onOpening(tcp_stream* pstream, const timeval* t);
 	virtual void onOpen(tcp_stream* pstream, const timeval* t);
 	virtual void onClose(tcp_stream* pstream, const timeval* t, unsigned char* packet);
@@ -941,7 +958,7 @@ class connection_time_handler : public basic_handler
 {
 public:
 	connection_time_handler(const string& not_found){connection_started = false;t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0; _not_found = not_found;}
-	virtual void append(std::basic_ostream<char>& out, const timeval* ) {if (t1.tv_sec &  t2.tv_sec) out <<to_double(t2-t1); else out << _not_found;}
+	virtual void append(std::basic_ostream<char>& out, const timeval* , connections_container* pconnections_container) {if (t1.tv_sec &  t2.tv_sec) out <<to_double(t2-t1); else out << _not_found;}
 	virtual void onOpening(tcp_stream* pstream, const timeval* t){if (!connection_started) t1=*t; ;connection_started= true;}
 	virtual void onOpen(tcp_stream* pstream, const timeval* t){t2=*t;}
 
@@ -956,7 +973,7 @@ class session_time_handler : public basic_handler
 {
 public:
 	session_time_handler(const string& not_found){t1.tv_sec = 0; t1.tv_usec= 0; t2.tv_sec = 0; t2.tv_usec= 0;_not_found = not_found;}
-	virtual void append(std::basic_ostream<char>& out, const timeval* ) {if (t1.tv_sec &  t2.tv_sec) out <<to_double(t2-t1); else out << _not_found;}
+	virtual void append(std::basic_ostream<char>& out, const timeval*, connections_container* pconnections_container ) {if (t1.tv_sec &  t2.tv_sec) out <<to_double(t2-t1); else out << _not_found;}
  	virtual void onOpen(tcp_stream* pstream, const timeval* t){ t1=((stream*) pstream)->opening_time; t2=*t;}
  	virtual void onRequest(tcp_stream* pstream, const timeval* t){t1=((stream*) pstream)->opening_time;t2=*t;}
  	virtual void onResponse(tcp_stream* pstream, const timeval* t){t1=((stream*) pstream)->opening_time;t2=*t;}
@@ -972,7 +989,7 @@ class session_request_counter : public basic_handler
 {
 public:
 	session_request_counter(const string& not_found):_pstream(0), _not_found(not_found){}
-	virtual void append(std::basic_ostream<char>& out, const timeval* ) {if (!_pstream) out << _not_found; else out << _pstream->tot_requests; }
+	virtual void append(std::basic_ostream<char>& out, const timeval*, connections_container* pconnections_container ) {if (!_pstream) out << _not_found; else out << _pstream->tot_requests; }
  	virtual void onOpen(tcp_stream* pstream, const timeval* t){ _pstream=((stream*) pstream);}
  	virtual void onRequest(tcp_stream* pstream, const timeval* t){ _pstream=((stream*) pstream);}
  	virtual void onResponse(tcp_stream* pstream, const timeval* t){ _pstream=((stream*) pstream);}
@@ -990,7 +1007,7 @@ class response_size_handler : public basic_handler
 {
 public:
 	response_size_handler():size(0){}
-	virtual void append(std::basic_ostream<char>& out,const timeval* ) {out <<size;}
+	virtual void append(std::basic_ostream<char>& out,const timeval* ,connections_container* pconnections_container) {out <<size;}
 	virtual void onResponse(tcp_stream* pstream, const timeval* t)
 	{
 	  size+=pstream->client.count_new;
@@ -1003,7 +1020,7 @@ class request_size_handler : public basic_handler
 {
 public:
 	request_size_handler():size(0){}
-	virtual void append(std::basic_ostream<char>& out, const timeval* ) {out <<size;}
+	virtual void append(std::basic_ostream<char>& out, const timeval* ,connections_container* pconnections_container) {out <<size;}
 	virtual void onRequest(tcp_stream* pstream, const timeval* t){size+=pstream->server.count_new;}
 private:
 	int size;
