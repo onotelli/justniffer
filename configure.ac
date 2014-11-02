@@ -10,8 +10,8 @@ dnl
 
 AC_PREREQ(2.68)
 AC_COPYRIGHT(2007-2014 (c) Plecno s.r.l)
-AC_INIT(justniffer, [0.5.13], info@plecno.com)
-AC_DEFINE(JUSTNIFFER_VERSION, ["0.5.13"], [justniffer version])
+AC_INIT(justniffer, [0.6], info@plecno.com)
+AC_DEFINE(JUSTNIFFER_VERSION, ["0.6"], [justniffer version])
 
 AM_INIT_AUTOMAKE
 AC_DEFINE([HAVE_LIB_PCAP], [], [has not libcap])
