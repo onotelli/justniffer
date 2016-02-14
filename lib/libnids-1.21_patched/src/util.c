@@ -29,17 +29,6 @@ test_malloc(int x)
   return ret;
 }
 
-inline int
-before(u_int seq1, u_int seq2)
-{
-  return ((int)(seq1 - seq2) < 0);
-}
-
-inline int
-after(u_int seq1, u_int seq2)
-{
-  return ((int)(seq2 - seq1) < 0);
-}
 
 void
 register_callback(struct proc_node **procs, void (*x))

@@ -12,7 +12,7 @@ AC_PREREQ(2.60)
 AC_COPYRIGHT(2007-2014 (c) Plecno s.r.l)
 AC_INIT(justniffer, [0.5.12], info@plecno.com)
 AC_DEFINE(JUSTNIFFER_VERSION, ["0.5.13"], [justniffer version])
-
+AC_CONFIG_MACRO_DIR([included])
 AM_INIT_AUTOMAKE
 AC_DEFINE([HAVE_LIB_PCAP], [], [has not libcap])
 AM_CONFIG_HEADER(include/config.h)
@@ -54,11 +54,11 @@ AC_CHECK_HEADER(netinet/ip.h, ,
 AC_PROG_LIBTOOL  
 AC_CHECK_LIB(pcap, pcap_open_live, AC_DEFINE(HAVE_LIB_PCAP))
 
-BOOST_REQUIRE([1.46])
+AX_BOOST_BASE([1.46])
  
-BOOST_REGEX
-BOOST_PROGRAM_OPTIONS
-BOOST_IOSTREAMS
+AX_BOOST_REGEX
+AX_BOOST_PROGRAM_OPTIONS
+AX_BOOST_IOSTREAMS
 
 AC_CHECK_FILE(lib/$LIBNIDS/README.original, ,
 [ AC_CHECK_PROG(PATCH, patch, yes, no) 
@@ -89,3 +89,7 @@ AC_SUBST(PYTHONSUBDIR)
 
 	
 AC_OUTPUT(Makefile src/Makefile python/Makefile )
+
+
+
+

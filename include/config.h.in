@@ -1,16 +1,16 @@
 /* include/config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* Defined if the requested minimum BOOST version is satisfied */
+/* define if the Boost library is available */
 #undef HAVE_BOOST
 
-/* Define to 1 if you have <boost/iostreams/device/file_descriptor.hpp> */
-#undef HAVE_BOOST_IOSTREAMS_DEVICE_FILE_DESCRIPTOR_HPP
+/* define if the Boost::IOStreams library is available */
+#undef HAVE_BOOST_IOSTREAMS
 
-/* Define to 1 if you have <boost/program_options.hpp> */
-#undef HAVE_BOOST_PROGRAM_OPTIONS_HPP
+/* define if the Boost::PROGRAM_OPTIONS library is available */
+#undef HAVE_BOOST_PROGRAM_OPTIONS
 
-/* Define to 1 if you have <boost/regex.hpp> */
-#undef HAVE_BOOST_REGEX_HPP
+/* define if the Boost::Regex library is available */
+#undef HAVE_BOOST_REGEX
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
