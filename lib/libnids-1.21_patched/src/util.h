@@ -23,12 +23,13 @@ struct lurker_node {
 
 void nids_no_mem(char *);
 char *test_malloc(int);
+
 //inline int before(u_int seq1, u_int seq2);
 //inline int after(u_int seq1, u_int seq2);
 void register_callback(struct proc_node **procs, void (*x));
 void unregister_callback(struct proc_node **procs, void (*x));
 
-
+#if __GNUC__>=5
 inline int
 before(u_int seq1, u_int seq2)
 {
@@ -40,5 +41,9 @@ after(u_int seq1, u_int seq2)
 {
   return ((int)(seq2 - seq1) < 0);
 }
+#else
+inline int before(u_int seq1, u_int seq2);
+inline int after(u_int seq1, u_int seq2);
+#endif // __GNUC__>=5
 
 #endif /* _NIDS_UTIL_H */
