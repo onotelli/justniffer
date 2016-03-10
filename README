@@ -1,31 +1,45 @@
-********************************************************
-* Copyright (c) 2008-2007 Plecno s.r.l. All Rights Reserved 
-* info@plecno.com
-* via Giovio 8, 20144 Milano, Italy
-*
-* Released under the terms of the GPLv3 or later
-*
-* Author: Oreste Notelli <oreste.notelli@plecno.com>	
-********************************************************
 
-Justniffer is a tcp packet sniffer. It can log network traffic in a customizable way. can simulate web server logs as the Apache access_log. may include information such as response times. useful to troubleshoot performance issues. It can also capture http traffic content (html, javascript, css, images, sounds, etc..) And save it in a directory
+Justniffer (Project page: http://justniffer.sourceforge.net/)  
 
-Main differences from other sniffers
+Network TCP Packet Sniffer
 
-Most of the sniffers are divided into two categories, packet an text sniffers. Both suffer from incompleteness of information that may be collected and analyzed
+Justniffer is a network protocol analyzer that captures network traffic and produces logs in a customized way, can emulate Apache web server log files, track response times and extract all "intercepted" files from the HTTP traffic.
 
-    Packet sniffers collect too much data, such as packet headers details, and they make easy to analize low level network problem (such as tcp retrasmissions, or ip fragmentation) but make hard-working and time wasting to analize more high level details ( such as content correctness, keep-alive issues, connection timeouts, response time, etc)
+It lets you interactively trace tcp traffic from a live network or from a previously saved capture file. Justniffer's native capture file format is libpcap format, which is also the format used by tcpdump and various other tools.
 
-    Textmode sniffers usually rebuild TCP stream but cannot collect low level information such as timestamps. They often rebuild the tcp flow in a too simplistic way and fail when dealing with complex TCP/IP issues (reordering, retransmission, reassemlbying, etc). TCP reassembling and reordering is a complex exercise, and require a deep knowledge of TCP/IP protocol and long experience in the field. Usually,they are useful for pure grabbing content from network traffic.
+Reliable TCP Flow Rebuilding
 
- Justniffer was born to help in toubleshooting perfomance in network tcp based services : HTTP, JDBC, RTSP, SIP, SMTP, IMAP, POP, LDAP, etc. 
- 
-It can collect low and hight level protocol and performance info reconstructing the tcp flow in a reliable way using portions of the Linux Kernel code. Precisely, it uses a slightly modified version of the libnids libraries that already include a modified version of linux kernel code in a more reusable way. 
+The main Justniffer's feature is the ability to handle all those complex low level protocol issues and retrieve the correct flow of the TCP/IP traffic: IP fragmentation, TCP retransmission, reordering. etc. It uses portions of Linux kernel source code for handling all TCP/IP stuff. Precisely, it uses a slightly modified version of the libnids libraries that already include a modified version of Linux code in a more reusable way.
 
-You can extend traffic analisys with external scripts (bash, python, or any executable). An example is provided: justniffer-grab-http-traffic script use justniffer to saves files (images, text, html pages, javascript, flash, video, etc) captured from HTTP traffic. 
+Optimized for "Request / Response" protocols. It is able to track server response time
 
-Justniffer can generate logs in a customizable way. For example it can mimic the apache access_log
+Justniffer was born as tool for helping in analyzing performance problem in complex network environment when it becomes impractical to analyze network captures solely using wireshark. It will help you to quickly identify the most significant bottlenecks analyzing the performance at "application" protocol level.
 
+In very complex and distributed systems is often useful to understand how communication takes place between different components, and when this is implemented as a network protocol based on TCP/IP (HTTP, JDBC, RTSP, SIP, SMTP, IMAP, POP, LDAP, REST, XML-RPC, IIOP, SOAP, etc.), justniffer becomes very useful. Often the logging level and monitoring systems of these systems does not report important information to determine performance issues such as the response time of each network request. Because they are in a "production" environment and cannot be too much verbose or they are in-house developed applications and do not provide such logging.
 
-Oreste Notelli
+Other times it is desirable to collect access logs from web services implemented on different environments (various web servers, application servers, python web frameworks, etc.) or web services that are not accessible and therefore traceable only on client side.
+
+Justniffer can capture traffic in promiscuous mode so it can be installed on dedicated and independent station within the same network "collision domain" of the gateway of the systems that must be analyzed, collecting all traffic without affecting the system performances and requiring invasive installation of new software in production environments.
+
+Can rebuild and save HTTP content on files
+
+The robust implementation for the reconstruction of the TCP flow turns it in a multipurpose sniffer.
+
+HTTP sniffer
+LDAP sniffer
+SMTP sniffer
+SIP sniffer
+password sniffer
+justniffer can also be used to retrieve files sent over the network.
+It is extensible
+
+Can be extended by external scripts. A python script has been developed to recover all files sent via HTTP (images, text, html, javascript, etc.).
+
+Features Summary
+
+Reliable TCP flow rebuilding: it can reorder, reassemble tcp segments and ip fragments using portions of the Linux kernel code
+Logging text mode can be customized
+Extensibility by any executable, such as bash, python, perl scripts, ELF executable, etc.
+Performance measurement it can collect many information on performances: connection time, close time, request time , response time, close time, etc.
+
 
