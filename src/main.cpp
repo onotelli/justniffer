@@ -26,7 +26,7 @@ using namespace std;
 namespace po = boost::program_options;
 namespace pos = boost::iostreams;
 static void show_usage(parser& p);
-static const char* copyrights =  PACKAGE_NAME " " JUSTNIFFER_VERSION "\nWritten by Oreste Notelli <oreste.notelli@plecno.com>\nCopyright (c) 2007-2014 Plecno s.r.l.";
+static const char* copyrights =  PACKAGE_NAME " " JUSTNIFFER_VERSION "\nWritten by Oreste Notelli <oreste.notelli@plecno.com>\nCopyright (c) 2007- " JUSTNIFFER_YEAR " Plecno s.r.l.";
 static po::options_description desc(string (copyrights).append("\n\nUsage").c_str());
 static void show_version()
 {
@@ -136,8 +136,8 @@ int main(int argc, char*argv [])
 			(string(uprintable_cmd_ext).append(",x").c_str(), "encode unprintable characters as [<char hexadecimal code>] ")
 			(string(raw_cmd).append(",r").c_str(), "show raw stream. it is a shortcat for  -l %request%response")
 			(string(not_found_string).append(",n").c_str(), po::value<string>()->default_value(default_not_found), string("default \"not found\" value, default is ").append(default_not_found).c_str())
-            (string(max_concurrent_tcp_stream).append(",s").c_str(), po::value<int>(&max_concurrent_tcp_stream_v)->default_value(65536), "Max concurrent tcp streams")
-            (string(max_fragmented_ip_hosts).append(",d").c_str(), po::value<int>(&max_fragmented_ip_hosts_v)->default_value(65536), "Max concurrent fragmented ip host")
+            (string(max_concurrent_tcp_stream).append(",s").c_str(), po::value<int>(&max_concurrent_tcp_stream_v)->default_value(1024), "Max concurrent tcp streams")
+            (string(max_fragmented_ip_hosts).append(",d").c_str(), po::value<int>(&max_fragmented_ip_hosts_v)->default_value(1024), "Max concurrent fragmented ip host")
 			(string(force_read_pcap).append(",F").c_str(), "force the reading of the pcap file ignoring the snaplen value. WARNING: could give unexpected results")
 			
 		;

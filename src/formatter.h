@@ -76,6 +76,7 @@ public:
 	virtual void onResponse(tcp_stream* pstream,const  timeval* t) = 0 ;
 	virtual void append(std::basic_ostream<char>& out, const timeval* t, connections_container* pconnections_container) = 0;
 	virtual void onClose(tcp_stream* pstream, const timeval* ,unsigned char* packet) = 0;
+	virtual void onTimedOut(tcp_stream* pstream, const timeval* ,unsigned char* packet) = 0;
 	virtual ~handler(){}
 };
 
@@ -87,6 +88,8 @@ class basic_handler : public handler
 	virtual void onRequest(tcp_stream* pstream, const timeval* t){}
 	virtual void onResponse(tcp_stream* pstream,const  timeval* t){}
 	virtual void onClose(tcp_stream* pstream, const timeval* ,unsigned char* packet){}
+	virtual void onTimedOut(tcp_stream* pstream, const timeval* ,unsigned char* packet){}
+
 };
 
 typedef std::vector<handler::ptr> handlers;
@@ -329,7 +332,7 @@ private:
 
 class stream : public shared_obj<stream>, public tcp_stream
 {
-enum status_enum{unknown, opening, open, request, response, close};
+enum status_enum{unknown, opening, open, request, response, close, timedout};
 public:
     timeval opening_time;
     unsigned tot_requests;
@@ -338,12 +341,16 @@ public:
 	virtual void onOpening(tcp_stream* pstream, const timeval* t);
 	virtual void onOpen(tcp_stream* pstream, const timeval* t);
 	virtual void onClose(tcp_stream* pstream, const timeval* t,unsigned char* packet);
+	virtual void onTimedOut(tcp_stream* pstream, const timeval* t,unsigned char* packet);
 	virtual void onRequest(tcp_stream* pstream, const timeval* t);
 	virtual void onResponse(tcp_stream* pstream, const timeval* t);
 	virtual ~stream(){};
 	virtual void init(tcp_stream* pstream);
 	virtual void reinit();
 	virtual void print(const timeval* t);
+
+protected:
+	stream(){}
 
 private:
     static int id;
@@ -358,24 +365,29 @@ private:
 typedef std::basic_ostream<char>& Out;
 // typedef std::basic_ostream<char>* pOut;
 
+
 class parser : public connections_container
 {
 public:
+	typedef struct conn_info_ {
+		conn_info_ (stream::ptr _stream_ptr, timeval	_t):stream_ptr(_stream_ptr),t(_t){};
+		conn_info_ (){};
+		stream::ptr stream_ptr;
+		timeval	t;
+	} conn_info;
+
 	typedef std::map< std::string , parse_element::ptr> parse_elements;
-	typedef std::map<struct tuple4, stream::ptr > streams;
+	typedef std::map<struct tuple4, conn_info > streams;
+	typedef std::multimap<struct timeval, struct tuple4> streamtimes_index_type;
 
 	parser()
 	{
-		_already_init = false;
-		check(theOnlyParser==NULL, common_exception("parser::parser(): I am not the only parser"));
-		theOnlyParser=this;
+		init();
 	}
 	
 	parser(printer* printer):_printer(printer)
 	{
-		_already_init = false;
-		check(theOnlyParser==NULL, common_exception("parser::parser(): I am not the only parser"));
-		theOnlyParser=this;
+		init();
 	}
 	parse_elements::iterator keywords_begin() {init_parse_elements();return elements.begin();}
 	parse_elements::iterator keywords_end() {init_parse_elements();return elements.end();}
@@ -387,16 +399,28 @@ public:
 	bool _already_init;
         virtual int connection_number();
 private:
+    void init()
+    {
+		_already_init = false;
+		check(theOnlyParser==NULL, common_exception("parser::parser(): I am not the only parser"));
+		theOnlyParser=this;
+	}
+
 	const char* _parse_element(const char* format);
 	void init_parse_elements();
 	void process_opening_connection(tcp_stream *ts, struct timeval* t, unsigned char* packet);
 	void process_open_connection(tcp_stream *ts, struct timeval* t, unsigned char* packet);
 	void process_server(tcp_stream *ts, struct timeval* t, unsigned char* packet);
+	stream::ptr get_stream(const tuple4& t);
 	void process_client(tcp_stream *ts, struct timeval* t, unsigned char* packet);
 	void process_close_connection(tcp_stream *ts, struct timeval* t, unsigned char* packet);
+	void process_timedout_connection(tcp_stream *ts, struct timeval* t, unsigned char* packet);
+
 	static parser* theOnlyParser;
 	parse_elements elements;
 	streams connections;
+	//streamtimes_index_type streamtimes_index;
+
 	handler_factories factories;
 	printer* _printer;
 	std::string _default_not_found;
@@ -525,7 +549,7 @@ public:
 			break;
 		}
 	}
-	
+
 	virtual void onOpening(tcp_stream* pstream, const timeval* t){stat = start;}
 	virtual void onOpen(tcp_stream* pstream, const timeval* t){stat = start;}
 	virtual void onRequest(tcp_stream* pstream, const timeval* t){if (stat == unknown) stat = cont;}
@@ -941,15 +965,17 @@ private:
 class close_originator : public basic_handler
 {
 public:
-	close_originator (const string& not_found){closed=false, ip_originator=0, sip=0, dip=0; _not_found= not_found;}
+	close_originator (const string& not_found){stat=unknown, ip_originator=0, sip=0, dip=0; _not_found= not_found;}
 	virtual void append(std::basic_ostream<char>& out, const timeval* , connections_container* pconnections_container);
 	virtual void onOpening(tcp_stream* pstream, const timeval* t);
 	virtual void onOpen(tcp_stream* pstream, const timeval* t);
 	virtual void onClose(tcp_stream* pstream, const timeval* t, unsigned char* packet);
+	virtual void onTimedOut(tcp_stream* pstream, const timeval* t, unsigned char* packet);
 	virtual void onRequest(tcp_stream* pstream, const timeval* t);
 	virtual void onResponse(tcp_stream* pstream,const  timeval* t);
 private:
-	bool closed;
+	enum status{unknown, closed, timedout} ;
+	status stat;
 	u_int32_t ip_originator, sip, dip;
 	string _not_found;
 };

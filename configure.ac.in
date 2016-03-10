@@ -1,5 +1,5 @@
 dnl
-dnl	Copyright (c) 2007-2016 Plecno s.r.l. All Rights Reserved 
+dnl	Copyright (c) 2007-{{date.year}} Plecno s.r.l. All Rights Reserved 
 dnl	info@plecno.com
 dnl	via Giovio 8, 20144 Milano, Italy
 dnl
@@ -9,10 +9,10 @@ dnl	Author: Oreste Notelli <oreste.notelli@plecno.com>
 dnl
 
 AC_PREREQ(2.60)
-AC_COPYRIGHT(2007-2016 (c) Plecno s.r.l)
-AC_INIT(justniffer, [0.5.14], info@plecno.com)
-AC_DEFINE(JUSTNIFFER_VERSION, ["0.5.14"], [justniffer version])
-AC_DEFINE(JUSTNIFFER_YEAR, ["2016"], [justniffer year])
+AC_COPYRIGHT(2007-{{date.year}} (c) Plecno s.r.l)
+AC_INIT(justniffer, [{{version}}], info@plecno.com)
+AC_DEFINE(JUSTNIFFER_VERSION, ["{{version}}"], [justniffer version])
+AC_DEFINE(JUSTNIFFER_YEAR, ["{{date.year}}"], [justniffer year])
 AC_CONFIG_MACRO_DIR([included])
 AM_INIT_AUTOMAKE
 AC_DEFINE([HAVE_LIB_PCAP], [], [has not libcap])

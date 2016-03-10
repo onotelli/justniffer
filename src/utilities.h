@@ -17,7 +17,7 @@
 #include <nids2.h>
 #include <sys/time.h>
 #include <unistd.h>
-
+#include <utility>
 using namespace std;
 
 template< class T> class shared_obj
@@ -75,6 +75,7 @@ unsigned long ip_to_ulong(char b0, char b1, char b2 , char b3);
 string ip_to_str (u_long addr);
 void check_pcap_file(const string& str) throw (invalid_pcap_file);
 bool operator < (const struct tuple4& a, const struct tuple4& b);
+bool operator < (const timeval&  a, const timeval& b);
 timeval operator -(const timeval& x, const timeval& y);
 bool get_headers(const char* start, const char* end,  string& str);
 bool get_first_line (const char* start , const char* end, string& out);

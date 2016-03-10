@@ -16,8 +16,11 @@
 #include <cstdio>
 #include <ext/stdio_filebuf.h>
 #include <signal.h>
+#include <iterator>
+#include <algorithm>
+#include <functional>
 
-using namespace std;
+using std::sort;
 
 parser* parser::theOnlyParser= NULL;
 const char parser::_key_word_id='%';
@@ -61,6 +64,9 @@ void parser::nids_handler(struct tcp_stream *ts, void **yoda, struct timeval* t,
 		case NIDS_OPENING:
 			theOnlyParser->process_opening_connection(ts, t, packet);
 			break;
+		case NIDS_TIMED_OUT:
+		    theOnlyParser->process_timedout_connection(ts, t, packet);
+		    break;
 		default:
 			theOnlyParser->process_close_connection(ts, t, packet);
 			break;
@@ -239,7 +245,7 @@ void parser::init_parse_elements()
 
 void parser::process_open_connection(tcp_stream *ts, struct timeval* t, unsigned char* packet)
 {
-	connections[ts->addr]->onOpen( ts, t);
+	connections[ts->addr].stream_ptr->onOpen( ts, t);
 }
 
 void parser::process_opening_connection(tcp_stream *ts, struct timeval* t, unsigned char* packet)
@@ -249,23 +255,47 @@ void parser::process_opening_connection(tcp_stream *ts, struct timeval* t, unsig
 	{
 		stream::ptr pstream(new stream(factories.begin(), factories.end(), _printer, this));
 		pstream->onOpening( ts, t);
-		connections[ts->addr]= pstream;
+		connections[ts->addr]= conn_info (pstream, *t);
+		/*
+		streams::size_type conn_size = connections.size();
+		if (conn_size > max_connections)
+		{
+			stream_vector v ;
+			transform(connections.begin(), connections.end(), back_inserter(v), get_value);
+			sort(v.begin(), v.end(), datesorter);
+			stream_vector::iterator begin = v.begin();
+			stream_vector::iterator end = begin;
+			advance(end, min(conn_size - max_connections, conn_size ));
+			for_each(begin, end, remove_connections(connections));
+			//_sort_
+			//streamtimes_index_type::iterator begin = streamtimes_index.begin();
+			//streamtimes_index_type::iterator end = streamtimes_index.end();
+
+		}
+		 */
 	}	
 }
 
+
 void parser::process_server(tcp_stream *ts, struct timeval* t, unsigned char* packet)
 {
-	connections[ts->addr]->onResponse(ts, t);
+
+	connections[ts->addr].stream_ptr->onResponse(ts, t);
 }
 
 void parser::process_client(tcp_stream *ts, struct timeval* t, unsigned char* packet)
 {
-	connections[ts->addr]->onRequest(ts, t);
+	connections[ts->addr].stream_ptr->onRequest(ts, t);
 }
 
+void parser::process_timedout_connection(tcp_stream *ts, struct timeval* t, unsigned char* packet)
+{
+	connections[ts->addr].stream_ptr->onTimedOut(ts, t, packet);
+	connections.erase(ts->addr);
+}
 void parser::process_close_connection(tcp_stream *ts, struct timeval* t, unsigned char* packet)
 {
-	connections[ts->addr]->onClose(ts, t, packet);
+	connections[ts->addr].stream_ptr->onClose(ts, t, packet);
 	connections.erase(ts->addr);
 	//cout << "connections.erase\n";
 }
@@ -518,12 +548,21 @@ void stream::onClose(tcp_stream* pstream, const timeval* t,unsigned char* packet
 	copy_tcp_stream(pstream);
 	for (handlers::iterator i= _handlers.begin(); i!= _handlers.end(); i++)
 		(*i)->onClose(this, t,packet);
-	// don't print log for only open connection. (hmmmm, i should think more about it)
-	if (status!=open)
-	  print(t);
-	//cout<<"stream::onClose end\n";
-	tot_requests = 0;
+	//if (status!=open)
 	status=close;
+	print(t);
+	tot_requests = 0;
+}
+
+
+void stream::onTimedOut(tcp_stream* pstream, const timeval* t,unsigned char* packet)
+{
+	copy_tcp_stream(pstream);
+	for (handlers::iterator i= _handlers.begin(); i!= _handlers.end(); i++)
+		(*i)->onTimedOut(this, t,packet);
+	status=timedout;
+	print(t);
+	tot_requests = 0;
 }
 
 void stream::onRequest(tcp_stream* pstream, const timeval* t)
@@ -595,7 +634,7 @@ void stream::print(const timeval* t)
 
 void close_originator::append(std::basic_ostream<char>& out, const timeval* t,connections_container* pconnections_container)
 {
-	if (closed)
+	if (stat == closed)
 	{
 	  if (ip_originator == sip)
 		  out <<"client";
@@ -605,14 +644,22 @@ void close_originator::append(std::basic_ostream<char>& out, const timeval* t,co
 		out <<_not_found;//<< ip_originator<< " " << dip<< " "<<sip;
 	  
 	}
+	else if (stat == timedout)
+	{
+		out <<"timedout";//<< ip_originator<< " " << dip<< " "<<sip;
+	}
 	else
 		out <<_not_found;
 	
 }
+void close_originator::onTimedOut(tcp_stream* pstream, const timeval* t, unsigned char* packet)
+{
+	stat= timedout;
+}
 
 void close_originator::onClose(tcp_stream* pstream, const timeval* t, unsigned char* packet)
 {
-	closed = true;
+	stat= closed;
 	if (packet)
 	{
 		struct ip *this_iphdr = (struct ip *)packet;

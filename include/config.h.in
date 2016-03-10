@@ -60,6 +60,9 @@
 /* justniffer version */
 #undef JUSTNIFFER_VERSION
 
+/* justniffer year */
+#undef JUSTNIFFER_YEAR
+
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */
 #undef LT_OBJDIR

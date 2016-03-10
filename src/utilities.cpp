@@ -94,7 +94,18 @@ bool operator < (const struct tuple4& a, const struct tuple4& b)
 	return false;	
 	
 }
-
+bool operator < (const timeval& a, const timeval& b)
+{
+	if (a.tv_sec <b.tv_sec)
+		return true;
+	if (a.tv_sec >b.tv_sec)
+		return false;
+	if (a.tv_usec <b.tv_usec )
+		return true;
+	if (a.tv_usec > b.tv_usec )
+		return false;
+	return false;
+}
 bool get_first_line (const char* start , const char* end, string& out)
 {
 	bool complete = false;

@@ -2,6 +2,11 @@
 # /src/
 /src/justniffer
 /src/.deps
+src/.cproject
+.project
+.settings
+.pydevproject
+.metadata
 Makefile
 include/stamp-h1
 *.o
@@ -12,3 +17,6 @@ libtool
 lib/libnids-1.21_patched/configure.lineno
 include/config.h
 python/justniffer-grab-http-traffic
+/justniffer
+__pycache__
+ws/test

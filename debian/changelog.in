@@ -1,7 +1,7 @@
-justniffer (0.5.14) wily; urgency=low
+justniffer ({{version}}) wily; urgency=low
   * timedout event added
 
- -- Oreste Notelli <oreste.notelli@plecno.com>  Thu, 10 March 2016 18:30:00 +0050
+ -- Oreste Notelli <oreste.notelli@plecno.com>  {{date.week_day}}, {{date.day}} {{date.month_name}} {{date.year}} {{date.time}} {{date.offset}}
 
 justniffer (0.5.11.quantal) quantal; urgency=low
   * Fixes for python 2.7

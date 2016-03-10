@@ -1,0 +1,15 @@
+argh==0.26.1
+decorator==4.0.9
+ipython==4.1.2
+ipython-genutils==0.1.0
+path.py==8.1.2
+pexpect==4.0.1
+pickleshare==0.6
+ptyprocess==0.5.1
+pudb==2016.1
+Pygments==2.1.3
+pystache==0.5.4
+pytz==2015.7
+simplegeneric==0.8.1
+traitlets==4.1.0
+urwid==1.3.1
