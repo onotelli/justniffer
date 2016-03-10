@@ -15,6 +15,7 @@ AC_DEFINE(JUSTNIFFER_VERSION, ["0.5.14"], [justniffer version])
 AC_DEFINE(JUSTNIFFER_YEAR, ["2016"], [justniffer year])
 AC_CONFIG_MACRO_DIR([included])
 AM_INIT_AUTOMAKE
+AM_MAINTAINER_MODE([disable])
 AC_DEFINE([HAVE_LIB_PCAP], [], [has not libcap])
 AM_CONFIG_HEADER(include/config.h)
 
