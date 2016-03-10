@@ -31,7 +31,7 @@ class Configurator():
         date_dict["week_day"] = d.strftime("%a")
         date_dict["time"] = d.strftime("%H:%M:%S")
         date_dict["offset"] = d.strftime("%z")
-        date_dict["month_name"] = d.strftime("%B")
+        date_dict["month_name"] = d.strftime("%b")
         return info_obj
     
     def _search_dir(self):

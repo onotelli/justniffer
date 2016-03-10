@@ -20,3 +20,9 @@ python/justniffer-grab-http-traffic
 /justniffer
 __pycache__
 ws/test
+build-stamp
+debian/files
+debian/justniffer.debhelper.log
+debian/justniffer.substvars
+debian/justniffer/
+
