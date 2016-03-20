@@ -395,10 +395,12 @@ public:
 	void parse(const char* format);
 	virtual ~parser(){theOnlyParser = NULL;};
 	void set_printer(printer* printer){_printer=printer;}
+    void set_handle_truncated(bool value){handle_truncated=value;}
 	void set_default_not_found( const std::string& default_not_found) {_default_not_found = default_not_found;}
 	bool _already_init;
         virtual int connection_number();
 private:
+    bool handle_truncated;
     void init()
     {
 		_already_init = false;

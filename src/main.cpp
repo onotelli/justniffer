@@ -257,7 +257,6 @@ int main(int argc, char*argv [])
 		p.set_printer(_printer.get());
 		
         p.set_handle_truncated(vm.count(handle_truncated_cmd));
-		p.set_max_lines(max_lines);
 		p.set_default_not_found(vm[not_found_string].as<string>());
 		// parse output format specifications
 		po::variable_value raw_arg = vm[raw_cmd];
