@@ -207,7 +207,7 @@ int main(int argc, char*argv [])
 		else
 		{
 			pcap_filename = pcapfile_arg.as<string>();
-			if (!vm.count(force_read_pcap))
+			if (!vm.count(force_read_pcap) && (pcap_filename != "-"))
 			    check_pcap_file(pcap_filename);
 			nids_params.filename=(char*)pcap_filename.c_str();
 		}
