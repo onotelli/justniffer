@@ -26,3 +26,4 @@ debian/justniffer.debhelper.log
 debian/justniffer.substvars
 debian/justniffer/
 
+/tmp
