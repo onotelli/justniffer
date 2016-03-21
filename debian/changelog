@@ -1,3 +1,8 @@
+justniffer (0.5.15) wily; urgency=low
+  * force read pcap file flag, inline functions in libnids removed
+
+ -- Oreste Notelli <oreste.notelli@plecno.com>  Mon, 21 Mar 2016 18:30:00 +0050
+
 justniffer (0.5.14) wily; urgency=low
   * timedout event added
 
