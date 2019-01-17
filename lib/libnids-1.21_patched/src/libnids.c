@@ -586,7 +586,10 @@ int nids_init()
 	struct bpf_program fcode;
 
 	if (pcap_compile(desc, &fcode, nids_params.pcap_filter, 1, mask) <
-	    0) return 0;
+	    0) {
+        strncat(nids_errbuf, pcap_geterr(desc), sizeof(nids_errbuf) - 1);
+        return 0;
+    }
 	if (pcap_setfilter(desc, &fcode) == -1)
 	    return 0;
     }
