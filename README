@@ -1,17 +1,17 @@
 
-Justniffer 
+# Justniffer 
 
-Network TCP Packet Sniffer
+## Network TCP Packet Sniffer
 
 Justniffer is a network protocol analyzer that captures network traffic and produces logs in a customized way, can emulate Apache web server log files, track response times and extract all "intercepted" files from the HTTP traffic.
 
 It lets you interactively trace tcp traffic from a live network or from a previously saved capture file. Justniffer's native capture file format is libpcap format, which is also the format used by tcpdump and various other tools.
 
-Reliable TCP Flow Rebuilding
+### Reliable TCP Flow Rebuilding
 
 The main Justniffer's feature is the ability to handle all those complex low level protocol issues and retrieve the correct flow of the TCP/IP traffic: IP fragmentation, TCP retransmission, reordering. etc. It uses portions of Linux kernel source code for handling all TCP/IP stuff. Precisely, it uses a slightly modified version of the libnids libraries that already include a modified version of Linux code in a more reusable way.
 
-Optimized for "Request / Response" protocols. It is able to track server response time
+### Optimized for "Request / Response" protocols. It is able to track server response time
 
 Justniffer was born as tool for helping in analyzing performance problem in complex network environment when it becomes impractical to analyze network captures solely using wireshark. It will help you to quickly identify the most significant bottlenecks analyzing the performance at "application" protocol level.
 
@@ -21,7 +21,7 @@ Other times it is desirable to collect access logs from web services implemented
 
 Justniffer can capture traffic in promiscuous mode so it can be installed on dedicated and independent station within the same network "collision domain" of the gateway of the systems that must be analyzed, collecting all traffic without affecting the system performances and requiring invasive installation of new software in production environments.
 
-Can rebuild and save HTTP content on files
+###  Can rebuild and save HTTP content on files
 
 The robust implementation for the reconstruction of the TCP flow turns it in a multipurpose sniffer.
 
@@ -31,15 +31,18 @@ SMTP sniffer
 SIP sniffer
 password sniffer
 justniffer can also be used to retrieve files sent over the network.
-It is extensible
+
+
+### It is extensible
 
 Can be extended by external scripts. A python script has been developed to recover all files sent via HTTP (images, text, html, javascript, etc.).
 
-Features Summary
 
-Reliable TCP flow rebuilding: it can reorder, reassemble tcp segments and ip fragments using portions of the Linux kernel code
-Logging text mode can be customized
-Extensibility by any executable, such as bash, python, perl scripts, ELF executable, etc.
-Performance measurement it can collect many information on performances: connection time, close time, request time , response time, close time, etc.
+### Features Summary
+
+- Reliable TCP flow rebuilding: it can reorder, reassemble tcp segments and ip fragments using portions of the Linux kernel code
+- Logging text mode can be customized
+- Extensibility by any executable, such as bash, python, perl scripts, ELF executable, etc.
+- Performance measurement it can collect many information on performances: connection time, close time, request time , response time, close time, etc.
 
 
