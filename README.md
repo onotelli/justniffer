@@ -46,6 +46,109 @@ Can be extended by external scripts. A python script has been developed to recov
 - Performance measurement it can collect many information on performances: connection time, close time, request time , response time, close time, etc.
 
 
+## TRACKING PERFORMANCES
+
+ The main feature of justniffer is to analize network traffic to monitor 
+ performances. The performances related keywords are:
+  **%connection.time**
+  **%idle.time.0**
+  **%request.time**
+  **%response.time**
+    **%response.time.begin**
+    **%response.time.end**
+  **%idle.time.1**
+
+
+
+    +---------+                           +---------+
+
+    |         |                           |         |
+
+    |  Client |                           | Server  |
+
+    |         |                           |         |
+
+    +---------+                           +---------+
+
+        |                                     |
+
+        |  -----   connect syn   -------->    |----+
+
+        |                                     |    |
+
+        |  <------   syn/ack    --------->    |    | %connection.time
+
+        |                                     |    |
+
+        |  -------     ack     ---------->    |    |
+
+        |           ESTABLISHED               |----+
+
+        |                                     |    | %idle.time.0 
+
+        |                                     |    |(after connection, before 
+
+        |                                     |    | request)
+
+        |                                     |    |
+
+        |  ---  request/first packet  --->    |----+
+
+        |  <------     ack     -----------    |    |
+
+        |                                     |    |
+
+        |  ---  request/....          --->    |    | %request.time
+
+        |  <------     ack     -----------    |    |
+
+        |                                     |    |
+
+        |  ---   request/last packet  --->    |    |
+
+        |  <------     ack     -----------    |----+--------------------+
+
+        |                                     |    |                    |
+
+        |                                     |    |                    |
+
+        |                                     |    |%response.time.begin |   
+
+        |                                     |    |                    |
+
+        |  <--  response/first packet ----    |----+                    | response 
+
+        |  -------     ack     ---------->    |    |                    | time
+
+        |                                     |    |                    |
+
+        |  <--  response/....         ----    |    |%response.time.end   |
+
+        |  -------     ack     ---------->    |    |                    |
+
+        |                                     |    |                    |
+
+        |  <--  response/last packet  ----    |    |                    |
+
+        |  -------     ack     ---------->    |----+--------------------+
+
+        |                                     |    |
+
+        |                                     |    |
+
+        |                                     |    | %idle.time.1 (after response, 
+
+        |                                     |    | before new request or close)
+
+        |                                     |    |
+
+        |  <------   close      --------->    |----+
+
+        |                                     |    |
+
+        |                                     |    |
+ 
+
 ## INSTALL
 
 Be sure you have installed third-party tools and libraries:
