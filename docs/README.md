@@ -403,3 +403,6 @@ output:
     /plecno_res/src/effects.js application/javascript 192.168.10.2
     /plecno_res/src/builder.js application/javascript 192.168.10.2
     /plecno_res/src/effects.js application/javascript 192.168.10.2
+
+
+see [MAN](MAN.md)
