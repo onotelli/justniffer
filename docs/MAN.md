@@ -162,12 +162,12 @@ sniffing proxy traffic
     justniffer -i eth0 -p "tcp port 8080"
 
 
-sniffing row telnet traffic
+sniffing raw telnet traffic
 
         justniffer -i eth0 -r -p "tcp port 23"
 
 
-sniffing row pop3 traffic
+sniffing raw pop3 traffic
 
         justniffer -i eth0 -r -p "tcp port 110"
 
