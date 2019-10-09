@@ -544,8 +544,7 @@ configuration file example:
     %%
     is replaced by `%'.
     
-##EXAMPLES
-
+## EXAMPLES
     sudo justsfniffer -i eth0 > /tmp/test.log
     sudo justsfniffer -i eth0 -l "%request.timestamp(%T %%D) - %request.header.host - %response.code - %response.time" > /tmp/test.log
     sudo justniffer -i eth0 -c config
