@@ -1,9 +1,9 @@
 # JUSTNIFFER
     Section: (8)
     Updated: September 12, 2011
-##NAME
+## NAME
     justniffer - tcp flow sniffer  
-##SYNOPSIS
+## SYNOPSIS
     justniffer [ [-i interface] or [-f <tcpdump file>] ] [-F]
     [-p <packet filter>] [-u or -x] 
     [ [-r] or [-l <log format>] or [-a <log format>]  ] 
@@ -41,7 +41,7 @@ Output format can be customized using the log format option -l (see FORMAT KEYWO
 Most of them can be used for retrieving HTTP protocol informations. See EXAMPLES
  
 
-##TRACKING PERFORMANCES
+## TRACKING PERFORMANCES
 The main feature of justniffer is to analize network traffic to monitor performances. The performances related keywords are:
 - %connection.time
 - %idle.time.0
@@ -141,7 +141,7 @@ The main feature of justniffer is to analize network traffic to monitor performa
             |                                     |    |
 
 
-##OPTIONS
+## OPTIONS
 
 **-i** or **--interface=<interface>** interface to listen on (e.g. eth0, en1, etc.)
 Example: justniffer -i eth0
