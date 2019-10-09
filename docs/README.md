@@ -5,6 +5,172 @@
 
 Justniffer is a network protocol analyzer that captures network traffic and produces logs in a customized way, can emulate Apache web server log files, track response times and extract all "intercepted" files from the HTTP traffic.
 
+It lets you interactively trace tcp traffic from a live network or from a previously saved capture file. Justniffer's native capture file format is libpcap format, which is also the format used by tcpdump and various other tools.
+
+### Reliable TCP Flow Rebuilding
+
+The main Justniffer's feature is the ability to handle all those complex low level protocol issues and retrieve the correct flow of the TCP/IP traffic: IP fragmentation, TCP retransmission, reordering. etc. It uses portions of Linux kernel source code for handling all TCP/IP stuff. Precisely, it uses a slightly modified version of the libnids libraries that already include a modified version of Linux code in a more reusable way.
+
+### Optimized for "Request / Response" protocols. It is able to track server response time
+
+Justniffer was born as tool for helping in analyzing performance problem in complex network environment when it becomes impractical to analyze network captures solely using wireshark. It will help you to quickly identify the most significant bottlenecks analyzing the performance at "application" protocol level.
+
+In very complex and distributed systems is often useful to understand how communication takes place between different components, and when this is implemented as a network protocol based on TCP/IP (HTTP, JDBC, RTSP, SIP, SMTP, IMAP, POP, LDAP, REST, XML-RPC, IIOP, SOAP, etc.), justniffer becomes very useful. Often the logging level and monitoring systems of these systems does not report important information to determine performance issues such as the response time of each network request. Because they are in a "production" environment and cannot be too much verbose or they are in-house developed applications and do not provide such logging.
+
+Other times it is desirable to collect access logs from web services implemented on different environments (various web servers, application servers, python web frameworks, etc.) or web services that are not accessible and therefore traceable only on client side.
+
+Justniffer can capture traffic in promiscuous mode so it can be installed on dedicated and independent station within the same network "collision domain" of the gateway of the systems that must be analyzed, collecting all traffic without affecting the system performances and requiring invasive installation of new software in production environments.
+
+###  Can rebuild and save HTTP content on files
+
+The robust implementation for the reconstruction of the TCP flow turns it in a multipurpose sniffer.
+
+HTTP sniffer
+LDAP sniffer
+SMTP sniffer
+SIP sniffer
+password sniffer
+justniffer can also be used to retrieve files sent over the network.
+
+
+### It is extensible
+
+Can be extended by external scripts. A python script has been developed to recover all files sent via HTTP (images, text, html, javascript, etc.).
+
+
+### Features Summary
+
+- Reliable TCP flow rebuilding: it can reorder, reassemble tcp segments and ip fragments using portions of the Linux kernel code
+- Logging text mode can be customized
+- Extensibility by any executable, such as bash, python, perl scripts, ELF executable, etc.
+- Performance measurement it can collect many information on performances: connection time, close time, request time , response time, close time, etc.
+
+
+## TRACKING PERFORMANCES
+
+ The main feature of justniffer is to analize network traffic to monitor 
+ performances. The performances related keywords are:
+  **%connection.time**
+  **%idle.time.0**
+  **%request.time**
+  **%response.time**
+    **%response.time.begin**
+    **%response.time.end**
+  **%idle.time.1**
+
+
+
+    +---------+                           +---------+
+
+    |         |                           |         |
+
+    |  Client |                           | Server  |
+
+    |         |                           |         |
+
+    +---------+                           +---------+
+
+        |                                     |
+
+        |  -----   connect syn   -------->    |----+
+
+        |                                     |    |
+
+        |  <------   syn/ack    --------->    |    | %connection.time
+
+        |                                     |    |
+
+        |  -------     ack     ---------->    |    |
+
+        |           ESTABLISHED               |----+
+
+        |                                     |    | %idle.time.0 
+
+        |                                     |    |(after connection, before 
+
+        |                                     |    | request)
+
+        |                                     |    |
+
+        |  ---  request/first packet  --->    |----+
+
+        |  <------     ack     -----------    |    |
+
+        |                                     |    |
+
+        |  ---  request/....          --->    |    | %request.time
+
+        |  <------     ack     -----------    |    |
+
+        |                                     |    |
+
+        |  ---   request/last packet  --->    |    |
+
+        |  <------     ack     -----------    |----+--------------------+
+
+        |                                     |    |                    |
+
+        |                                     |    |                    |
+
+        |                                     |    |%response.time.begin |   
+
+        |                                     |    |                    |
+
+        |  <--  response/first packet ----    |----+                    | response 
+
+        |  -------     ack     ---------->    |    |                    | time
+
+        |                                     |    |                    |
+
+        |  <--  response/....         ----    |    |%response.time.end   |
+
+        |  -------     ack     ---------->    |    |                    |
+
+        |                                     |    |                    |
+
+        |  <--  response/last packet  ----    |    |                    |
+
+        |  -------     ack     ---------->    |----+--------------------+
+
+        |                                     |    |
+
+        |                                     |    |
+
+        |                                     |    | %idle.time.1 (after response, 
+
+        |                                     |    | before new request or close)
+
+        |                                     |    |
+
+        |  <------   close      --------->    |----+
+
+        |                                     |    |
+
+        |                                     |    |
+ 
+
+## INSTALL
+
+Be sure you have installed third-party tools and libraries:
+
+- patch
+- tar
+- autotools
+- make
+- libc6
+- libpcap0.8
+- g++                         
+- gcc 
+- libboost-iostreams          
+- libboost-program-options
+- libboost-regex  
+
+
+unpacked the source package, type:
+
+    $ ./configure 
+    $ make 
+    $ make install
 
 ## EXAMPLES
 
@@ -18,7 +184,7 @@ output:
     192.168.2.2 - - [15/Apr/2009:17:20:18 +0200] "GET /csi?v=3&s=web&action=&tran=undefined&ei=MvvlSdjOEciRsAbY0rGpCw&e=19592,20292&rt=prt.175,xjs.557,ol.558 HTTP/1.1" 204 0 "http://www.google.it/search?q=subversion+tagging&ie=utf-8&oe=utf-8&aq=t&rls=com.ubuntu:en-US:unofficial&client=firefox-a" "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8 Gecko/2009032711 Ubuntu/8.10 (intrepid) Firefox/3.0.8)"
     192.168.2.2 - - [15/Apr/2009:17:20:07 +0200] "GET /HTTP/1.1" 200 0 "" "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8) Gecko/2009032711 Ubuntu/8.10 (intrepid) Firefox/3.0.8)"
 
-### Example 2. Like Example 1 but appending other fields,
+## Example 2. Like Example 1 but appending other fields,
 For example http response time (see man page for a complete keyword list)
 
     $ justniffer -i eth0 -a " %response.time"
@@ -29,7 +195,7 @@ output:
     192.168.2.5 - - [22/Apr/2009:22:27:51 +0200] "GET /complete/search?output=firefox&client=firefox&hl=en-US&q=add+a HTTP/1.1" 200 128 "" "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8) Gecko/2009032711 Ubuntu/8.10 (intrepid) Firefox/3.0.8)"0.266929 
     192.168.2.5 - - [22/Apr/2009:22:27:21 +0200] "GET /extern_js/f/CgJlbiswCjgVLCswDjgFLCswFjgJLCswFzgBLCswGDgDLCswITgWLCswJTjJiAEsKzAmOAQsKzAnOAAs/-wB3HvFrpXA.js HTTP/1.1" 304 0 "http://www.google.com/search?q=gnusticker&hl=en&safe=off&start=20&sa=N" "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8) Gecko/2009032711 Ubuntu/8.10 (intrepid) Firefox/3.0.8)" 2.025879
 
-### Example 3. Capture all tcp traffic
+## Example 3. Capture all tcp traffic
 (add -u or -x options to encode unprintable characters):
 
     $ justniffer -i eth0 -r
@@ -60,7 +226,7 @@ output:
     Expires: Thu, 23 Apr 2009 20:38:51 GMT
     Cache-Control: max-age=86400
 
-### Example 4. Define a completely custom log format
+## Example 4. Define a completely custom log format
 
     $ justniffer -i eth0 -l "%request.timestamp %source.ip %dest.ip %request.header.host %request.url" 
 
@@ -73,13 +239,13 @@ output:
     06/28/11 13:30:49 192.168.2.2 216.34.181.71 static.sourceforge.net /include/coremetrics/v40/eluminate.js 
     06/28/11 13:30:51 192.168.2.2 199.93.61.126 c.fsdn.com /sf/images/phoneix/grad_white_dual_100.png 
 
-### Example 5. Read from a capture file
+## Example 5. Read from a capture file
 NOTE: capture file must be performed with unlimited snaplen for catching whole packets. Justniffer can work only works on pcap files with whole packets.
 tcpdump command example: tcpdump -w /tmp/file.cap -s0 -i ath0
 
     $ justniffer -f /file.cap
 
-### Example 6. Parameters for setting a more precise formatting
+## Example 6. Parameters for setting a more precise formatting
 Many keyword has parameters for setting a more precise formatting:
 
     $ justniffer -i eth0 -l "%request.timestamp %request.header.host %request.url %response.time" 
@@ -111,12 +277,12 @@ output:
     06/28/11 15:10:28 www.google.com www.google.com/ig?hl=en 0.116146
     06/28/11 15:10:28 NoHostFound N/A/ig?hl=en 0.116146 
 
-### Example 7. Capture only http traffic
+## Example 7. Capture only http traffic
 the -p option let you to specify a tcpdump compatible filter (see pcap-filter(7)): "port 80 or port 8080" capture only http traffic (usually using tcp port 80 and 8080)
 
     $ justniffer -i eth0 -r -p "port 80 or port 8080"
 
-### Example 8. Extend with an external executable
+## Example 8. Extend with an external executable
 the -e option let you to specify an external executable (usually a script) to which , for every log, the output will be redirect to. If you want to perform complex extraction operations, you can write your own script that will receive from the standard input all content specified by the -l option. A complete ad useful example is provided with justniffer-grab-http-traffic
     $ justniffer -l "%response" -e ./myscript.sh -i ath0
 
@@ -125,7 +291,7 @@ myscript.sh
         
     #!/bin/bash
     # myscript.sh 
-    ## Example script (print all lines containing "href" string)
+    # example script (print all lines containing "href" string)
 
     while read inputline
     do 
@@ -138,7 +304,7 @@ myscript.sh
       
 
     
-### Example 9. Capture smtp traffic (usually using tcp port 25)
+## Example 9. Capture smtp traffic (usually using tcp port 25)
     $ justniffer -i eth0 -r -p "port 25"
 
 output:
@@ -216,12 +382,12 @@ output:
       
 
     
-### Example 10. Trace performances
+## Example 10. Trace performances
 The following keywords are used to obtain logs that give an overview on the performance of services based on HTTP protocol measuring connection time, response time, tcp connection timeouts, keep alive requests, etc. (see man for more information)
 
     $ sudo justniffer -i eth0 -u -p "port 80 or port 8080" -l "%request.header.host %request.url %connection.time %idle.time.0  %request.time %response.time.begin %response.time.end %idle.time.1 %connection %close.originator"
 
-### Example 11. Grep keywords
+## Example 11. Grep keywords
 The "grep keywords"can be used to capture portions of text using regular expressions. In this example we want to collect:
 
 the url from the request header by the regular expression [^\s]*[\s]*([^\s]*)
