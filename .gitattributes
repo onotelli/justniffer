@@ -3,3 +3,4 @@ compile* linguist-vendored
 configure* linguist-vendored
 m4/ linguist-vendored
 config* linguist-vendored
+Make* linguist-vendored
