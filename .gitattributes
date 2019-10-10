@@ -1,6 +1,8 @@
 *.m4 linguist-vendored
 compile* linguist-vendored
-configure* linguist-vendored
 m4/ linguist-vendored
 config* linguist-vendored
 Make* linguist-vendored
+autom4te.cache/ linguist-vendored
+depcomp linguist-vendored
+*sh linguist-vendored
