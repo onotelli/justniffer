@@ -7,3 +7,4 @@ autom4te.cache/* linguist-vendored
 justniffer.8* linguist-vendored
 depcomp linguist-vendored
 *sh linguist-vendored
+lib/libnids-1.21_patched/src/libnids.3* linguist-vendored
