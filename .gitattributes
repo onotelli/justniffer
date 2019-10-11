@@ -3,6 +3,7 @@ compile* linguist-vendored
 m4/ linguist-vendored
 config* linguist-vendored
 Make* linguist-vendored
-autom4te.cache/ linguist-vendored
+autom4te.cache/* linguist-vendored
+justniffer.8* linguist-vendored
 depcomp linguist-vendored
 *sh linguist-vendored
