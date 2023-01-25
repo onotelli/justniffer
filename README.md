@@ -11,12 +11,13 @@ Justniffer is one of many options available for HTTP traffic analysis, some of w
 
 Justniffer can be used for multiple purposes, such as:
 
-Analyzing HTTP traffic in a development environment to identify any issues
-Analyzing HTTP traffic in a production environment to monitor performance
-Analyzing HTTP traffic in a testing environment to verify the correct functioning of applications
-Debugging security issues
-Analyzing bandwidth and bandwidth usage.
-Justniffer is a very useful tool for developers, system managers, and network administrators.
+- Analyzing HTTP traffic in a development environment to identify any issues
+- Analyzing HTTP traffic in a production environment to monitor performance
+- Analyzing HTTP traffic in a testing environment to verify the correct functioning of applications
+- Debugging security issues
+- Analyzing bandwidth and bandwidth usage.
+
+Justniffer is a tool for developers, system managers, and network administrators.
 
 
 ## EXAMPLES
