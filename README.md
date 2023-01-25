@@ -3,7 +3,20 @@
 
 ## Network TCP Packet Sniffer
 
-Justniffer is a network protocol analyzer that captures network traffic and produces logs in a customized way, can emulate Apache web server log files, track response times and extract all "intercepted" files from the HTTP traffic.
+Justniffer is a network traffic analysis tool that allows you to analyze and trace HTTP traffic in a network. Justniffer allows capturing network packets and decoding HTTP data, providing detailed information about HTTP requests and responses, such as the IP address of the client and server, the requested URL, header fields and message content.
+
+Justniffer is written in Python and uses the libpcap network packet analysis library to capture network packets. Justniffer is able to decode network packets so that the data can be viewed in a clear and easy-to-read format, allowing for efficient traffic analysis.
+
+Justniffer is one of many options available for HTTP traffic analysis, some of which are tcpdump, Wireshark, mitmproxy, Charles, and Fiddler.
+
+Justniffer can be used for multiple purposes, such as:
+
+Analyzing HTTP traffic in a development environment to identify any issues
+Analyzing HTTP traffic in a production environment to monitor performance
+Analyzing HTTP traffic in a testing environment to verify the correct functioning of applications
+Debugging security issues
+Analyzing bandwidth and bandwidth usage.
+Justniffer is a very useful tool for developers, system managers, and network administrators.
 
 
 ## EXAMPLES
