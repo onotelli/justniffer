@@ -77,6 +77,7 @@ public:
 	virtual void append(std::basic_ostream<char>& out, const timeval* t, connections_container* pconnections_container) = 0;
 	virtual void onClose(tcp_stream* pstream, const timeval* ,unsigned char* packet) = 0;
 	virtual void onTimedOut(tcp_stream* pstream, const timeval* ,unsigned char* packet) = 0;
+	virtual void onInterrupted() = 0;
 	virtual ~handler(){}
 };
 
@@ -89,7 +90,7 @@ class basic_handler : public handler
 	virtual void onResponse(tcp_stream* pstream,const  timeval* t){}
 	virtual void onClose(tcp_stream* pstream, const timeval* ,unsigned char* packet){}
 	virtual void onTimedOut(tcp_stream* pstream, const timeval* ,unsigned char* packet){}
-
+	virtual void onInterrupted() {}
 };
 
 typedef std::vector<handler::ptr> handlers;
@@ -332,7 +333,7 @@ private:
 
 class stream : public shared_obj<stream>, public tcp_stream
 {
-enum status_enum{unknown, opening, open, request, response, close, timedout};
+enum status_enum{unknown, opening, open, request, response, close, timedout, interrupted};
 public:
     timeval opening_time;
     unsigned tot_requests;
@@ -344,6 +345,7 @@ public:
 	virtual void onTimedOut(tcp_stream* pstream, const timeval* t,unsigned char* packet);
 	virtual void onRequest(tcp_stream* pstream, const timeval* t);
 	virtual void onResponse(tcp_stream* pstream, const timeval* t);
+	virtual void onInterrupted();
 	virtual ~stream(){};
 	virtual void init(tcp_stream* pstream);
 	virtual void reinit();
@@ -399,6 +401,8 @@ public:
 	void set_default_not_found( const std::string& default_not_found) {_default_not_found = default_not_found;}
 	bool _already_init;
         virtual int connection_number();
+	void process_truncated();
+		
 private:
     bool handle_truncated;
     void init()
@@ -417,8 +421,7 @@ private:
 	void process_client(tcp_stream *ts, struct timeval* t, unsigned char* packet);
 	void process_close_connection(tcp_stream *ts, struct timeval* t, unsigned char* packet);
 	void process_timedout_connection(tcp_stream *ts, struct timeval* t, unsigned char* packet);
-
-	static parser* theOnlyParser;
+	
 	parse_elements elements;
 	streams connections;
 	//streamtimes_index_type streamtimes_index;
@@ -428,6 +431,7 @@ private:
 	std::string _default_not_found;
 public:
 	
+	static parser* theOnlyParser;
 	static const char _key_word_id;
 };
 
@@ -975,8 +979,10 @@ public:
 	virtual void onTimedOut(tcp_stream* pstream, const timeval* t, unsigned char* packet);
 	virtual void onRequest(tcp_stream* pstream, const timeval* t);
 	virtual void onResponse(tcp_stream* pstream,const  timeval* t);
+	virtual void onInterrupted();
+	
 private:
-	enum status{unknown, closed, timedout} ;
+	enum status{unknown, closed, timedout, truncated} ;
 	status stat;
 	u_int32_t ip_originator, sip, dip;
 	string _not_found;

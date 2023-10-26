@@ -35,7 +35,7 @@ unsigned long ip_to_ulong(char b0, char b1, char b2 , char b3)
 	return val;
 }
 
-void check_pcap_file(const string& str) throw (invalid_pcap_file)
+void check_pcap_file(const string& str) 
 {
 	char errbuff[4096];
 	pcap_t * p = pcap_open_offline(str.c_str(), errbuff);

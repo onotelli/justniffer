@@ -73,7 +73,7 @@ inline double to_double(const timeval& t)
 
 unsigned long ip_to_ulong(char b0, char b1, char b2 , char b3);
 string ip_to_str (u_long addr);
-void check_pcap_file(const string& str) throw (invalid_pcap_file);
+void check_pcap_file(const string& str);
 bool operator < (const struct tuple4& a, const struct tuple4& b);
 bool operator < (const timeval&  a, const timeval& b);
 timeval operator -(const timeval& x, const timeval& y);
@@ -91,7 +91,7 @@ private:
   uid_t previous_uid;
 };
 
-template <class E> void check (bool arg1, const E& e) throw (exception)
+template <class E> void check (bool arg1, const E& e)
 {
 	if (!arg1)
 		throw E(e);

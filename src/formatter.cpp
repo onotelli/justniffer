@@ -300,6 +300,14 @@ void parser::process_close_connection(tcp_stream *ts, struct timeval* t, unsigne
 	//cout << "connections.erase\n";
 }
 
+void parser::process_truncated()
+{
+	for (const auto& entry : connections){
+	  const conn_info& value = entry.second;
+	  value.stream_ptr->onInterrupted();
+	}
+}
+
 ///// keyword_base /////
 const char reserved_chars[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ._";
 
@@ -565,6 +573,18 @@ void stream::onTimedOut(tcp_stream* pstream, const timeval* t,unsigned char* pac
 	tot_requests = 0;
 }
 
+void stream::onInterrupted()
+{
+	//copy_tcp_stream(pstream);
+	for (handlers::iterator i= _handlers.begin(); i!= _handlers.end(); i++)
+	{
+		(*i)->onInterrupted();
+	}
+	status = interrupted;	
+	print(NULL);
+	tot_requests = 0;
+}
+
 void stream::onRequest(tcp_stream* pstream, const timeval* t)
 {
 	copy_tcp_stream(pstream);
@@ -648,6 +668,10 @@ void close_originator::append(std::basic_ostream<char>& out, const timeval* t,co
 	{
 		out <<"timedout";//<< ip_originator<< " " << dip<< " "<<sip;
 	}
+	else if (stat == truncated)
+	{
+		out <<"truncated";
+	}
 	else
 		out <<_not_found;
 	
@@ -685,9 +709,14 @@ void close_originator::onRequest(tcp_stream* pstream, const timeval* t)
 	sip = pstream->addr.saddr;
 	dip = pstream->addr.daddr;
 }
+
 void close_originator::onResponse(tcp_stream* pstream,const  timeval* t)
 {
 	sip = pstream->addr.saddr;
 	dip = pstream->addr.daddr;
 }
 
+void close_originator::onInterrupted()
+{
+	stat = truncated;
+}

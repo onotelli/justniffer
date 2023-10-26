@@ -25,5 +25,5 @@ debian/files
 debian/justniffer.debhelper.log
 debian/justniffer.substvars
 debian/justniffer/
-
+.vscode
 /tmp

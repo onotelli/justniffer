@@ -299,6 +299,7 @@ int main(int argc, char*argv [])
 
 		nids_register_chksum_ctl(chksumctl, 1);
 		nids_run();
+		parser::theOnlyParser->process_truncated();
 		// reached when parsing file
 		exit(0);
 

@@ -20,7 +20,7 @@ AC_DEFINE([HAVE_LIB_PCAP], [], [has not libcap])
 AM_CONFIG_HEADER(include/config.h)
 
 
-AM_INIT_AUTOMAKE([-Wall -Werror])
+AC_INIT([-Wall -Werror])
 
 dnl if test "$CXXFLAGS" = ""; then
 dnl CXXFLAGS="-Os -Wall"
