@@ -8,10 +8,10 @@ dnl
 dnl	Author: Oreste Notelli <oreste.notelli@plecno.com>	
 dnl
 
-AC_PREREQ(2.60)
+AC_PREREQ([2.71])
 AC_COPYRIGHT(2007-2016 (c) Plecno s.r.l)
-AC_INIT(justniffer, [0.5.15], info@plecno.com)
-AC_DEFINE(JUSTNIFFER_VERSION, ["0.5.15"], [justniffer version])
+AC_INIT([justniffer],[0.5.16],[info@plecno.com])
+AC_DEFINE(JUSTNIFFER_VERSION, ["0.5.16"], [justniffer version])
 AC_DEFINE(JUSTNIFFER_YEAR, ["2016"], [justniffer year])
 #AC_CONFIG_MACRO_DIR([included])
 AM_INIT_AUTOMAKE
@@ -49,11 +49,24 @@ AC_C_CONST
 AC_C_INLINE
 AC_FUNC_STRFTIME
 AC_HEADER_STDBOOL
-AC_HEADER_TIME
+m4_warn([obsolete],
+[Update your code to rely only on HAVE_SYS_TIME_H,
+then remove this warning and the obsolete code below it.
+All current systems provide time.h; it need not be checked for.
+Not all systems provide sys/time.h, but those that do, all allow
+you to include it and time.h simultaneously.])dnl
+AC_CHECK_HEADERS_ONCE([sys/time.h])
+# Obsolete code to be removed.
+if test $ac_cv_header_sys_time_h = yes; then
+  AC_DEFINE([TIME_WITH_SYS_TIME],[1],[Define to 1 if you can safely include both <sys/time.h>
+	     and <time.h>.  This macro is obsolete.])
+fi
+# End of obsolete code.
+
 AC_STRUCT_TM
 AC_CHECK_HEADER(netinet/ip.h, , 
   AC_MSG_ERROR(["cannot find netinet/ip.h"]))
-AC_PROG_LIBTOOL  
+LT_INIT  
 AC_CHECK_LIB(pcap, pcap_open_live, AC_DEFINE(HAVE_LIB_PCAP))
 
 AX_BOOST_BASE([1.46])
@@ -90,7 +103,8 @@ fi
 AC_SUBST(PYTHONSUBDIR)
 
 	
-AC_OUTPUT(Makefile src/Makefile python/Makefile )
+AC_CONFIG_FILES([Makefile src/Makefile python/Makefile ])
+AC_OUTPUT
 
 
 
