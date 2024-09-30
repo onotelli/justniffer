@@ -1,7 +1,7 @@
 justniffer (0.5.16) jammy; urgency=low
   * handle truncated connection
 
- -- Oreste Notelli <oreste.notelli@plecno.com>  Mon, 30 September 2024 23:20:00 +0050
+ -- Oreste Notelli <oreste.notelli@gmail.com>  Mon, 30 Sep 2024 23:20:00 +0050
 
 justniffer (0.5.15) wily; urgency=low
   * force read pcap file flag, inline functions in libnids removed

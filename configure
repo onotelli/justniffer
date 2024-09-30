@@ -4,7 +4,7 @@
 #
 # Report bugs to <info@plecno.com>.
 #
-# 2007-2016 (c) Plecno s.r.l
+# 2007-2024 (c) Plecno s.r.l
 #
 #
 # Copyright (C) 1992-1996, 1998-2017, 2020-2021 Free Software Foundation,
@@ -1598,7 +1598,7 @@ Copyright (C) 2021 Free Software Foundation, Inc.
 This configure script is free software; the Free Software Foundation
 gives unlimited permission to copy, distribute and modify it.
 
-2007-2016 (c) Plecno s.r.l
+2007-2024 (c) Plecno s.r.l
 _ACEOF
   exit
 fi
@@ -3006,7 +3006,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 printf "%s\n" "#define JUSTNIFFER_VERSION \"0.5.16\"" >>confdefs.h
 
 
-printf "%s\n" "#define JUSTNIFFER_YEAR \"2016\"" >>confdefs.h
+printf "%s\n" "#define JUSTNIFFER_YEAR \"2024\"" >>confdefs.h
 
 #AC_CONFIG_MACRO_DIR([included])
 am__api_version='1.16'

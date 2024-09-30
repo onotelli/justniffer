@@ -9,10 +9,10 @@ dnl	Author: Oreste Notelli <oreste.notelli@plecno.com>
 dnl
 
 AC_PREREQ([2.71])
-AC_COPYRIGHT(2007-2016 (c) Plecno s.r.l)
+AC_COPYRIGHT(2007-2024 (c) Plecno s.r.l)
 AC_INIT([justniffer],[0.5.16],[info@plecno.com])
 AC_DEFINE(JUSTNIFFER_VERSION, ["0.5.16"], [justniffer version])
-AC_DEFINE(JUSTNIFFER_YEAR, ["2016"], [justniffer year])
+AC_DEFINE(JUSTNIFFER_YEAR, ["2024"], [justniffer year])
 #AC_CONFIG_MACRO_DIR([included])
 AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE([disable])

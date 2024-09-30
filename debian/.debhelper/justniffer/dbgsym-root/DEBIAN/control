@@ -1,0 +1,13 @@
+Package: justniffer-dbgsym
+Package-Type: ddeb
+Source: justniffer
+Version: 0.5.16
+Auto-Built-Package: debug-symbols
+Architecture: amd64
+Maintainer: Oreste Notelli <oreste.notelli@plecno.com>
+Installed-Size: 1867
+Depends: justniffer (= 0.5.16)
+Section: debug
+Priority: optional
+Description: debug symbols for justniffer
+Build-Ids: 15a704134b8ebc075b87f45f48a1b0b3ed721c95

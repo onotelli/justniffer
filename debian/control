@@ -8,7 +8,7 @@ Standards-Version: 3.9.2
 Package: justniffer
 Homepage: http://justniffer.sourceforge.net/
 Architecture: any
-Depends: ${shlibs:Depends}, python (>=2.6)
+Depends: ${shlibs:Depends}
 Description: tcp packet sniffer. It can log network traffic in 
  a 'standard' (web server like) or in a customized way. It can also log response 
  times, useful for tracking network services performances (e.g. web server, 
