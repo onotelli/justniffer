@@ -172,6 +172,13 @@ unpacked the source package, type:
     $ make 
     $ make install
 
+## Install on Ubuntu
+    sudo apt install software-properties-common
+    sudo add-apt-repository ppa:oreste-notelli/ppa
+    sudo apt update
+    sudo apt install justniffer
+
+
 ## EXAMPLES
 
 ### Example 1. Retrieving http network traffic in access_log format

@@ -95,3 +95,9 @@ tcpdump command example: tcpdump -w /tmp/file.cap -s0 -i ath0
 
 
 see  [project site](https://onotelli.github.io/justniffer/)
+
+## Install on Ubuntu
+    sudo apt install software-properties-common
+    sudo add-apt-repository ppa:oreste-notelli/ppa
+    sudo apt update
+    sudo apt install justniffer
