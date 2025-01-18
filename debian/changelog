@@ -1,4 +1,4 @@
-justniffer (0.5.16) jammy; urgency=low
+justniffer (0.5.16.noble) noble; urgency=low
   * handle truncated connection
 
  -- Oreste Notelli <oreste.notelli@gmail.com>  Mon, 30 Sep 2024 23:20:00 +0050
