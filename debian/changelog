@@ -1,3 +1,8 @@
+justniffer (0.5.17) noble; urgency=low
+  * handle truncated connection
+
+ -- Oreste Notelli <oreste.notelli@gmail.com>  Mon, 18 Jan 2025 21:10:00 +0100
+
 justniffer (0.5.16.noble) noble; urgency=low
   * handle truncated connection
 

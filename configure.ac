@@ -1,5 +1,5 @@
 dnl
-dnl	Copyright (c) 2007-2016 Plecno s.r.l. All Rights Reserved 
+dnl	Copyright (c) 2007-2025 Plecno s.r.l. All Rights Reserved 
 dnl	info@plecno.com
 dnl	via Giovio 8, 20144 Milano, Italy
 dnl
@@ -9,16 +9,16 @@ dnl	Author: Oreste Notelli <oreste.notelli@plecno.com>
 dnl
 
 AC_PREREQ([2.71])
-AC_COPYRIGHT(2007-2024 (c) Plecno s.r.l)
-AC_INIT([justniffer],[0.5.16],[info@plecno.com])
-AC_DEFINE(JUSTNIFFER_VERSION, ["0.5.16"], [justniffer version])
-AC_DEFINE(JUSTNIFFER_YEAR, ["2024"], [justniffer year])
+AC_COPYRIGHT(2007-2025 (c) Plecno s.r.l)
+AC_INIT([justniffer],[0.5.17],[info@plecno.com])
+AC_DEFINE(JUSTNIFFER_VERSION, ["0.5.17"], [justniffer version])
+AC_DEFINE(JUSTNIFFER_YEAR, ["2025"], [justniffer year])
 #AC_CONFIG_MACRO_DIR([included])
 AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE([disable])
 AC_DEFINE([HAVE_LIB_PCAP], [], [has not libcap])
 AM_CONFIG_HEADER(include/config.h)
-
+AC_SUBST([BASH_COMPLETION_DIR])
 
 #AM_INIT_AUTOMAKE([-Wall -Werror])
 
@@ -91,6 +91,8 @@ AC_CHECK_FILE(lib/$LIBNIDS/README.original, ,
   ]
 )
 
+BASH_COMPLETION_DIR="`pkg-config --variable=completionsdir bash-completion`"
+
 AC_CONFIG_SUBDIRS([lib/libnids-1.21_patched])
 	
 AX_PYTHON
@@ -103,7 +105,7 @@ fi
 AC_SUBST(PYTHONSUBDIR)
 
 	
-AC_CONFIG_FILES([Makefile src/Makefile python/Makefile ])
+AC_CONFIG_FILES([Makefile src/Makefile ])
 AC_OUTPUT
 
 

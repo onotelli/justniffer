@@ -1,5 +1,5 @@
 #!/bin/bash
-JUST_VERSION=0.5.16
+JUST_VERSION=0.5.17
 
 TMP_DIR=/tmp
 JUST_DIR=justniffer

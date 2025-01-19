@@ -14,6 +14,7 @@
 #include "config.h"
 #include <boost/program_options.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
+#include <boost/algorithm/string/join.hpp> 
 #include <string>
 #include <vector>
 #include <iostream>
@@ -127,7 +128,7 @@ int main(int argc, char*argv [])
 			(string(version_cmd).append(",V").c_str(), "version")
 			(string(filecap_cmd).append(",f").c_str(), po::value<string>(), "input file in 'tcpdump capture file format' (e.g. produced by tshark or tcpdump)")
 			(string(interface_cmd).append(",i").c_str(), po::value<string>(), "network interface to listen on (e.g. eth0, en1, etc.)")
-			(string(logformat_cmd).append(",l").c_str(), po::value<string>(), string("log format (see FORMAT KEYWORDS). If missing the CommonLog (apache access log) format will ne used. See man page for further infos\nIt is equivalent to \n").append(default_format).c_str())
+			(string(logformat_cmd).append(",l").c_str(), po::value<vector<string>>()->multitoken(), string("log format (see FORMAT KEYWORDS). If missing the CommonLog (apache access log) format will ne used. See man page for further infos\nIt is equivalent to \n").append(default_format).c_str())
 			(string(append_logformat_cmd).append(",a").c_str(), po::value<string>(), "append log format (see FORMAT KEYWORDS) to the default apache log format.")
 			(string(config_cmd).append(",c").c_str(), po::value<string>(), "configuration file")
 			(string(user_cmd).append(",U").c_str(), po::value<string>(), string("user to impersonate when executing the command specified by the \"").append(execute_cmd ).append("\" option").c_str())
@@ -276,7 +277,10 @@ int main(int argc, char*argv [])
 		else
 		{
 			if (vm.count(logformat_cmd))
-				p.parse(logformat_arg.as<string>().c_str());
+			{
+				auto s =boost::algorithm::join(logformat_arg.as<vector<string>>(), " ");
+				p.parse(s.c_str());
+			}
 			else
 				p.parse(default_format);
 		}
