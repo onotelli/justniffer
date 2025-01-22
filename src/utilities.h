@@ -78,6 +78,7 @@ bool operator < (const struct tuple4& a, const struct tuple4& b);
 bool operator < (const timeval&  a, const timeval& b);
 timeval operator -(const timeval& x, const timeval& y);
 bool get_headers(const char* start, const char* end,  string& str);
+bool get_body(const char* start, const char* end, string& str, bool header_complete);
 bool get_first_line (const char* start , const char* end, string& out);
 std::string timestamp(const timeval* tv, const string& frm);
 void change_current_user(const char* username);

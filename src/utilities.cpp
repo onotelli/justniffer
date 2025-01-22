@@ -142,6 +142,49 @@ bool get_headers(const char* start, const char* end,  string& str)
 	return complete;
 }
 
+bool get_body(const char* start, const char* end, string& str, bool headers_complete)
+{
+	int counter = 0;
+
+    // Iterate through the data between start and end
+    for (const char* it = start; it != end; ++it)
+    {
+        // Process headers first (headers end with double CRLF, i.e., "\r\n\r\n")
+        if (!headers_complete)
+        {
+            // Detect a CRLF sequence (0x0D 0x0A) indicating the end of a header line
+            if (*it == 13)  // CR (Carriage Return)
+            {
+                counter++;
+            }
+            else if (counter && *it != 10)  // LF (Line Feed)
+            {
+                counter = 0;
+            }
+            if (counter >= 2)  // Double CRLF
+            {
+                headers_complete = true;  // Mark headers as complete
+				it += 2;  // Skip the double CRLF
+				if (it >= end){
+					break;
+				}
+                //str += "\r\n\r\n";  // Add the double CRLF to indicate end of headers
+            }
+        }
+
+        if (headers_complete)
+        {
+            str += *it;  // Append the character to the response body
+
+        }
+    }
+
+    // If we have completed the entire response (headers and body), return true
+
+    return headers_complete;
+}
+
+
 timeval operator -(const timeval& x, const timeval& y)
 {
 	timeval t1 = x;

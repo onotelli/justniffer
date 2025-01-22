@@ -491,6 +491,25 @@ protected:
 };
 
 template <class base>
+class request_body_collector : public base
+{
+public:
+	request_body_collector() :header_complete(false){}
+	virtual void onRequest(tcp_stream *pstream, const timeval *t)
+	{
+		header_complete = get_body(pstream->server.data, pstream->server.data + pstream->server.count_new, text, header_complete);
+	}
+
+protected:
+	string text;
+private:
+	bool header_complete;
+
+};
+
+
+
+template <class base>
 class response_header_collector : public base
 {
 public:
@@ -507,6 +526,23 @@ private:
 protected:
 	string text;
 };
+
+template <class base>
+class response_body_collector : public base
+{
+public:
+	response_body_collector():header_complete(false) {}
+	virtual void onResponse(tcp_stream *pstream, const timeval *t)
+	{
+		header_complete = get_body(pstream->client.data, pstream->client.data + pstream->client.count_new, text, header_complete);
+	}
+
+protected:
+	string text;
+private:
+	bool header_complete;
+};
+
 
 template <class base>
 class request_collector : public base

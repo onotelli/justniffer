@@ -133,8 +133,8 @@ void parser::parse(const char *input)
 	}
 }
 
-typedef keyword_arg_and_optional_not_found<header_handler_factory_t<regex_handler_request>> req_header;
-typedef keyword_arg_and_optional_not_found<header_handler_factory_t<regex_handler_response>> resp_header;
+typedef keyword_arg_and_optional_not_found<header_handler_factory_t<regex_handler_request_header>> req_header;
+typedef keyword_arg_and_optional_not_found<header_handler_factory_t<regex_handler_response_header>> resp_header;
 typedef parse_element::ptr pelem;
 
 #define REQUEST_HEADER(key, head) elements[key] = pelem(new req_header(string(head), _default_not_found))
@@ -158,6 +158,9 @@ void parser::init_parse_elements()
 	elements["close.originator"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, close_originator>>(_default_not_found));
 	elements["close.timestamp"] = pelem(new keyword_arg_and_optional_params<handler_factory_t_arg2<string, string, close_timestamp_handler>>("%D %T", _default_not_found));
 	elements["close.timestamp2"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, close_timestamp_handler2>>(_default_not_found));
+	elements["session.time"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, session_time_handler>>(_default_not_found));
+	elements["session.requests"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, session_request_counter>>(_default_not_found));
+
 	elements["request"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_all_request>>(string(".*")));
 	elements["request.timestamp"] = pelem(new keyword_arg_and_optional_params<handler_factory_t_arg2<string, string, request_timestamp_handler>>("%D %T", _default_not_found));
 	elements["request.timestamp2"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, request_timestamp_handler2>>(_default_not_found));
@@ -168,9 +171,8 @@ void parser::init_parse_elements()
 	elements["request.url"] = pelem(new keyword_arg_and_optional_params<regex_handler_factory_t<regex_handler_request_line>>(string("^[^\\s]*\\s*([^\\s]*)"), _default_not_found));
 	elements["request.protocol"] = pelem(new keyword_arg_and_optional_params<regex_handler_factory_t<regex_handler_request_line>>(string("^[^\\s]*\\s*[^\\s]*\\s*([^\\s]*)"), _default_not_found));
 	elements["request.grep"] = pelem(new keyword_params_and_arg<regex_handler_factory_t<regex_handler_all_request>>(_default_not_found));
-	elements["request.header"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_request>>(string(".*")));
-	elements["session.time"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, session_time_handler>>(_default_not_found));
-	elements["session.requests"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, session_request_counter>>(_default_not_found));
+	elements["request.header"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_request_header>>(string(".*")));
+	elements["request.body"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_request_body>>(string(".*")));
 
 	REQUEST_HEADER("request.header.host", "Host");
 	REQUEST_HEADER("request.header.user-agent", "User-Agent");
@@ -180,6 +182,7 @@ void parser::init_parse_elements()
 	REQUEST_HEADER("request.header.accept-language", "Accept-Language");
 	REQUEST_HEADER("request.header.authorization", "Authorization");
 	REQUEST_HEADER("request.header.keep-alive", "Keep-Alive");
+	REQUEST_HEADER("request.header.origin", "Origin");
 	REQUEST_HEADER("request.header.referer", "Referer");
 	REQUEST_HEADER("request.header.range", "Range");
 	REQUEST_HEADER("request.header.cookie", "Cookie");
@@ -189,9 +192,10 @@ void parser::init_parse_elements()
 	REQUEST_HEADER("request.header.transfer-encoding", "Transfer-Encoding");
 	REQUEST_HEADER("request.header.content-length", "Content-Length");
 	REQUEST_HEADER("request.header.content-md5", "Content-MD5");
+	REQUEST_HEADER("request.header.content-type", "Content-Type");
 	REQUEST_HEADER("request.header.via", "Via");
-	elements["request.header.value"] = pelem(new keyword_params<header_handler_factory_t<regex_handler_request>>());
-	elements["request.header.grep"] = pelem(new keyword_params_and_arg<regex_handler_factory_t<regex_handler_request>>(_default_not_found));
+	elements["request.header.value"] = pelem(new keyword_params<header_handler_factory_t<regex_handler_request_header>>());
+	elements["request.header.grep"] = pelem(new keyword_params_and_arg<regex_handler_factory_t<regex_handler_request_header>>(_default_not_found));
 
 	elements["response"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_all_response>>(string(".*")));
 	elements["response.timestamp"] = pelem(new keyword_arg_and_optional_params<handler_factory_t_arg2<string, string, response_timestamp_handler>>("%D %T", _default_not_found));
@@ -205,7 +209,8 @@ void parser::init_parse_elements()
 	elements["response.code"] = pelem(new keyword_arg_and_optional_params<regex_handler_factory_t<regex_handler_response_line>>(string("^[^\\s]*\\s*([^\\s]*)"), _default_not_found));
 	elements["response.message"] = pelem(new keyword_arg_and_optional_params<regex_handler_factory_t<regex_handler_response_line>>(string("^[^\\s]*\\s*[^\\s]*\\s*([^\\r]*)"), _default_not_found));
 	elements["response.grep"] = pelem(new keyword_params_and_arg<regex_handler_factory_t<regex_handler_all_response>>(_default_not_found));
-	elements["response.header"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_response>>(string(".*")));
+	elements["response.header"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_response_header>>(string(".*")));
+	elements["response.body"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_response_body>>(string(".*")));
 	RESPONSE_HEADER("response.header.allow", "Allow");
 	RESPONSE_HEADER("response.header.server", "Server");
 	RESPONSE_HEADER("response.header.date", "Date");
@@ -228,12 +233,11 @@ void parser::init_parse_elements()
 	RESPONSE_HEADER("response.header.age", "Age");
 	RESPONSE_HEADER("response.header.accept-ranges", "Accept-Ranges");
 	RESPONSE_HEADER("response.header.set-cookie", "Set-Cookie");
-	RESPONSE_HEADER("response.header.via", "Via");
 	RESPONSE_HEADER("response.header.www-authenticate", "WWW-Authenticate");
 
-	elements["response.header.value"] = pelem(new keyword_params<header_handler_factory_t<regex_handler_response>>());
+	elements["response.header.value"] = pelem(new keyword_params<header_handler_factory_t<regex_handler_response_header>>());
 	// elements["response.header.grep"] = pelem(new keyword_params_and_arg<regex_handler_factory_t<regex_handler_response> >());
-	elements["response.header.grep"] = pelem(new keyword_params_and_arg<regex_handler_factory_t<regex_handler_response>>(_default_not_found));
+	elements["response.header.grep"] = pelem(new keyword_params_and_arg<regex_handler_factory_t<regex_handler_response_header>>(_default_not_found));
 
 	elements["idle.time.0"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, idle_time_1>>(_default_not_found));
 	elements["idle.time.1"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, idle_time_2>>(_default_not_found));

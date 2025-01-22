@@ -27,3 +27,6 @@ debian/justniffer.substvars
 debian/justniffer/
 .vscode
 /tmp
+.debhelper
+config.guess
+config.sub

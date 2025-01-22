@@ -54,21 +54,42 @@ protected:
 	 string _not_found;
 };
 
-class regex_handler_request: public request_header_collector<regex_handler_base>
+class regex_handler_request_header: public request_header_collector<regex_handler_base>
 {
 public:
-	regex_handler_request(const boost::regex& re, const std::string& not_found){_re=re; _not_found= not_found;}
-	regex_handler_request(const boost::regex& re){_re=re;}
+	regex_handler_request_header(const boost::regex& re, const std::string& not_found){_re=re; _not_found= not_found;}
+	regex_handler_request_header(const boost::regex& re){_re=re;}
 protected:
 	virtual string& get_text() {return text;};
 
 };
 
-class regex_handler_response: public response_header_collector<regex_handler_base>
+class regex_handler_request_body: public request_body_collector<regex_handler_base>
 {
 public:
-	regex_handler_response(const boost::regex& re, const std::string& not_found){_re=re; _not_found= not_found;}
-	regex_handler_response(const boost::regex& re){_re=re;}
+	regex_handler_request_body(const boost::regex& re, const std::string& not_found){_re=re; _not_found= not_found;}
+	regex_handler_request_body(const boost::regex& re){_re=re;}
+protected:
+	virtual string& get_text() {return text;};
+
+};
+
+
+class regex_handler_response_header: public response_header_collector<regex_handler_base>
+{
+public:
+	regex_handler_response_header(const boost::regex& re, const std::string& not_found){_re=re; _not_found= not_found;}
+	regex_handler_response_header(const boost::regex& re){_re=re;}
+protected:
+	virtual string& get_text() {return text;};
+};
+
+
+class regex_handler_response_body: public response_body_collector<regex_handler_base>
+{
+public:
+	regex_handler_response_body(const boost::regex& re, const std::string& not_found){_re=re; _not_found= not_found;}
+	regex_handler_response_body(const boost::regex& re){_re=re;}
 protected:
 	virtual string& get_text() {return text;};
 };
