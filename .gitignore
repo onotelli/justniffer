@@ -15,6 +15,7 @@ config.log
 config.status
 libtool
 lib/libnids-1.21_patched/configure.lineno
+lib/libnids-1.21_patched/src/config.h
 include/config.h
 python/justniffer-grab-http-traffic
 /justniffer
