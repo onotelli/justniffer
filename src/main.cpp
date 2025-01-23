@@ -133,7 +133,7 @@ int main(int argc, char*argv [])
 			(string(config_cmd).append(",c").c_str(), po::value<string>(), "configuration file")
 			(string(user_cmd).append(",U").c_str(), po::value<string>(), string("user to impersonate when executing the command specified by the \"").append(execute_cmd ).append("\" option").c_str())
 			(string(execute_cmd).append(",e").c_str(), po::value<string>(), "execute the specified command every request/response phase")
-			(string(packet_filter_cmd).append(",p").c_str(), po::value<string>(), "packet filter (tcpdump filter syntax)")
+			(string(packet_filter_cmd).append(",p").c_str(), po::value<vector<string>>()->multitoken(), "packet filter (tcpdump filter syntax)")
 			(string(uprintable_cmd).append(",u").c_str(), "encode as dots (.) unprintable characters")
 			(string(handle_truncated_cmd).append(",t").c_str(), "handle truncated streams (not correctly closed)")
 			(string(uprintable_cmd_ext).append(",x").c_str(), "encode unprintable characters as [<char hexadecimal code>] ")
@@ -224,7 +224,7 @@ int main(int argc, char*argv [])
 			nids_params.pcap_filter=(char*)default_packet_filter;
 		else
 		{
-			capture_filter = vm[packet_filter_cmd].as<string>();
+			capture_filter = boost::algorithm::join(vm[packet_filter_cmd].as<vector<string>>(), " ");
 			nids_params.pcap_filter=(char*)capture_filter.c_str();
 		}
 

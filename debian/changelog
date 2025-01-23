@@ -1,4 +1,4 @@
-justniffer (0.5.17) jammy; urgency=low
+justniffer (0.5.18) jammy; urgency=low
   * bash completion and new headers
 
  -- Oreste Notelli <oreste.notelli@gmail.com>  Mon, 22 Jan 2025 23:10:00 +0100
