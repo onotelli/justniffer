@@ -31,3 +31,4 @@ debian/justniffer/
 .debhelper
 config.guess
 config.sub
+autom4te.cache
