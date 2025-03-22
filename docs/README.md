@@ -416,7 +416,10 @@ Sometimes, justniffer does not capture traffic because it was primarily designed
 
 However, in some cases, it can still be useful to trace traffic even without these precise details, so use it with an understanding of what you are obtaining.
 
-You can use the flag -m or --capture-in-the-middle to enable capturing in the middle of a connection.
+You can use the flag **-m** or **--capture-in-the-middle** to enable capturing in the middle of a connection.
+
+**WARNING**: it may yield unexpected results
+
 
     $ sudo justniffer -i eth0 -m -r -u
 
