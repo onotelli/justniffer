@@ -4,12 +4,17 @@
 ## NAME
     justniffer - tcp flow sniffer  
 ## SYNOPSIS
-    justniffer [ [-i interface] or [-f <tcpdump file>] ] [-F]
-    [-p <packet filter>] [-u or -x] 
+    justniffer [ [-i interface] or [-f <tcpdump file>] ] 
+    [-p <packet filter>]
+    [-m]
+    [-u or -x] 
     [ [-r] or [-l <log format>] or [-a <log format>]  ] 
-    [-c <config file>]  [-e <external program>]  [-U <user> ]   
-    [-n <not-found> ]  [-s <max concurrent tcp streams> ]  
+    [-e <external program>]
+    [-U <user> ]   
+    [-n <not-found> ] 
+    [-s <max concurrent tcp streams> ]  
     [-d <max concurrent IP fragments> ]
+    [-F]
 
 ## Examples 
 Logging network traffic in Apache like format:
@@ -200,6 +205,12 @@ Example:
 show raw stream. it is a shortcut for -l %request%response
 
 Example: justniffer -i eth0 -r
+
+****-m or \--capture-in-the-middle****
+
+Captures and reconstructs TCP streams in the middle (even without
+    the initial connection).\
+    **WARNING: it may yield unexpected results.**
 
 **-s** or **--max-tcp-streams** max concurrent TCP stream. (default= 65536) excess will be discarded
 **-d** or **--max-fragmented-ip** max concurrent fragmented IP. (default= 65536) excess will be discarded
