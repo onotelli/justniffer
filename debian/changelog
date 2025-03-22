@@ -1,3 +1,8 @@
+justniffer (0.5.19.noble) noble; urgency=low
+  * capture in the middle
+
+ -- Oreste Notelli <oreste.notelli@gmail.com>  Mon, 22 Mar 2025 18:00:00 +0100
+
 justniffer (0.5.18.noble) noble; urgency=low
   * bash completion and new headers
 
