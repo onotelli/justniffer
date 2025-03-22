@@ -963,8 +963,11 @@ void process_tcp(u_char *data, int skblen, struct timeval *ts)
       return;
     }
     else{
-      a_tcp = add_middle_tcp(this_tcphdr, this_iphdr, ts, data);
-      //a_tcp->nids_state = NIDS_DATA;
+      if (nids_params.reassemble_in_the_middle){
+        a_tcp = add_middle_tcp(this_tcphdr, this_iphdr, ts, data);
+      }
+      else
+        return;
     }
   }
   // printf("a_tcp->listeners %X\n",a_tcp->listeners);

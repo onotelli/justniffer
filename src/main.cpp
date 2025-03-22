@@ -85,6 +85,7 @@ const char* default_format= "%source.ip - - [%request.timestamp(%d/%b/%Y:%T %z)]
 const char* raw_format= "%request%response";
 const char* default_not_found="-";
 const char* force_read_pcap = "force-read-pcap";
+const char* capture_in_the_middle = "capture-in-the-middle";
 
 typedef vector<string>::const_iterator args_type;
 bool check_conflicts( const po::variables_map &vm, const vector<string>& arguments)
@@ -142,6 +143,7 @@ int main(int argc, char*argv [])
             (string(max_concurrent_tcp_stream).append(",s").c_str(), po::value<int>(&max_concurrent_tcp_stream_v)->default_value(1024), "Max concurrent tcp streams")
             (string(max_fragmented_ip_hosts).append(",d").c_str(), po::value<int>(&max_fragmented_ip_hosts_v)->default_value(1024), "Max concurrent fragmented ip host")
 			(string(force_read_pcap).append(",F").c_str(), "force the reading of the pcap file ignoring the snaplen value. WARNING: could give unexpected results")
+			(string(capture_in_the_middle).append(",m").c_str(), "capture in the middle. WARNING: could give unexpected results")
 			
 		;
 
@@ -237,6 +239,8 @@ int main(int argc, char*argv [])
         nids_params.n_hosts= max_fragmented_ip_hosts_v;
 		// we don want to log intrusions
 		nids_params.syslog =reinterpret_cast<void (*)()>(null_syslog);
+		bool bcapture_in_the_middle = (vm.count(capture_in_the_middle)> 0)?true:false;
+		nids_params.reassemble_in_the_middle = bcapture_in_the_middle;
 		if (!nids_init())
 		{
 			print_error(nids_errbuf)<<"\n";

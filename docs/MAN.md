@@ -1,6 +1,6 @@
 # JUSTNIFFER
     Section: (8)
-    Updated: September 12, 2011
+    Updated: March 22, 2025
 ## NAME
     justniffer - tcp flow sniffer  
 ## SYNOPSIS

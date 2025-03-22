@@ -131,6 +131,7 @@ struct nids_prm
   int multiproc;
   int queue_limit;
   int tcp_workarounds;
+  int reassemble_in_the_middle;
   pcap_t *pcap_desc;
 };
 
