@@ -29,6 +29,3 @@ debian/justniffer/
 .vscode
 /tmp
 .debhelper
-config.guess
-config.sub
-autom4te.cache
