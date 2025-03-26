@@ -24,14 +24,14 @@ int set_all_promisc()
 	param.ifc_len = ifaces_size;
 	param.ifc_req = ifaces;
 	if (ioctl(sock, SIOCGIFCONF, &param))
-		;
+		goto err;
 	} while (param.ifc_len>=ifaces_size);	
 	for (i = 0; i < param.ifc_len / sizeof(struct ifreq); i++) {
 		if (ioctl(sock, SIOCGIFFLAGS, ifaces + i))
-			;
+			goto err;
 		ifaces[i].ifr_flags |= IFF_PROMISC;
 		if (ioctl(sock, SIOCSIFFLAGS, ifaces + i))
-			;
+		goto err;
 	}
 	close(sock);
 	return 1;
