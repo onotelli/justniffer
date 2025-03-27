@@ -338,10 +338,14 @@ class python_printer : public printer
 {
 public:
 	python_printer(std::string script);
+	python_printer(std::string script, std::string user);
 	virtual void doit(handlers::iterator start, handlers::iterator end, const timeval *t, connections_container *pconnections_container);	
 	virtual ~python_printer();
 private:
+	void _init();
+	void _init_instance(std::string script_name, std::string func, py::object main_namespace);
 	std::string _script;
+	std::string _user;
 	py::object instance;
 	bool _finalized;
 }; 

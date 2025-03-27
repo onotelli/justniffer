@@ -230,12 +230,12 @@ int main(int argc, char *argv[])
 
 		po::variable_value python_function_arg = vm[python_function];
 		po::variable_value execute_cmd_arg = vm[execute_cmd];
+		po::variable_value user_arg = vm[user_cmd];
 		printer::ptr _printer;
 		if (execute_cmd_arg.empty() && python_function_arg.empty())
 			_printer = printer::ptr(new outstream_printer(out));
 		else if (vm.count(execute_cmd))
 		{
-			po::variable_value user_arg = vm[user_cmd];
 			if (!user_arg.empty())
 				_printer = printer::ptr(new cmd_execute_printer(execute_cmd_arg.as<string>(), user_arg.as<string>()));
 			else
@@ -243,8 +243,11 @@ int main(int argc, char *argv[])
 		}
 		else if (vm.count(python_function))
 		{
-			_printer = printer::ptr(new python_printer(python_function_arg.as<string>()));
-			//cerr.flush();
+			if (!user_arg.empty())
+				_printer = printer::ptr(new python_printer(python_function_arg.as<string>(), user_arg.as<string>()));
+			else
+				_printer = printer::ptr(new python_printer(python_function_arg.as<string>()));
+		//cerr.flush();
 		}
 		p.set_printer(_printer.get());
 

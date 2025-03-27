@@ -526,14 +526,26 @@ void outstream_printer::doit(handlers::iterator start, handlers::iterator end, c
 }
 
 ///// python_printer /////
+
+python_printer::python_printer(std::string script, std::string user) : _script(script), _finalized(false), _user(user)
+{
+	_init();
+}
+
 python_printer::python_printer(std::string script) : _script(script), _finalized(false)
+{
+	_init();
+}
+
+void python_printer::_init()
 {
 	try
 	{
 		std::string func = "app";
 		std::string script_name = _script;
 		size_t pos = _script.find(':');
-		if (pos != std::string::npos) {
+		if (pos != std::string::npos)
+		{
 			// Extract the part before the delimiter
 			script_name = _script.substr(0, pos);
 			// Extract the part after the delimiter
@@ -542,8 +554,20 @@ python_printer::python_printer(std::string script) : _script(script), _finalized
 		Py_Initialize();
 		py::object main_module = py::import("__main__");
 		py::object main_namespace = main_module.attr("__dict__");
-		py::exec_file(script_name.c_str(), main_namespace, main_namespace);
-		instance = main_namespace[func];
+		
+
+		if (!_user.empty())
+		{
+			run_as r(_user);
+			_init_instance(script_name, func, main_namespace);
+	
+		}
+		else
+		{
+			_init_instance(script_name, func, main_namespace);
+	
+		}
+
 	}
 	catch (py::error_already_set const &)
 	{
@@ -551,6 +575,12 @@ python_printer::python_printer(std::string script) : _script(script), _finalized
 		Py_Finalize();
 		_finalized = true;
 	}
+}
+
+void python_printer::_init_instance(std::string script_name, std::string func, py::object main_namespace)
+{
+	py::exec_file(script_name.c_str(), main_namespace, main_namespace);
+	instance = main_namespace[func];
 }
 
 void python_printer::doit(handlers::iterator start, handlers::iterator end, const timeval *t, connections_container *pconnections_container)
