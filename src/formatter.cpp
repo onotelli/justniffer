@@ -19,6 +19,7 @@
 #include <iterator>
 #include <algorithm>
 #include <functional>
+#include <boost/python.hpp>
 
 using std::sort;
 
@@ -523,6 +524,13 @@ void outstream_printer::doit(handlers::iterator start, handlers::iterator end, c
 		 << std::flush;
 	//_out.sync();
 	fflush(stdout);
+}
+
+
+void test(){
+	Py_Initialize();
+	boost::python::object my_python_module = boost::python::import("my_python_module");
+
 }
 
 ///// stream /////

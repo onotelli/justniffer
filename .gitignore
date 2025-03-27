@@ -29,3 +29,4 @@ debian/justniffer/
 .vscode
 /tmp
 .debhelper
+autom4te.cache

@@ -74,6 +74,7 @@ AX_BOOST_BASE([1.46])
 AX_BOOST_REGEX
 AX_BOOST_PROGRAM_OPTIONS
 AX_BOOST_IOSTREAMS
+AX_BOOST_PYTHON
 
 AC_CHECK_FILE(lib/$LIBNIDS/README.original, ,
 [ AC_CHECK_PROG(PATCH, patch, yes, no) 
@@ -95,14 +96,9 @@ BASH_COMPLETION_DIR="`pkg-config --variable=completionsdir bash-completion`"
 
 AC_CONFIG_SUBDIRS([lib/libnids-1.21_patched])
 	
-AX_PYTHON
-PYTHONCODEDIR=${datarootdir}/justniffer/scripts
-AC_SUBST(PYTHONCODEDIR)
-if test "$AX_PYTHON_ENABLED" == "enabled"; then
-  PYTHONSUBDIR="python"
-fi
+AX_PYTHON_DEVEL
 
-AC_SUBST(PYTHONSUBDIR)
+
 
 	
 AC_CONFIG_FILES([Makefile src/Makefile ])

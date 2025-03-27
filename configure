@@ -665,11 +665,18 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
-PYTHONSUBDIR
-PYTHONCODEDIR
 subdirs
 TAR
 PATCH
+BOOST_PYTHON_LIB
+PYTHON_EXTRA_LDFLAGS
+PYTHON_EXTRA_LIBS
+PYTHON_PLATFORM_SITE_PKG
+PYTHON_SITE_PKG
+PYTHON_LIBS
+PYTHON_CPPFLAGS
+PYTHON
+PYTHON_VERSION
 BOOST_IOSTREAMS_LIB
 BOOST_PROGRAM_OPTIONS_LIB
 BOOST_REGEX_LIB
@@ -826,6 +833,7 @@ with_boost_libdir
 with_boost_regex
 with_boost_program_options
 with_boost_iostreams
+with_boost_python
 '
       ac_precious_vars='build_alias
 host_alias
@@ -840,7 +848,8 @@ CC
 CFLAGS
 CPP
 LT_SYS_LIBRARY_PATH
-CXXCPP'
+CXXCPP
+PYTHON_VERSION'
 ac_subdirs_all='lib/libnids-1.21_patched'
 
 # Initialize some variables set by options.
@@ -1517,6 +1526,8 @@ Optional Packages:
                           possible to specify a certain library for the linker
                           e.g.
                           --with-boost-iostreams=boost_iostreams-gcc-mt-d-1_33_1
+  --with-boost-python     specify yes/no or the boost python library or suffix
+                          to use
 
 Some influential environment variables:
   CXX         C++ compiler command
@@ -1532,6 +1543,10 @@ Some influential environment variables:
   LT_SYS_LIBRARY_PATH
               User-defined run-time library search path.
   CXXCPP      C++ preprocessor
+  PYTHON_VERSION
+              The installed Python version to use, for example '2.3'. This
+              string will be appended to the Python interpreter canonical
+              name.
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -18429,6 +18444,656 @@ fi
 	fi
 
 
+	# Get whether it's optional
+	if test -z ""; then
+	   ax_python_devel_optional=false
+	else
+	   ax_python_devel_optional=
+	fi
+	ax_python_devel_found=yes
+
+	#
+	# Allow the use of a (user set) custom python version
+	#
+
+
+	# Extract the first word of "python[$PYTHON_VERSION]", so it can be a program name with args.
+set dummy python$PYTHON_VERSION; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_path_PYTHON+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  case $PYTHON in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PYTHON="$PYTHON" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_path_PYTHON="$as_dir$ac_word$ac_exec_ext"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+PYTHON=$ac_cv_path_PYTHON
+if test -n "$PYTHON"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PYTHON" >&5
+printf "%s\n" "$PYTHON" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+	if test -z "$PYTHON"; then
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: Cannot find python$PYTHON_VERSION in your system path" >&5
+printf "%s\n" "$as_me: WARNING: Cannot find python$PYTHON_VERSION in your system path" >&2;}
+	   if ! $ax_python_devel_optional; then
+	      as_fn_error $? "Giving up, python development not available" "$LINENO" 5
+	   fi
+	   ax_python_devel_found=no
+	   PYTHON_VERSION=""
+	fi
+
+	if test $ax_python_devel_found = yes; then
+	   #
+	   # Check for a version of Python >= 2.1.0
+	   #
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for a version of Python >= '2.1.0'" >&5
+printf %s "checking for a version of Python >= '2.1.0'... " >&6; }
+	   ac_supports_python_ver=`$PYTHON -c "import sys; \
+		ver = sys.version.split ()[0]; \
+		print (ver >= '2.1.0')"`
+	   if test "$ac_supports_python_ver" != "True"; then
+		if test -z "$PYTHON_NOVERSIONCHECK"; then
+			{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+			{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING:
+This version of the AC_PYTHON_DEVEL macro
+doesn't work properly with versions of Python before
+2.1.0. You may need to re-run configure, setting the
+variables PYTHON_CPPFLAGS, PYTHON_LIBS, PYTHON_SITE_PKG,
+PYTHON_EXTRA_LIBS and PYTHON_EXTRA_LDFLAGS by hand.
+Moreover, to disable this check, set PYTHON_NOVERSIONCHECK
+to something else than an empty string.
+" >&5
+printf "%s\n" "$as_me: WARNING:
+This version of the AC_PYTHON_DEVEL macro
+doesn't work properly with versions of Python before
+2.1.0. You may need to re-run configure, setting the
+variables PYTHON_CPPFLAGS, PYTHON_LIBS, PYTHON_SITE_PKG,
+PYTHON_EXTRA_LIBS and PYTHON_EXTRA_LDFLAGS by hand.
+Moreover, to disable this check, set PYTHON_NOVERSIONCHECK
+to something else than an empty string.
+" >&2;}
+			if ! $ax_python_devel_optional; then
+			   { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "Giving up
+See \`config.log' for more details" "$LINENO" 5; }
+			fi
+			ax_python_devel_found=no
+			PYTHON_VERSION=""
+		else
+			{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: skip at user request" >&5
+printf "%s\n" "skip at user request" >&6; }
+		fi
+	   else
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+	   fi
+	fi
+
+	if test $ax_python_devel_found = yes; then
+	   #
+	   # If the macro parameter ``version'' is set, honour it.
+	   # A Python shim class, VPy, is used to implement correct version comparisons via
+	   # string expressions, since e.g. a naive textual ">= 2.7.3" won't work for
+	   # Python 2.7.10 (the ".1" being evaluated as less than ".3").
+	   #
+	   if test -n ""; then
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for a version of Python " >&5
+printf %s "checking for a version of Python ... " >&6; }
+                cat << EOF > ax_python_devel_vpy.py
+class VPy:
+    def vtup(self, s):
+        return tuple(map(int, s.strip().replace("rc", ".").split(".")))
+    def __init__(self):
+        import sys
+        self.vpy = tuple(sys.version_info)[:3]
+    def __eq__(self, s):
+        return self.vpy == self.vtup(s)
+    def __ne__(self, s):
+        return self.vpy != self.vtup(s)
+    def __lt__(self, s):
+        return self.vpy < self.vtup(s)
+    def __gt__(self, s):
+        return self.vpy > self.vtup(s)
+    def __le__(self, s):
+        return self.vpy <= self.vtup(s)
+    def __ge__(self, s):
+        return self.vpy >= self.vtup(s)
+EOF
+		ac_supports_python_ver=`$PYTHON -c "import ax_python_devel_vpy; \
+                        ver = ax_python_devel_vpy.VPy(); \
+			print (ver )"`
+                rm -rf ax_python_devel_vpy*.py* __pycache__/ax_python_devel_vpy*.py*
+		if test "$ac_supports_python_ver" = "True"; then
+			{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+		else
+			{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+			{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: this package requires Python .
+If you have it installed, but it isn't the default Python
+interpreter in your system path, please pass the PYTHON_VERSION
+variable to configure. See \`\`configure --help'' for reference.
+" >&5
+printf "%s\n" "$as_me: WARNING: this package requires Python .
+If you have it installed, but it isn't the default Python
+interpreter in your system path, please pass the PYTHON_VERSION
+variable to configure. See \`\`configure --help'' for reference.
+" >&2;}
+			if ! $ax_python_devel_optional; then
+			   as_fn_error $? "Giving up" "$LINENO" 5
+			fi
+			ax_python_devel_found=no
+			PYTHON_VERSION=""
+		fi
+	   fi
+	fi
+
+	if test $ax_python_devel_found = yes; then
+	   #
+	   # Check if you have distutils, else fail
+	   #
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for the sysconfig Python package" >&5
+printf %s "checking for the sysconfig Python package... " >&6; }
+	   ac_sysconfig_result=`$PYTHON -c "import sysconfig" 2>&1`
+	   if test $? -eq 0; then
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+		IMPORT_SYSCONFIG="import sysconfig"
+	   else
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for the distutils Python package" >&5
+printf %s "checking for the distutils Python package... " >&6; }
+		ac_sysconfig_result=`$PYTHON -c "from distutils import sysconfig" 2>&1`
+		if test $? -eq 0; then
+			{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+			IMPORT_SYSCONFIG="from distutils import sysconfig"
+		else
+			{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: cannot import Python module \"distutils\".
+Please check your Python installation. The error was:
+$ac_sysconfig_result" >&5
+printf "%s\n" "$as_me: WARNING: cannot import Python module \"distutils\".
+Please check your Python installation. The error was:
+$ac_sysconfig_result" >&2;}
+			if ! $ax_python_devel_optional; then
+			   as_fn_error $? "Giving up" "$LINENO" 5
+			fi
+			ax_python_devel_found=no
+			PYTHON_VERSION=""
+		fi
+	   fi
+	fi
+
+	if test $ax_python_devel_found = yes; then
+	   #
+	   # Check for Python include path
+	   #
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Python include path" >&5
+printf %s "checking for Python include path... " >&6; }
+	   if test -z "$PYTHON_CPPFLAGS"; then
+		if test "$IMPORT_SYSCONFIG" = "import sysconfig"; then
+			# sysconfig module has different functions
+			python_path=`$PYTHON -c "$IMPORT_SYSCONFIG; \
+				print (sysconfig.get_path ('include'));"`
+			plat_python_path=`$PYTHON -c "$IMPORT_SYSCONFIG; \
+				print (sysconfig.get_path ('platinclude'));"`
+		else
+			# old distutils way
+			python_path=`$PYTHON -c "$IMPORT_SYSCONFIG; \
+				print (sysconfig.get_python_inc ());"`
+			plat_python_path=`$PYTHON -c "$IMPORT_SYSCONFIG; \
+				print (sysconfig.get_python_inc (plat_specific=1));"`
+		fi
+		if test -n "${python_path}"; then
+			if test "${plat_python_path}" != "${python_path}"; then
+				python_path="-I$python_path -I$plat_python_path"
+			else
+				python_path="-I$python_path"
+			fi
+		fi
+		PYTHON_CPPFLAGS=$python_path
+	   fi
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PYTHON_CPPFLAGS" >&5
+printf "%s\n" "$PYTHON_CPPFLAGS" >&6; }
+
+
+	   #
+	   # Check for Python library path
+	   #
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Python library path" >&5
+printf %s "checking for Python library path... " >&6; }
+	   if test -z "$PYTHON_LIBS"; then
+		# (makes two attempts to ensure we've got a version number
+		# from the interpreter)
+		ac_python_version=`cat<<EOD | $PYTHON -
+
+# join all versioning strings, on some systems
+# major/minor numbers could be in different list elements
+from sysconfig import *
+e = get_config_var('VERSION')
+if e is not None:
+	print(e)
+EOD`
+
+		if test -z "$ac_python_version"; then
+			if test -n "$PYTHON_VERSION"; then
+				ac_python_version=$PYTHON_VERSION
+			else
+				ac_python_version=`$PYTHON -c "import sys; \
+					print ("%d.%d" % sys.version_info[:2])"`
+			fi
+		fi
+
+		# Make the versioning information available to the compiler
+
+printf "%s\n" "#define HAVE_PYTHON \"$ac_python_version\"" >>confdefs.h
+
+
+		# First, the library directory:
+		ac_python_libdir=`cat<<EOD | $PYTHON -
+
+# There should be only one
+$IMPORT_SYSCONFIG
+e = sysconfig.get_config_var('LIBDIR')
+if e is not None:
+	print (e)
+EOD`
+
+		# Now, for the library:
+		ac_python_library=`cat<<EOD | $PYTHON -
+
+$IMPORT_SYSCONFIG
+c = sysconfig.get_config_vars()
+if 'LDVERSION' in c:
+	print ('python'+c['LDVERSION'])
+else:
+	print ('python'+c['VERSION'])
+EOD`
+
+		# This small piece shamelessly adapted from PostgreSQL python macro;
+		# credits goes to momjian, I think. I'd like to put the right name
+		# in the credits, if someone can point me in the right direction... ?
+		#
+		if test -n "$ac_python_libdir" -a -n "$ac_python_library"
+		then
+			# use the official shared library
+			ac_python_library=`echo "$ac_python_library" | sed "s/^lib//"`
+			PYTHON_LIBS="-L$ac_python_libdir -l$ac_python_library"
+		else
+			# old way: use libpython from python_configdir
+			ac_python_libdir=`$PYTHON -c \
+			  "from sysconfig import get_python_lib as f; \
+			  import os; \
+			  print (os.path.join(f(plat_specific=1, standard_lib=1), 'config'));"`
+			PYTHON_LIBS="-L$ac_python_libdir -lpython$ac_python_version"
+		fi
+
+		if test -z "$PYTHON_LIBS"; then
+			{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING:
+  Cannot determine location of your Python DSO. Please check it was installed with
+  dynamic libraries enabled, or try setting PYTHON_LIBS by hand.
+			" >&5
+printf "%s\n" "$as_me: WARNING:
+  Cannot determine location of your Python DSO. Please check it was installed with
+  dynamic libraries enabled, or try setting PYTHON_LIBS by hand.
+			" >&2;}
+			if ! $ax_python_devel_optional; then
+			   as_fn_error $? "Giving up" "$LINENO" 5
+			fi
+			ax_python_devel_found=no
+			PYTHON_VERSION=""
+		fi
+	   fi
+	fi
+
+	if test $ax_python_devel_found = yes; then
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PYTHON_LIBS" >&5
+printf "%s\n" "$PYTHON_LIBS" >&6; }
+
+
+	   #
+	   # Check for site packages
+	   #
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Python site-packages path" >&5
+printf %s "checking for Python site-packages path... " >&6; }
+	   if test -z "$PYTHON_SITE_PKG"; then
+		if test "$IMPORT_SYSCONFIG" = "import sysconfig"; then
+			PYTHON_SITE_PKG=`$PYTHON -c "
+$IMPORT_SYSCONFIG;
+if hasattr(sysconfig, 'get_default_scheme'):
+    scheme = sysconfig.get_default_scheme()
+else:
+    scheme = sysconfig._get_default_scheme()
+if scheme == 'posix_local':
+    # Debian's default scheme installs to /usr/local/ but we want to find headers in /usr/
+    scheme = 'posix_prefix'
+prefix = '$prefix'
+if prefix == 'NONE':
+    prefix = '$ac_default_prefix'
+sitedir = sysconfig.get_path('purelib', scheme, vars={'base': prefix})
+print(sitedir)"`
+		else
+			# distutils.sysconfig way
+			PYTHON_SITE_PKG=`$PYTHON -c "$IMPORT_SYSCONFIG; \
+				print (sysconfig.get_python_lib(0,0));"`
+		fi
+	   fi
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PYTHON_SITE_PKG" >&5
+printf "%s\n" "$PYTHON_SITE_PKG" >&6; }
+
+
+	   #
+	   # Check for platform-specific site packages
+	   #
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Python platform specific site-packages path" >&5
+printf %s "checking for Python platform specific site-packages path... " >&6; }
+	   if test -z "$PYTHON_PLATFORM_SITE_PKG"; then
+		if test "$IMPORT_SYSCONFIG" = "import sysconfig"; then
+			PYTHON_PLATFORM_SITE_PKG=`$PYTHON -c "
+$IMPORT_SYSCONFIG;
+if hasattr(sysconfig, 'get_default_scheme'):
+    scheme = sysconfig.get_default_scheme()
+else:
+    scheme = sysconfig._get_default_scheme()
+if scheme == 'posix_local':
+    # Debian's default scheme installs to /usr/local/ but we want to find headers in /usr/
+    scheme = 'posix_prefix'
+prefix = '$prefix'
+if prefix == 'NONE':
+    prefix = '$ac_default_prefix'
+sitedir = sysconfig.get_path('platlib', scheme, vars={'platbase': prefix})
+print(sitedir)"`
+		else
+			# distutils.sysconfig way
+			PYTHON_PLATFORM_SITE_PKG=`$PYTHON -c "$IMPORT_SYSCONFIG; \
+				print (sysconfig.get_python_lib(1,0));"`
+		fi
+	   fi
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PYTHON_PLATFORM_SITE_PKG" >&5
+printf "%s\n" "$PYTHON_PLATFORM_SITE_PKG" >&6; }
+
+
+	   #
+	   # libraries which must be linked in when embedding
+	   #
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking python extra libraries" >&5
+printf %s "checking python extra libraries... " >&6; }
+	   if test -z "$PYTHON_EXTRA_LIBS"; then
+	      PYTHON_EXTRA_LIBS=`$PYTHON -c "$IMPORT_SYSCONFIG; \
+                conf = sysconfig.get_config_var; \
+                print (conf('LIBS') + ' ' + conf('SYSLIBS'))"`
+	   fi
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PYTHON_EXTRA_LIBS" >&5
+printf "%s\n" "$PYTHON_EXTRA_LIBS" >&6; }
+
+
+	   #
+	   # linking flags needed when embedding
+	   #
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking python extra linking flags" >&5
+printf %s "checking python extra linking flags... " >&6; }
+	   if test -z "$PYTHON_EXTRA_LDFLAGS"; then
+		PYTHON_EXTRA_LDFLAGS=`$PYTHON -c "$IMPORT_SYSCONFIG; \
+			conf = sysconfig.get_config_var; \
+			print (conf('LINKFORSHARED'))"`
+		# Hack for macos, it sticks this in here.
+		PYTHON_EXTRA_LDFLAGS=`echo $PYTHON_EXTRA_LDFLAGS | sed 's/CoreFoundation.*$/CoreFoundation/'`
+	   fi
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PYTHON_EXTRA_LDFLAGS" >&5
+printf "%s\n" "$PYTHON_EXTRA_LDFLAGS" >&6; }
+
+
+	   #
+	   # final check to see if everything compiles alright
+	   #
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking consistency of all components of python development environment" >&5
+printf %s "checking consistency of all components of python development environment... " >&6; }
+	   # save current global flags
+	   ac_save_LIBS="$LIBS"
+	   ac_save_LDFLAGS="$LDFLAGS"
+	   ac_save_CPPFLAGS="$CPPFLAGS"
+	   LIBS="$ac_save_LIBS $PYTHON_LIBS $PYTHON_EXTRA_LIBS"
+	   LDFLAGS="$ac_save_LDFLAGS $PYTHON_EXTRA_LDFLAGS"
+	   CPPFLAGS="$ac_save_CPPFLAGS $PYTHON_CPPFLAGS"
+	   ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+	   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+		#include <Python.h>
+int
+main (void)
+{
+Py_Initialize();
+  ;
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  pythonexists=yes
+else $as_nop
+  pythonexists=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+	   ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+	   # turn back to default flags
+	   CPPFLAGS="$ac_save_CPPFLAGS"
+	   LIBS="$ac_save_LIBS"
+	   LDFLAGS="$ac_save_LDFLAGS"
+
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $pythonexists" >&5
+printf "%s\n" "$pythonexists" >&6; }
+
+	   if test ! "x$pythonexists" = "xyes"; then
+	      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING:
+  Could not link test program to Python. Maybe the main Python library has been
+  installed in some non-standard library path. If so, pass it to configure,
+  via the LIBS environment variable.
+  Example: ./configure LIBS=\"-L/usr/non-standard-path/python/lib\"
+  ============================================================================
+   ERROR!
+   You probably have to install the development version of the Python package
+   for your distribution.  The exact name of this package varies among them.
+  ============================================================================
+	      " >&5
+printf "%s\n" "$as_me: WARNING:
+  Could not link test program to Python. Maybe the main Python library has been
+  installed in some non-standard library path. If so, pass it to configure,
+  via the LIBS environment variable.
+  Example: ./configure LIBS=\"-L/usr/non-standard-path/python/lib\"
+  ============================================================================
+   ERROR!
+   You probably have to install the development version of the Python package
+   for your distribution.  The exact name of this package varies among them.
+  ============================================================================
+	      " >&2;}
+	      if ! $ax_python_devel_optional; then
+		 as_fn_error $? "Giving up" "$LINENO" 5
+	      fi
+	      ax_python_devel_found=no
+	      PYTHON_VERSION=""
+	   fi
+	fi
+
+	#
+	# all done!
+	#
+
+ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+ax_boost_python_save_CPPFLAGS="$CPPFLAGS"
+ax_boost_python_save_LDFLAGS="$LDFLAGS"
+ax_boost_python_save_LIBS="$LIBS"
+if test "x$PYTHON_CPPFLAGS" != "x"; then
+  CPPFLAGS="$PYTHON_CPPFLAGS $CPPFLAGS"
+fi
+
+# Versions of AX_PYTHON_DEVEL() before serial 18 provided PYTHON_LDFLAGS
+# instead of PYTHON_LIBS, so this is just here for compatibility.
+if test "x$PYTHON_LDFLAGS" != "x"; then
+  LDFLAGS="$PYTHON_LDFLAGS $LDFLAGS"
+fi
+
+# Note: Only versions of AX_PYTHON_DEVEL() since serial 18 provide PYTHON_LIBS
+# instead of PYTHON_LDFLAGS.
+if test "x$PYTHON_LIBS" != "x"; then
+  LIBS="$PYTHON_LIBS $LIBS"
+fi
+
+if test "x$BOOST_CPPFLAGS" != "x"; then
+  CPPFLAGS="$BOOST_CPPFLAGS $CPPFLAGS"
+fi
+if test "x$BOOST_LDFLAGS" != "x"; then
+  LDFLAGS="$BOOST_LDFLAGS $LDFLAGS"
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the Boost::Python library is available" >&5
+printf %s "checking whether the Boost::Python library is available... " >&6; }
+if test ${ac_cv_boost_python+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <boost/python/module.hpp>
+BOOST_PYTHON_MODULE(test) { throw "Boost::Python test."; }
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"
+then :
+  ac_cv_boost_python=yes
+else $as_nop
+  ac_cv_boost_python=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_boost_python" >&5
+printf "%s\n" "$ac_cv_boost_python" >&6; }
+if test "$ac_cv_boost_python" = "yes"; then
+
+printf "%s\n" "#define HAVE_BOOST_PYTHON /**/" >>confdefs.h
+
+  ax_python_lib=boost_python
+
+# Check whether --with-boost-python was given.
+if test ${with_boost_python+y}
+then :
+  withval=$with_boost_python; if test "x$with_boost_python" != "xno" -a "x$with_boost_python" != "xyes"; then
+     ax_python_lib=$with_boost_python
+     ax_boost_python_lib=boost_python-$with_boost_python
+   fi
+fi
+
+  BOOSTLIBDIR=`echo $BOOST_LDFLAGS | sed -e 's/[^\/]*//'`
+  for ax_lib in $ax_python_lib $ax_boost_python_lib `ls $BOOSTLIBDIR/libboost_python*.so* $BOOSTLIBDIR/libboost_python*.dylib* $BOOSTLIBDIR/libboost_python*.a* 2>/dev/null | sed 's,.*/,,' | sed -e 's;^lib\(boost_python.*\)\.so.*$;\1;' -e 's;^lib\(boost_python.*\)\.dylib.*$;\1;' -e 's;^lib\(boost_python.*\)\.a.*$;\1;' ` boost_python boost_python3; do
+    as_ax_Lib=`printf "%s\n" "ax_cv_lib_$ax_lib''_BOOST_PYTHON_MODULE" | $as_tr_sh`
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether $ax_lib is the correct library" >&5
+printf %s "checking whether $ax_lib is the correct library... " >&6; }
+if eval test \${$as_ax_Lib+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  LIBS="-l$ax_lib $ax_boost_python_save_LIBS $PYTHON_LIBS"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <boost/python/module.hpp>
+BOOST_PYTHON_MODULE(test) { throw "Boost::Python test."; }
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"
+then :
+  eval "$as_ax_Lib=yes"
+else $as_nop
+  eval "$as_ax_Lib=no"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+eval ac_res=\$$as_ax_Lib
+	       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+printf "%s\n" "$ac_res" >&6; }
+    if eval test \"x\$"$as_ax_Lib"\" = x"yes"
+then :
+  BOOST_PYTHON_LIB=-l$ax_lib break
+fi
+      done
+
+fi
+CPPFLAGS="$ax_boost_python_save_CPPFLAGS"
+LDFLAGS="$ax_boost_python_save_LDFLAGS"
+LIBS="$ax_boost_python_save_LIBS"
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
 as_ac_File=`printf "%s\n" "ac_cv_file_lib/$LIBNIDS/README.original" | $as_tr_sh`
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for lib/$LIBNIDS/README.original" >&5
 printf %s "checking for lib/$LIBNIDS/README.original... " >&6; }
@@ -18582,12 +19247,528 @@ BASH_COMPLETION_DIR="`pkg-config --variable=completionsdir bash-completion`"
 subdirs="$subdirs lib/libnids-1.21_patched"
 
 
-AX_PYTHON
-PYTHONCODEDIR=${datarootdir}/justniffer/scripts
 
-if test "$AX_PYTHON_ENABLED" == "enabled"; then
-  PYTHONSUBDIR="python"
+	# Get whether it's optional
+	if test -z ""; then
+	   ax_python_devel_optional=false
+	else
+	   ax_python_devel_optional=
+	fi
+	ax_python_devel_found=yes
+
+	#
+	# Allow the use of a (user set) custom python version
+	#
+
+
+	# Extract the first word of "python[$PYTHON_VERSION]", so it can be a program name with args.
+set dummy python$PYTHON_VERSION; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_path_PYTHON+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  case $PYTHON in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PYTHON="$PYTHON" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_path_PYTHON="$as_dir$ac_word$ac_exec_ext"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
 fi
+PYTHON=$ac_cv_path_PYTHON
+if test -n "$PYTHON"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PYTHON" >&5
+printf "%s\n" "$PYTHON" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+	if test -z "$PYTHON"; then
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: Cannot find python$PYTHON_VERSION in your system path" >&5
+printf "%s\n" "$as_me: WARNING: Cannot find python$PYTHON_VERSION in your system path" >&2;}
+	   if ! $ax_python_devel_optional; then
+	      as_fn_error $? "Giving up, python development not available" "$LINENO" 5
+	   fi
+	   ax_python_devel_found=no
+	   PYTHON_VERSION=""
+	fi
+
+	if test $ax_python_devel_found = yes; then
+	   #
+	   # Check for a version of Python >= 2.1.0
+	   #
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for a version of Python >= '2.1.0'" >&5
+printf %s "checking for a version of Python >= '2.1.0'... " >&6; }
+	   ac_supports_python_ver=`$PYTHON -c "import sys; \
+		ver = sys.version.split ()[0]; \
+		print (ver >= '2.1.0')"`
+	   if test "$ac_supports_python_ver" != "True"; then
+		if test -z "$PYTHON_NOVERSIONCHECK"; then
+			{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+			{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING:
+This version of the AC_PYTHON_DEVEL macro
+doesn't work properly with versions of Python before
+2.1.0. You may need to re-run configure, setting the
+variables PYTHON_CPPFLAGS, PYTHON_LIBS, PYTHON_SITE_PKG,
+PYTHON_EXTRA_LIBS and PYTHON_EXTRA_LDFLAGS by hand.
+Moreover, to disable this check, set PYTHON_NOVERSIONCHECK
+to something else than an empty string.
+" >&5
+printf "%s\n" "$as_me: WARNING:
+This version of the AC_PYTHON_DEVEL macro
+doesn't work properly with versions of Python before
+2.1.0. You may need to re-run configure, setting the
+variables PYTHON_CPPFLAGS, PYTHON_LIBS, PYTHON_SITE_PKG,
+PYTHON_EXTRA_LIBS and PYTHON_EXTRA_LDFLAGS by hand.
+Moreover, to disable this check, set PYTHON_NOVERSIONCHECK
+to something else than an empty string.
+" >&2;}
+			if ! $ax_python_devel_optional; then
+			   { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "Giving up
+See \`config.log' for more details" "$LINENO" 5; }
+			fi
+			ax_python_devel_found=no
+			PYTHON_VERSION=""
+		else
+			{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: skip at user request" >&5
+printf "%s\n" "skip at user request" >&6; }
+		fi
+	   else
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+	   fi
+	fi
+
+	if test $ax_python_devel_found = yes; then
+	   #
+	   # If the macro parameter ``version'' is set, honour it.
+	   # A Python shim class, VPy, is used to implement correct version comparisons via
+	   # string expressions, since e.g. a naive textual ">= 2.7.3" won't work for
+	   # Python 2.7.10 (the ".1" being evaluated as less than ".3").
+	   #
+	   if test -n ""; then
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for a version of Python " >&5
+printf %s "checking for a version of Python ... " >&6; }
+                cat << EOF > ax_python_devel_vpy.py
+class VPy:
+    def vtup(self, s):
+        return tuple(map(int, s.strip().replace("rc", ".").split(".")))
+    def __init__(self):
+        import sys
+        self.vpy = tuple(sys.version_info)[:3]
+    def __eq__(self, s):
+        return self.vpy == self.vtup(s)
+    def __ne__(self, s):
+        return self.vpy != self.vtup(s)
+    def __lt__(self, s):
+        return self.vpy < self.vtup(s)
+    def __gt__(self, s):
+        return self.vpy > self.vtup(s)
+    def __le__(self, s):
+        return self.vpy <= self.vtup(s)
+    def __ge__(self, s):
+        return self.vpy >= self.vtup(s)
+EOF
+		ac_supports_python_ver=`$PYTHON -c "import ax_python_devel_vpy; \
+                        ver = ax_python_devel_vpy.VPy(); \
+			print (ver )"`
+                rm -rf ax_python_devel_vpy*.py* __pycache__/ax_python_devel_vpy*.py*
+		if test "$ac_supports_python_ver" = "True"; then
+			{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+		else
+			{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+			{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: this package requires Python .
+If you have it installed, but it isn't the default Python
+interpreter in your system path, please pass the PYTHON_VERSION
+variable to configure. See \`\`configure --help'' for reference.
+" >&5
+printf "%s\n" "$as_me: WARNING: this package requires Python .
+If you have it installed, but it isn't the default Python
+interpreter in your system path, please pass the PYTHON_VERSION
+variable to configure. See \`\`configure --help'' for reference.
+" >&2;}
+			if ! $ax_python_devel_optional; then
+			   as_fn_error $? "Giving up" "$LINENO" 5
+			fi
+			ax_python_devel_found=no
+			PYTHON_VERSION=""
+		fi
+	   fi
+	fi
+
+	if test $ax_python_devel_found = yes; then
+	   #
+	   # Check if you have distutils, else fail
+	   #
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for the sysconfig Python package" >&5
+printf %s "checking for the sysconfig Python package... " >&6; }
+	   ac_sysconfig_result=`$PYTHON -c "import sysconfig" 2>&1`
+	   if test $? -eq 0; then
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+		IMPORT_SYSCONFIG="import sysconfig"
+	   else
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for the distutils Python package" >&5
+printf %s "checking for the distutils Python package... " >&6; }
+		ac_sysconfig_result=`$PYTHON -c "from distutils import sysconfig" 2>&1`
+		if test $? -eq 0; then
+			{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+			IMPORT_SYSCONFIG="from distutils import sysconfig"
+		else
+			{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: cannot import Python module \"distutils\".
+Please check your Python installation. The error was:
+$ac_sysconfig_result" >&5
+printf "%s\n" "$as_me: WARNING: cannot import Python module \"distutils\".
+Please check your Python installation. The error was:
+$ac_sysconfig_result" >&2;}
+			if ! $ax_python_devel_optional; then
+			   as_fn_error $? "Giving up" "$LINENO" 5
+			fi
+			ax_python_devel_found=no
+			PYTHON_VERSION=""
+		fi
+	   fi
+	fi
+
+	if test $ax_python_devel_found = yes; then
+	   #
+	   # Check for Python include path
+	   #
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Python include path" >&5
+printf %s "checking for Python include path... " >&6; }
+	   if test -z "$PYTHON_CPPFLAGS"; then
+		if test "$IMPORT_SYSCONFIG" = "import sysconfig"; then
+			# sysconfig module has different functions
+			python_path=`$PYTHON -c "$IMPORT_SYSCONFIG; \
+				print (sysconfig.get_path ('include'));"`
+			plat_python_path=`$PYTHON -c "$IMPORT_SYSCONFIG; \
+				print (sysconfig.get_path ('platinclude'));"`
+		else
+			# old distutils way
+			python_path=`$PYTHON -c "$IMPORT_SYSCONFIG; \
+				print (sysconfig.get_python_inc ());"`
+			plat_python_path=`$PYTHON -c "$IMPORT_SYSCONFIG; \
+				print (sysconfig.get_python_inc (plat_specific=1));"`
+		fi
+		if test -n "${python_path}"; then
+			if test "${plat_python_path}" != "${python_path}"; then
+				python_path="-I$python_path -I$plat_python_path"
+			else
+				python_path="-I$python_path"
+			fi
+		fi
+		PYTHON_CPPFLAGS=$python_path
+	   fi
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PYTHON_CPPFLAGS" >&5
+printf "%s\n" "$PYTHON_CPPFLAGS" >&6; }
+
+
+	   #
+	   # Check for Python library path
+	   #
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Python library path" >&5
+printf %s "checking for Python library path... " >&6; }
+	   if test -z "$PYTHON_LIBS"; then
+		# (makes two attempts to ensure we've got a version number
+		# from the interpreter)
+		ac_python_version=`cat<<EOD | $PYTHON -
+
+# join all versioning strings, on some systems
+# major/minor numbers could be in different list elements
+from sysconfig import *
+e = get_config_var('VERSION')
+if e is not None:
+	print(e)
+EOD`
+
+		if test -z "$ac_python_version"; then
+			if test -n "$PYTHON_VERSION"; then
+				ac_python_version=$PYTHON_VERSION
+			else
+				ac_python_version=`$PYTHON -c "import sys; \
+					print ("%d.%d" % sys.version_info[:2])"`
+			fi
+		fi
+
+		# Make the versioning information available to the compiler
+
+printf "%s\n" "#define HAVE_PYTHON \"$ac_python_version\"" >>confdefs.h
+
+
+		# First, the library directory:
+		ac_python_libdir=`cat<<EOD | $PYTHON -
+
+# There should be only one
+$IMPORT_SYSCONFIG
+e = sysconfig.get_config_var('LIBDIR')
+if e is not None:
+	print (e)
+EOD`
+
+		# Now, for the library:
+		ac_python_library=`cat<<EOD | $PYTHON -
+
+$IMPORT_SYSCONFIG
+c = sysconfig.get_config_vars()
+if 'LDVERSION' in c:
+	print ('python'+c['LDVERSION'])
+else:
+	print ('python'+c['VERSION'])
+EOD`
+
+		# This small piece shamelessly adapted from PostgreSQL python macro;
+		# credits goes to momjian, I think. I'd like to put the right name
+		# in the credits, if someone can point me in the right direction... ?
+		#
+		if test -n "$ac_python_libdir" -a -n "$ac_python_library"
+		then
+			# use the official shared library
+			ac_python_library=`echo "$ac_python_library" | sed "s/^lib//"`
+			PYTHON_LIBS="-L$ac_python_libdir -l$ac_python_library"
+		else
+			# old way: use libpython from python_configdir
+			ac_python_libdir=`$PYTHON -c \
+			  "from sysconfig import get_python_lib as f; \
+			  import os; \
+			  print (os.path.join(f(plat_specific=1, standard_lib=1), 'config'));"`
+			PYTHON_LIBS="-L$ac_python_libdir -lpython$ac_python_version"
+		fi
+
+		if test -z "$PYTHON_LIBS"; then
+			{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING:
+  Cannot determine location of your Python DSO. Please check it was installed with
+  dynamic libraries enabled, or try setting PYTHON_LIBS by hand.
+			" >&5
+printf "%s\n" "$as_me: WARNING:
+  Cannot determine location of your Python DSO. Please check it was installed with
+  dynamic libraries enabled, or try setting PYTHON_LIBS by hand.
+			" >&2;}
+			if ! $ax_python_devel_optional; then
+			   as_fn_error $? "Giving up" "$LINENO" 5
+			fi
+			ax_python_devel_found=no
+			PYTHON_VERSION=""
+		fi
+	   fi
+	fi
+
+	if test $ax_python_devel_found = yes; then
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PYTHON_LIBS" >&5
+printf "%s\n" "$PYTHON_LIBS" >&6; }
+
+
+	   #
+	   # Check for site packages
+	   #
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Python site-packages path" >&5
+printf %s "checking for Python site-packages path... " >&6; }
+	   if test -z "$PYTHON_SITE_PKG"; then
+		if test "$IMPORT_SYSCONFIG" = "import sysconfig"; then
+			PYTHON_SITE_PKG=`$PYTHON -c "
+$IMPORT_SYSCONFIG;
+if hasattr(sysconfig, 'get_default_scheme'):
+    scheme = sysconfig.get_default_scheme()
+else:
+    scheme = sysconfig._get_default_scheme()
+if scheme == 'posix_local':
+    # Debian's default scheme installs to /usr/local/ but we want to find headers in /usr/
+    scheme = 'posix_prefix'
+prefix = '$prefix'
+if prefix == 'NONE':
+    prefix = '$ac_default_prefix'
+sitedir = sysconfig.get_path('purelib', scheme, vars={'base': prefix})
+print(sitedir)"`
+		else
+			# distutils.sysconfig way
+			PYTHON_SITE_PKG=`$PYTHON -c "$IMPORT_SYSCONFIG; \
+				print (sysconfig.get_python_lib(0,0));"`
+		fi
+	   fi
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PYTHON_SITE_PKG" >&5
+printf "%s\n" "$PYTHON_SITE_PKG" >&6; }
+
+
+	   #
+	   # Check for platform-specific site packages
+	   #
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Python platform specific site-packages path" >&5
+printf %s "checking for Python platform specific site-packages path... " >&6; }
+	   if test -z "$PYTHON_PLATFORM_SITE_PKG"; then
+		if test "$IMPORT_SYSCONFIG" = "import sysconfig"; then
+			PYTHON_PLATFORM_SITE_PKG=`$PYTHON -c "
+$IMPORT_SYSCONFIG;
+if hasattr(sysconfig, 'get_default_scheme'):
+    scheme = sysconfig.get_default_scheme()
+else:
+    scheme = sysconfig._get_default_scheme()
+if scheme == 'posix_local':
+    # Debian's default scheme installs to /usr/local/ but we want to find headers in /usr/
+    scheme = 'posix_prefix'
+prefix = '$prefix'
+if prefix == 'NONE':
+    prefix = '$ac_default_prefix'
+sitedir = sysconfig.get_path('platlib', scheme, vars={'platbase': prefix})
+print(sitedir)"`
+		else
+			# distutils.sysconfig way
+			PYTHON_PLATFORM_SITE_PKG=`$PYTHON -c "$IMPORT_SYSCONFIG; \
+				print (sysconfig.get_python_lib(1,0));"`
+		fi
+	   fi
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PYTHON_PLATFORM_SITE_PKG" >&5
+printf "%s\n" "$PYTHON_PLATFORM_SITE_PKG" >&6; }
+
+
+	   #
+	   # libraries which must be linked in when embedding
+	   #
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking python extra libraries" >&5
+printf %s "checking python extra libraries... " >&6; }
+	   if test -z "$PYTHON_EXTRA_LIBS"; then
+	      PYTHON_EXTRA_LIBS=`$PYTHON -c "$IMPORT_SYSCONFIG; \
+                conf = sysconfig.get_config_var; \
+                print (conf('LIBS') + ' ' + conf('SYSLIBS'))"`
+	   fi
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PYTHON_EXTRA_LIBS" >&5
+printf "%s\n" "$PYTHON_EXTRA_LIBS" >&6; }
+
+
+	   #
+	   # linking flags needed when embedding
+	   #
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking python extra linking flags" >&5
+printf %s "checking python extra linking flags... " >&6; }
+	   if test -z "$PYTHON_EXTRA_LDFLAGS"; then
+		PYTHON_EXTRA_LDFLAGS=`$PYTHON -c "$IMPORT_SYSCONFIG; \
+			conf = sysconfig.get_config_var; \
+			print (conf('LINKFORSHARED'))"`
+		# Hack for macos, it sticks this in here.
+		PYTHON_EXTRA_LDFLAGS=`echo $PYTHON_EXTRA_LDFLAGS | sed 's/CoreFoundation.*$/CoreFoundation/'`
+	   fi
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PYTHON_EXTRA_LDFLAGS" >&5
+printf "%s\n" "$PYTHON_EXTRA_LDFLAGS" >&6; }
+
+
+	   #
+	   # final check to see if everything compiles alright
+	   #
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking consistency of all components of python development environment" >&5
+printf %s "checking consistency of all components of python development environment... " >&6; }
+	   # save current global flags
+	   ac_save_LIBS="$LIBS"
+	   ac_save_LDFLAGS="$LDFLAGS"
+	   ac_save_CPPFLAGS="$CPPFLAGS"
+	   LIBS="$ac_save_LIBS $PYTHON_LIBS $PYTHON_EXTRA_LIBS"
+	   LDFLAGS="$ac_save_LDFLAGS $PYTHON_EXTRA_LDFLAGS"
+	   CPPFLAGS="$ac_save_CPPFLAGS $PYTHON_CPPFLAGS"
+	   ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+	   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+		#include <Python.h>
+int
+main (void)
+{
+Py_Initialize();
+  ;
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  pythonexists=yes
+else $as_nop
+  pythonexists=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+	   ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+	   # turn back to default flags
+	   CPPFLAGS="$ac_save_CPPFLAGS"
+	   LIBS="$ac_save_LIBS"
+	   LDFLAGS="$ac_save_LDFLAGS"
+
+	   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $pythonexists" >&5
+printf "%s\n" "$pythonexists" >&6; }
+
+	   if test ! "x$pythonexists" = "xyes"; then
+	      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING:
+  Could not link test program to Python. Maybe the main Python library has been
+  installed in some non-standard library path. If so, pass it to configure,
+  via the LIBS environment variable.
+  Example: ./configure LIBS=\"-L/usr/non-standard-path/python/lib\"
+  ============================================================================
+   ERROR!
+   You probably have to install the development version of the Python package
+   for your distribution.  The exact name of this package varies among them.
+  ============================================================================
+	      " >&5
+printf "%s\n" "$as_me: WARNING:
+  Could not link test program to Python. Maybe the main Python library has been
+  installed in some non-standard library path. If so, pass it to configure,
+  via the LIBS environment variable.
+  Example: ./configure LIBS=\"-L/usr/non-standard-path/python/lib\"
+  ============================================================================
+   ERROR!
+   You probably have to install the development version of the Python package
+   for your distribution.  The exact name of this package varies among them.
+  ============================================================================
+	      " >&2;}
+	      if ! $ax_python_devel_optional; then
+		 as_fn_error $? "Giving up" "$LINENO" 5
+	      fi
+	      ax_python_devel_found=no
+	      PYTHON_VERSION=""
+	   fi
+	fi
+
+	#
+	# all done!
+	#
+
 
 
 
