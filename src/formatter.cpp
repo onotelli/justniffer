@@ -560,12 +560,10 @@ void python_printer::_init()
 		{
 			run_as r(_user);
 			_init_instance(script_name, func, main_namespace);
-	
 		}
 		else
 		{
 			_init_instance(script_name, func, main_namespace);
-	
 		}
 
 	}
