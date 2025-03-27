@@ -19,7 +19,6 @@
 #include <iterator>
 #include <algorithm>
 #include <functional>
-#include <boost/python.hpp>
 
 using std::sort;
 
@@ -526,11 +525,80 @@ void outstream_printer::doit(handlers::iterator start, handlers::iterator end, c
 	fflush(stdout);
 }
 
+///// python_printer /////
+python_printer::python_printer(std::string script) : _script(script), _finalized(false)
+{
+	try
+	{
+		std::string func = "app";
+		std::string script_name = _script;
+		size_t pos = _script.find(':');
+		if (pos != std::string::npos) {
+			// Extract the part before the delimiter
+			script_name = _script.substr(0, pos);
+			// Extract the part after the delimiter
+			func = _script.substr(pos + 1);
+		}
+		Py_Initialize();
+		py::object main_module = py::import("__main__");
+		py::object main_namespace = main_module.attr("__dict__");
+		py::exec_file(script_name.c_str(), main_namespace, main_namespace);
+		instance = main_namespace[func];
+	}
+	catch (py::error_already_set const &)
+	{
+		PyErr_Print();
+		Py_Finalize();
+		_finalized = true;
+	}
+}
 
-void test(){
-	Py_Initialize();
-	boost::python::object my_python_module = boost::python::import("my_python_module");
+void python_printer::doit(handlers::iterator start, handlers::iterator end, const timeval *t, connections_container *pconnections_container)
+{
+	try
+	{
+		if (!_finalized)
+		{
+			std::ostringstream _out(std::ios::binary);
+			for (handlers::iterator i = start; i != end; i++)
+				(*i)->append(_out, t, pconnections_container);
+			std::string binaryData = _out.str();
+			py::object pyBytes(py::handle<>(PyBytes_FromStringAndSize(binaryData.data(), binaryData.size())));
+			if (!instance.is_none())
+				instance(pyBytes);
+		}
+	}
+	catch (py::error_already_set const &)
+	{
+		PyErr_Print();
+		Py_Finalize();
+		_finalized = true;
+	}
+}
 
+python_printer::~python_printer()
+{
+	if (!_finalized)
+		Py_Finalize();
+}
+
+void test_py()
+{
+	try
+	{
+		Py_Initialize();
+		py::object sys = py::import("sys");
+		sys.attr("path").attr("append")(".");
+		py::object script_module = py::import("example");
+		py::object my_class = script_module.attr("Test");
+		py::object instance = my_class();
+		instance.attr("test")();
+	}
+	catch (py::error_already_set const &)
+	{
+		PyErr_Print();
+	}
+	Py_Finalize();
 }
 
 ///// stream /////

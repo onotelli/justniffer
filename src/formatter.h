@@ -20,6 +20,7 @@
 #include <boost/iostreams/categories.hpp>
 #include <boost/iostreams/operations.hpp>
 #include <boost/iostreams/concepts.hpp>
+#include <boost/python.hpp>
 #include "utilities.h"
 
 class ascii_filter : public boost::iostreams::output_filter
@@ -329,6 +330,21 @@ private:
 	void _execute(handlers::iterator start, handlers::iterator end, const timeval *t, connections_container *pconnections_container);
 	std::string _command, _user;
 };
+
+
+namespace py = boost::python;
+
+class python_printer : public printer
+{
+public:
+	python_printer(std::string script);
+	virtual void doit(handlers::iterator start, handlers::iterator end, const timeval *t, connections_container *pconnections_container);	
+	virtual ~python_printer();
+private:
+	std::string _script;
+	py::object instance;
+	bool _finalized;
+}; 
 
 class stream : public shared_obj<stream>, public tcp_stream
 {
@@ -1398,5 +1414,6 @@ public:
 private:
 	int size;
 };
+
 
 #endif // _sniffer_formatter_h
