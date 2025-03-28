@@ -1,7 +1,7 @@
 import os
-
+from traceback import extract_stack
 from datetime import datetime
-from logging import basicConfig, DEBUG, debug, info
+from logging import basicConfig, DEBUG, debug, info, error
 basicConfig(level=DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class Test:
@@ -16,7 +16,11 @@ class Test:
                 first_line_bytes = test[:pos]
                 rest = test[pos +2:]            
                 t, source, dest = first_line_bytes.decode().split()
-                d = datetime.fromtimestamp(float(t))
+                try:
+                    d = datetime.fromtimestamp(float(t))
+                except:
+                    d = None
+                    pass
                 print (f'{os.getuid()} {d} {source} {dest}')
                 if rest.startswith(self._methods):
                     print(rest.decode())
@@ -25,8 +29,8 @@ class Test:
 
         except KeyboardInterrupt:
             raise
-        except:
-
+        except Exception as e:
+            error(f'{type(e)}:{e}',stack_info=True)
             pass
 
 app = Test()
