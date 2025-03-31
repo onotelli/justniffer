@@ -15,7 +15,7 @@ class Test:
             if pos != -1:
                 first_line_bytes = test[:pos]
                 rest = test[pos +2:]            
-                t, source, dest = first_line_bytes.decode().split()
+                t, source, dest = first_line_bytes.decode().split()[:3]
                 try:
                     d = datetime.fromtimestamp(float(t))
                 except:
@@ -26,7 +26,7 @@ class Test:
                     print(rest.decode())
                 else:
                     print(f'**** {str(rest[:10])}')
-
+            print('-'*80)
         except KeyboardInterrupt:
             raise
         except Exception as e:

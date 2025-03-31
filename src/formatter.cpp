@@ -246,6 +246,8 @@ void parser::init_parse_elements()
 	elements["-"] = pelem(new break_keyword<handler_factory_t<basic_handler>>());
 	elements["%"] = pelem(new keyword_arg<string, handler_factory_t_arg<string, constant>>(string("%")));
 	elements["newline"] = pelem(new keyword_arg<string, handler_factory_t_arg<string, constant>>(string("\n")));
+
+	elements["python"] = pelem(new keyword_params<python_handler_factory>());
 	_already_init = true;
 }
 
@@ -537,35 +539,47 @@ python_printer::python_printer(std::string script) : _script(script), _finalized
 	_init();
 }
 
+struct Res
+{
+	Res(std::string script_name, std::string func, py::object nmspace) : script_name(script_name), func(func), nmspace(nmspace)
+	{
+	}
+	std::string script_name;
+	std::string func;
+	py::object nmspace;
+};
+
+Res python_init(std::string scriptname)
+{
+	std::string _scriptname = scriptname;
+	std::string func = "app";
+	size_t pos = scriptname.find(':');
+	if (pos != std::string::npos)
+	{
+		_scriptname = scriptname.substr(0, pos);
+		func = scriptname.substr(pos + 1);
+	}
+	Py_Initialize();
+	py::object main_module = py::import("__main__");
+	py::object main_namespace = main_module.attr("__dict__");
+	return Res(_scriptname, func, main_namespace);
+}
+
 void python_printer::_init()
 {
 	try
 	{
-		std::string func = "app";
-		std::string script_name = _script;
-		size_t pos = _script.find(':');
-		if (pos != std::string::npos)
-		{
-			// Extract the part before the delimiter
-			script_name = _script.substr(0, pos);
-			// Extract the part after the delimiter
-			func = _script.substr(pos + 1);
-		}
-		Py_Initialize();
-		py::object main_module = py::import("__main__");
-		py::object main_namespace = main_module.attr("__dict__");
-		
+		Res res = python_init(_script);
 
 		if (!_user.empty())
 		{
 			run_as r(_user);
-			_init_instance(script_name, func, main_namespace);
+			_init_instance(res.script_name, res.func, res.nmspace);
 		}
 		else
 		{
-			_init_instance(script_name, func, main_namespace);
+			_init_instance(res.script_name, res.func, res.nmspace);
 		}
-
 	}
 	catch (py::error_already_set const &)
 	{
@@ -822,4 +836,174 @@ void close_originator::onResponse(tcp_stream *pstream, const timeval *t)
 void close_originator::onInterrupted()
 {
 	stat = truncated;
+}
+
+/////// python_handler ////
+
+python_handler_factory::python_handler_factory(const std::string &arg)
+{
+	Res res = python_init(arg);
+	py::exec_file(res.script_name.c_str(), res.nmspace, res.nmspace);
+	_pyclass = res.nmspace[res.func];
+}
+
+handler::ptr python_handler_factory::create_handler()
+{
+	return handler::ptr(new python_handler(_pyclass));
+}
+
+struct TCPStream
+{
+};
+
+py::object tcp_stream_to_python(tcp_stream *pstream)
+{
+	py::dict source = py::dict();
+	source["ip"] = ip_to_str(pstream->addr.saddr);
+	source["port"] = pstream->addr.source;
+
+	py::object dest = py::dict();
+	dest["ip"] = ip_to_str(pstream->addr.daddr);
+	dest["port"] = pstream->addr.dest;
+	return py::make_tuple(source, dest);
+}
+
+python_handler::python_handler(py::object &classObj)
+{
+	try
+	{
+		_instance = classObj();
+	}
+	catch (const py::error_already_set &)
+	{
+		PyErr_Print();
+	}
+}
+
+void python_handler::append(std::basic_ostream<char> &out, const timeval *t, connections_container *pconnections_container)
+{
+	try
+	{
+		py::object res = _instance.attr("result")();
+		std::string result_str = py::extract<std::string>(res);
+		out << result_str;
+	}
+	catch (const py::error_already_set &)
+	{
+		cout << "fico\n";
+		cout.flush();
+		PyErr_Print();
+	}
+}
+
+double timeval_to_python(const timeval *t)
+{
+	double totalSeconds = t->tv_sec + (t->tv_usec / 1000000.0);
+	return totalSeconds;
+}
+
+void python_handler::onOpening(tcp_stream *pstream, const timeval *t)
+{
+	try
+	{
+		_instance.attr("on_opening")(tcp_stream_to_python(pstream), timeval_to_python(t));
+	}
+	catch (const py::error_already_set &e)
+	{
+		_handle_exception(e);
+	}
+}
+
+void python_handler::_handle_exception(const py::error_already_set &e)
+{
+	if (PyErr_ExceptionMatches(PyExc_KeyboardInterrupt))
+	{
+		std::cerr << "KeyboardInterrupt" << std::endl;
+		PyErr_Clear();
+		exit(0);
+	}
+	else
+	{
+		PyErr_Print(); // Print Python error if any
+	}
+}
+void python_handler::onOpen(tcp_stream *pstream, const timeval *t)
+{
+	py::object conn = tcp_stream_to_python(pstream);
+	double dtime = timeval_to_python(t);
+	try
+	{
+		_instance.attr("on_open")(conn, dtime );
+	}
+	catch (const py::error_already_set &e)
+	{
+		_handle_exception(e);
+	}
+}
+void python_handler::onRequest(tcp_stream *pstream, const timeval *t)
+{
+	std::string content = std::string(pstream->server.data, pstream->server.data + pstream->server.count_new);
+	py::object pyBytes(py::handle<>(PyBytes_FromStringAndSize(content.data(), content.size())));	
+	py::object conn = tcp_stream_to_python(pstream);
+	double dtime = timeval_to_python(t);
+	try
+	{
+		_instance.attr("on_request")(conn, pyBytes, dtime );
+	}
+	catch (const py::error_already_set &e)
+	{
+		_handle_exception(e);
+	}
+}
+void python_handler::onResponse(tcp_stream *pstream, const timeval *t)
+{
+	std::string content = std::string(pstream->client.data, pstream->client.data + pstream->client.count_new);
+	py::object pyBytes(py::handle<>(PyBytes_FromStringAndSize(content.data(), content.size())));	
+	py::object conn = tcp_stream_to_python(pstream);
+	double dtime = timeval_to_python(t);
+	try
+	{
+		_instance.attr("on_response")(conn, pyBytes, dtime );
+	}
+	catch (const py::error_already_set &e)
+	{
+		_handle_exception(e);
+	}
+}
+void python_handler::onClose(tcp_stream *pstream, const timeval *t, unsigned char *packet)
+{
+	py::object conn = tcp_stream_to_python(pstream);
+	double dtime = timeval_to_python(t);
+	try
+	{
+		_instance.attr("on_close")(conn, dtime );
+	}
+	catch (const py::error_already_set &e)
+	{
+		_handle_exception(e);
+	}
+}
+void python_handler::onTimedOut(tcp_stream *pstream, const timeval *t, unsigned char *packet)
+{
+	py::object conn = tcp_stream_to_python(pstream);
+	double dtime = timeval_to_python(t);
+	try
+	{
+		_instance.attr("on_timed_out")(conn, dtime );
+	}
+	catch (const py::error_already_set &e)
+	{
+		_handle_exception(e);
+	}
+}
+void python_handler::onInterrupted()
+{
+	try
+	{
+		_instance.attr("on_interrupted")( );
+	}
+	catch (const py::error_already_set &e)
+	{
+		_handle_exception(e);
+	}
 }

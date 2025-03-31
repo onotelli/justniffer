@@ -1420,4 +1420,34 @@ private:
 };
 
 
+class python_handler_factory :public handler_factory
+{
+public:
+	python_handler_factory(const std::string& arg);
+	virtual handler::ptr create_handler();
+private:	
+	std::string _arg;
+	py::object _pyclass;
+};
+
+
+
+class python_handler: public handler{
+public:
+	python_handler(py::object &pyClass);
+	virtual void append(std::basic_ostream<char> &out, const timeval *t, connections_container *pconnections_container);
+    virtual void onOpening(tcp_stream *pstream, const timeval *t);
+    virtual void onOpen(tcp_stream *pstream, const timeval *t);
+	virtual void onRequest(tcp_stream *pstream, const timeval *t);
+	virtual void onResponse(tcp_stream *pstream, const timeval *t);
+	virtual void onClose(tcp_stream *pstream, const timeval *, unsigned char *packet);
+	virtual void onTimedOut(tcp_stream *pstream, const timeval *, unsigned char *packet);
+	virtual void onInterrupted();
+private:
+	py::object	_instance;
+    void _handle_exception(const py::error_already_set &e);
+
+};
+
+
 #endif // _sniffer_formatter_h
