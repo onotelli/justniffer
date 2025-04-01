@@ -595,6 +595,13 @@ void python_printer::_init_instance(std::string script_name, std::string func, p
 	instance = main_namespace[func];
 }
 
+py::object create_py_bytes(const char* data, size_t size) {
+    if (!data || size == 0) {
+        return py::object(py::handle<>(PyBytes_FromStringAndSize("", 0)));
+    }
+    return py::object(py::handle<>(PyBytes_FromStringAndSize(data, size)));
+}
+
 void python_printer::doit(handlers::iterator start, handlers::iterator end, const timeval *t, connections_container *pconnections_container)
 {
 	try
@@ -605,7 +612,7 @@ void python_printer::doit(handlers::iterator start, handlers::iterator end, cons
 			for (handlers::iterator i = start; i != end; i++)
 				(*i)->append(_out, t, pconnections_container);
 			std::string binaryData = _out.str();
-			py::object pyBytes(py::handle<>(PyBytes_FromStringAndSize(binaryData.data(), binaryData.size())));
+			py::object pyBytes = create_py_bytes(binaryData.data(), binaryData.size());
 			if (!instance.is_none())
 				instance(pyBytes);
 		}
@@ -852,10 +859,6 @@ handler::ptr python_handler_factory::create_handler()
 	return handler::ptr(new python_handler(_pyclass));
 }
 
-struct TCPStream
-{
-};
-
 py::object tcp_stream_to_python(tcp_stream *pstream)
 {
 	py::dict source = py::dict();
@@ -890,8 +893,6 @@ void python_handler::append(std::basic_ostream<char> &out, const timeval *t, con
 	}
 	catch (const py::error_already_set &)
 	{
-		cout << "fico\n";
-		cout.flush();
 		PyErr_Print();
 	}
 }
@@ -902,16 +903,18 @@ double timeval_to_python(const timeval *t)
 	return totalSeconds;
 }
 
+template <typename... Args>
+void python_handler::call_python_method(const char* method_name, Args&&... args) {
+    try {
+        _instance.attr(method_name)(std::forward<Args>(args)...);
+    } catch (const py::error_already_set &e) {
+        _handle_exception(e);
+    }
+}
+
 void python_handler::onOpening(tcp_stream *pstream, const timeval *t)
 {
-	try
-	{
-		_instance.attr("on_opening")(tcp_stream_to_python(pstream), timeval_to_python(t));
-	}
-	catch (const py::error_already_set &e)
-	{
-		_handle_exception(e);
-	}
+	call_python_method("on_opening",tcp_stream_to_python(pstream), timeval_to_python(t));
 }
 
 void python_handler::_handle_exception(const py::error_already_set &e)
@@ -929,81 +932,39 @@ void python_handler::_handle_exception(const py::error_already_set &e)
 }
 void python_handler::onOpen(tcp_stream *pstream, const timeval *t)
 {
-	py::object conn = tcp_stream_to_python(pstream);
-	double dtime = timeval_to_python(t);
-	try
-	{
-		_instance.attr("on_open")(conn, dtime );
-	}
-	catch (const py::error_already_set &e)
-	{
-		_handle_exception(e);
-	}
+	call_python_method("on_open",tcp_stream_to_python(pstream), timeval_to_python(t));
 }
+
 void python_handler::onRequest(tcp_stream *pstream, const timeval *t)
 {
 	std::string content = std::string(pstream->server.data, pstream->server.data + pstream->server.count_new);
-	py::object pyBytes(py::handle<>(PyBytes_FromStringAndSize(content.data(), content.size())));	
+	py::object pyBytes = create_py_bytes(content.data(), content.size());	
 	py::object conn = tcp_stream_to_python(pstream);
 	double dtime = timeval_to_python(t);
-	try
-	{
-		_instance.attr("on_request")(conn, pyBytes, dtime );
-	}
-	catch (const py::error_already_set &e)
-	{
-		_handle_exception(e);
-	}
+	call_python_method("on_request",conn, pyBytes, dtime);	
 }
 void python_handler::onResponse(tcp_stream *pstream, const timeval *t)
 {
 	std::string content = std::string(pstream->client.data, pstream->client.data + pstream->client.count_new);
-	py::object pyBytes(py::handle<>(PyBytes_FromStringAndSize(content.data(), content.size())));	
+	py::object pyBytes = create_py_bytes(content.data(), content.size());	
 	py::object conn = tcp_stream_to_python(pstream);
 	double dtime = timeval_to_python(t);
-	try
-	{
-		_instance.attr("on_response")(conn, pyBytes, dtime );
-	}
-	catch (const py::error_already_set &e)
-	{
-		_handle_exception(e);
-	}
+	call_python_method("on_response",conn, pyBytes, dtime);	
 }
 void python_handler::onClose(tcp_stream *pstream, const timeval *t, unsigned char *packet)
 {
 	py::object conn = tcp_stream_to_python(pstream);
 	double dtime = timeval_to_python(t);
-	try
-	{
-		_instance.attr("on_close")(conn, dtime );
-	}
-	catch (const py::error_already_set &e)
-	{
-		_handle_exception(e);
-	}
+	call_python_method("on_close", conn, dtime);	
 }
+
 void python_handler::onTimedOut(tcp_stream *pstream, const timeval *t, unsigned char *packet)
 {
 	py::object conn = tcp_stream_to_python(pstream);
 	double dtime = timeval_to_python(t);
-	try
-	{
-		_instance.attr("on_timed_out")(conn, dtime );
-	}
-	catch (const py::error_already_set &e)
-	{
-		_handle_exception(e);
-	}
+	call_python_method("on_timed_out",conn, dtime);	
 }
 void python_handler::onInterrupted()
 {
-	try
-	{
-		_instance.attr("on_interrupted")( );
-	}
-	catch (const py::error_already_set &e)
-	{
-		_handle_exception(e);
-	}
+	call_python_method("on_interrupted");	
 }

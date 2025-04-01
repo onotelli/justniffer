@@ -1,0 +1,124 @@
+autoscan: warning: missing AC_CHECK_FUNCS([memchr]) wanted by: 
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_objects.c:30
+autoscan: warning: missing AC_CHECK_FUNCS([memset]) wanted by: 
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/_cffi_include.h:340
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/_embedding.h:516
+	tmp/env/test/lib/python3.10/site-packages/cffi/_cffi_include.h:340
+	tmp/env/test/lib/python3.10/site-packages/cffi/_embedding.h:516
+autoscan: warning: missing AC_CHECK_FUNCS([strtol]) wanted by: 
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_objects.c:81
+autoscan: warning: missing AC_CHECK_HEADERS([malloc.h]) wanted by: 
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/_cffi_include.h:68
+	tmp/env/test/lib/python3.10/site-packages/cffi/_cffi_include.h:68
+autoscan: warning: missing AC_CHECK_HEADERS([stdint.h]) wanted by: 
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_pack.c:23
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/_cffi_include.h:97
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/_cffi_include.h:107
+	tmp/env/test/lib/python3.10/site-packages/cffi/_cffi_include.h:97
+	tmp/env/test/lib/python3.10/site-packages/cffi/_cffi_include.h:107
+autoscan: warning: missing AC_CHECK_HEADERS([unistd.h]) wanted by: 
+	src/utilities.cpp:17
+	src/utilities.h:19
+autoscan: warning: missing AC_FUNC_ALLOCA wanted by: 
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/_cffi_include.h:109
+	tmp/env/test/lib/python3.10/site-packages/cffi/_cffi_include.h:109
+autoscan: warning: missing AC_FUNC_STRNLEN wanted by: 
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_objects.c:88
+autoscan: warning: missing AC_PROG_RANLIB wanted by: 
+	ltmain.sh:3864
+autoscan: warning: missing AC_TYPE_INT16_T wanted by: 
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/stdint.h:9
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/_cffi_include.h:71
+	tmp/env/test/lib/python3.10/site-packages/cffi/_cffi_include.h:71
+autoscan: warning: missing AC_TYPE_INT32_T wanted by: 
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/stdint.h:10
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/_cffi_include.h:72
+	tmp/env/test/lib/python3.10/site-packages/cffi/_cffi_include.h:72
+autoscan: warning: missing AC_TYPE_INT64_T wanted by: 
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/stdint.h:11
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/_cffi_include.h:73
+	tmp/env/test/lib/python3.10/site-packages/cffi/_cffi_include.h:73
+autoscan: warning: missing AC_TYPE_INT8_T wanted by: 
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/stdint.h:8
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/_cffi_include.h:70
+	tmp/env/test/lib/python3.10/site-packages/cffi/_cffi_include.h:70
+autoscan: warning: missing AC_TYPE_MODE_T wanted by: 
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_diff_tree.c:26
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_diff_tree.c:271
+autoscan: warning: missing AC_TYPE_SIZE_T wanted by: 
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_pack.c:39
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_pack.c:39
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_pack.c:39
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_pack.c:41
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_pack.c:42
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_pack.c:44
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_pack.c:81
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_pack.c:82
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_pack.c:83
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_pack.c:84
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_pack.c:102
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_pack.c:105
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_pack.c:129
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_objects.c:27
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_objects.c:27
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_objects.c:28
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_objects.c:28
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_objects.c:31
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_objects.c:57
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_objects.c:140
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/parse_c_type.h:113
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/parse_c_type.h:127
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/parse_c_type.h:128
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/parse_c_type.h:165
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/parse_c_type.h:171
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/parse_c_type.h:178
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/parse_c_type.h:180
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/_cffi_include.h:333
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/_cffi_include.h:340
+	src/formatter.cpp:556
+	src/formatter.cpp:598
+	tmp/env/test/lib/python3.10/site-packages/cffi/parse_c_type.h:113
+	tmp/env/test/lib/python3.10/site-packages/cffi/parse_c_type.h:127
+	tmp/env/test/lib/python3.10/site-packages/cffi/parse_c_type.h:128
+	tmp/env/test/lib/python3.10/site-packages/cffi/parse_c_type.h:165
+	tmp/env/test/lib/python3.10/site-packages/cffi/parse_c_type.h:171
+	tmp/env/test/lib/python3.10/site-packages/cffi/parse_c_type.h:178
+	tmp/env/test/lib/python3.10/site-packages/cffi/parse_c_type.h:180
+	tmp/env/test/lib/python3.10/site-packages/cffi/_cffi_include.h:333
+	tmp/env/test/lib/python3.10/site-packages/cffi/_cffi_include.h:340
+autoscan: warning: missing AC_TYPE_UID_T wanted by: 
+	src/utilities.cpp:235
+	src/utilities.h:92
+autoscan: warning: missing AC_TYPE_UINT16_T wanted by: 
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/stdint.h:14
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/_cffi_include.h:75
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/_cffi_include.h:270
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/_cffi_include.h:273
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/_cffi_include.h:276
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/_cffi_include.h:278
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/_cffi_include.h:281
+	tmp/env/test/lib/python3.10/site-packages/cffi/_cffi_include.h:75
+	tmp/env/test/lib/python3.10/site-packages/cffi/_cffi_include.h:270
+	tmp/env/test/lib/python3.10/site-packages/cffi/_cffi_include.h:273
+	tmp/env/test/lib/python3.10/site-packages/cffi/_cffi_include.h:276
+	tmp/env/test/lib/python3.10/site-packages/cffi/_cffi_include.h:278
+	tmp/env/test/lib/python3.10/site-packages/cffi/_cffi_include.h:281
+autoscan: warning: missing AC_TYPE_UINT32_T wanted by: 
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/stdint.h:15
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/_cffi_include.h:76
+	tmp/env/test/lib/python3.10/site-packages/cffi/_cffi_include.h:76
+autoscan: warning: missing AC_TYPE_UINT64_T wanted by: 
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/stdint.h:16
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/_cffi_include.h:77
+	tmp/env/test/lib/python3.10/site-packages/cffi/_cffi_include.h:77
+autoscan: warning: missing AC_TYPE_UINT8_T wanted by: 
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_pack.c:39
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_pack.c:80
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_pack.c:85
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_pack.c:101
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_pack.c:104
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_pack.c:124
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/_pack.c:126
+	python/.env/justniffer/lib/python3.12/site-packages/dulwich/stdint.h:13
+	python/.env/justniffer/lib/python3.12/site-packages/cffi/_cffi_include.h:74
+	tmp/env/test/lib/python3.10/site-packages/cffi/_cffi_include.h:74

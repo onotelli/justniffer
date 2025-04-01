@@ -1446,6 +1446,8 @@ public:
 private:
 	py::object	_instance;
     void _handle_exception(const py::error_already_set &e);
+	template <typename... Args> void call_python_method(const char* method_name, Args&&... args);
+
 
 };
 

@@ -15,6 +15,8 @@
 #include <boost/program_options.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/algorithm/string/join.hpp>
+#include <boost/thread.hpp>
+#include <boost/asio.hpp>
 #include <string>
 #include <vector>
 #include <iostream>
@@ -118,6 +120,24 @@ bool check_conflicts(const po::variables_map &vm, const vector<string> &argument
 
 static int max_concurrent_tcp_stream_v;
 static int max_fragmented_ip_hosts_v;
+
+boost::asio::io_service io_service;
+boost::asio::signal_set signals(io_service, SIGINT);
+boost::thread signal_thread;
+
+
+
+void signal_handler(const boost::system::error_code& error, int signal_number) {
+    if (!error) {
+		nids_exit();
+        io_service.stop();
+    }
+}
+
+void run_signal_service() {
+    signals.async_wait(signal_handler);
+    io_service.run();
+}
 
 int main(int argc, char *argv[])
 {
@@ -293,8 +313,10 @@ int main(int argc, char *argv[])
 		chksumctl[0].action = NIDS_DONT_CHKSUM;
 
 		nids_register_chksum_ctl(chksumctl, 1);
+		signal_thread  = boost::thread(&run_signal_service);
 		nids_run();
 		parser::theOnlyParser->process_truncated();
+		signal_thread.join();
 		// reached when parsing file
 		exit(0);
 	}
