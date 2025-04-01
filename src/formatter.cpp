@@ -392,52 +392,6 @@ const char *keyword_params_base::parse(const char *cursor, const string &_keywor
 		}
 	}
 	return cursor;
-	/*
-	if (newcur != cursor)
-	{
-		string frm;
-		bool found=false;
-		int in_par = 0;
-		for (bool cont = true;cont;++newcur)
-		{
-			if (*newcur == start)
-			{
-				if (in_par)
-					frm += *newcur;
-				++in_par;
-			}
-			else if (*newcur == end)
-			{
-				if (!(--in_par))
-				{
-					cont = false;
-					found = true;
-				}
-				else
-					frm += *newcur;
-			}
-			else
-				switch (*newcur)
-				{
-					case 0:
-						cont = false;
-						break;
-					default:
-						if (in_par)
-							frm += *newcur;
-						else
-							cont = false;
-						break;
-				}
-		}
-		if (found)
-		{
-			factories.push_back(create_new_factory(frm));
-			return newcur;
-		}
-	}
-	return cursor;
-	*/
 }
 ///// keyword_optional_params_base ////
 
@@ -521,9 +475,11 @@ void outstream_printer::doit(handlers::iterator start, handlers::iterator end, c
 {
 	for (handlers::iterator i = start; i != end; i++)
 		(*i)->append(_out, t, pconnections_container);
-	_out << std::endl
-		 << std::flush;
-	//_out.sync();
+	if (!_skip_newline)
+	{
+		_out << std::endl;
+	}
+	_out << std::flush;
 	fflush(stdout);
 }
 
@@ -595,11 +551,13 @@ void python_printer::_init_instance(std::string script_name, std::string func, p
 	instance = main_namespace[func];
 }
 
-py::object create_py_bytes(const char* data, size_t size) {
-    if (!data || size == 0) {
-        return py::object(py::handle<>(PyBytes_FromStringAndSize("", 0)));
-    }
-    return py::object(py::handle<>(PyBytes_FromStringAndSize(data, size)));
+py::object create_py_bytes(const char *data, size_t size)
+{
+	if (!data || size == 0)
+	{
+		return py::object(py::handle<>(PyBytes_FromStringAndSize("", 0)));
+	}
+	return py::object(py::handle<>(PyBytes_FromStringAndSize(data, size)));
 }
 
 void python_printer::doit(handlers::iterator start, handlers::iterator end, const timeval *t, connections_container *pconnections_container)
@@ -861,13 +819,8 @@ handler::ptr python_handler_factory::create_handler()
 
 py::object tcp_stream_to_python(tcp_stream *pstream)
 {
-	py::dict source = py::dict();
-	source["ip"] = ip_to_str(pstream->addr.saddr);
-	source["port"] = pstream->addr.source;
-
-	py::object dest = py::dict();
-	dest["ip"] = ip_to_str(pstream->addr.daddr);
-	dest["port"] = pstream->addr.dest;
+	py::object source = py::make_tuple(ip_to_str(pstream->addr.saddr), pstream->addr.source);
+	py::object dest = py::make_tuple(ip_to_str(pstream->addr.daddr), pstream->addr.dest);
 	return py::make_tuple(source, dest);
 }
 
@@ -888,8 +841,10 @@ void python_handler::append(std::basic_ostream<char> &out, const timeval *t, con
 	try
 	{
 		py::object res = _instance.attr("result")();
-		std::string result_str = py::extract<std::string>(res);
-		out << result_str;
+		if (!res.is_none()){
+			std::string result_str = py::extract<std::string>(res);
+			out << result_str;
+		}
 	}
 	catch (const py::error_already_set &)
 	{
@@ -904,67 +859,62 @@ double timeval_to_python(const timeval *t)
 }
 
 template <typename... Args>
-void python_handler::call_python_method(const char* method_name, Args&&... args) {
+void python_handler::call_python_method(const char* method_name, Args&&... args)
+{
+    namespace py = boost::python;
+    
+    if (!PyObject_HasAttrString(_instance.ptr(), method_name)) {
+        return;
+    }
+	py::object attr = _instance.attr(method_name);
     try {
-        _instance.attr(method_name)(std::forward<Args>(args)...);
-    } catch (const py::error_already_set &e) {
+        attr(std::forward<Args>(args)...);
+    }
+    catch (const py::error_already_set& e) {
         _handle_exception(e);
     }
 }
 
 void python_handler::onOpening(tcp_stream *pstream, const timeval *t)
 {
-	call_python_method("on_opening",tcp_stream_to_python(pstream), timeval_to_python(t));
+	call_python_method("on_opening", tcp_stream_to_python(pstream), timeval_to_python(t));
 }
 
 void python_handler::_handle_exception(const py::error_already_set &e)
 {
-	if (PyErr_ExceptionMatches(PyExc_KeyboardInterrupt))
-	{
-		std::cerr << "KeyboardInterrupt" << std::endl;
-		PyErr_Clear();
-		exit(0);
-	}
-	else
-	{
-		PyErr_Print(); // Print Python error if any
-	}
+	PyErr_Print();
 }
 void python_handler::onOpen(tcp_stream *pstream, const timeval *t)
 {
-	call_python_method("on_open",tcp_stream_to_python(pstream), timeval_to_python(t));
+	call_python_method("on_open", tcp_stream_to_python(pstream), timeval_to_python(t));
 }
 
 void python_handler::onRequest(tcp_stream *pstream, const timeval *t)
 {
 	std::string content = std::string(pstream->server.data, pstream->server.data + pstream->server.count_new);
-	py::object pyBytes = create_py_bytes(content.data(), content.size());	
-	py::object conn = tcp_stream_to_python(pstream);
+	py::object pyBytes = create_py_bytes(content.data(), content.size());
 	double dtime = timeval_to_python(t);
-	call_python_method("on_request",conn, pyBytes, dtime);	
+	call_python_method("on_request", pyBytes, dtime);
 }
 void python_handler::onResponse(tcp_stream *pstream, const timeval *t)
 {
 	std::string content = std::string(pstream->client.data, pstream->client.data + pstream->client.count_new);
-	py::object pyBytes = create_py_bytes(content.data(), content.size());	
-	py::object conn = tcp_stream_to_python(pstream);
+	py::object pyBytes = create_py_bytes(content.data(), content.size());
 	double dtime = timeval_to_python(t);
-	call_python_method("on_response",conn, pyBytes, dtime);	
+	call_python_method("on_response", pyBytes, dtime);
 }
 void python_handler::onClose(tcp_stream *pstream, const timeval *t, unsigned char *packet)
 {
-	py::object conn = tcp_stream_to_python(pstream);
 	double dtime = timeval_to_python(t);
-	call_python_method("on_close", conn, dtime);	
+	call_python_method("on_close", dtime);
 }
 
 void python_handler::onTimedOut(tcp_stream *pstream, const timeval *t, unsigned char *packet)
 {
-	py::object conn = tcp_stream_to_python(pstream);
 	double dtime = timeval_to_python(t);
-	call_python_method("on_timed_out",conn, dtime);	
+	call_python_method("on_timed_out", dtime);
 }
 void python_handler::onInterrupted()
 {
-	call_python_method("on_interrupted");	
+	call_python_method("on_interrupted");
 }

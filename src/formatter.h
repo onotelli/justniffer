@@ -311,10 +311,11 @@ class outstream_printer : public printer
 public:
 	typedef std::basic_ostream<char> &Out;
 	// typedef T& Out;
-	outstream_printer(Out out) : _out(out) { _out.setf(ios_base::fixed); }
+	outstream_printer(Out out, bool skip_newline) : _out(out),_skip_newline(skip_newline) { _out.setf(ios_base::fixed); }
 	void doit(handlers::iterator start, handlers::iterator end, const timeval *t, connections_container *pconnections_container);
 
 private:
+	bool _skip_newline;
 	Out _out;
 };
 
