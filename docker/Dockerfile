@@ -1,4 +1,6 @@
-FROM ubuntu:22.04 AS dev_env
+ARG BASE_IMAGE=ubuntu:24.04
+
+FROM ${BASE_IMAGE} AS dev_env
 
 RUN apt-get update -y && \
     apt-get install -y libboost-python-dev \
@@ -11,9 +13,12 @@ FROM dev_env AS build_env
 COPY / /workspace
 RUN cd /workspace && dpkg-buildpackage -d
 
-FROM ubuntu:22.04
+FROM ${BASE_IMAGE}
 COPY --from=build_env /*.deb /
-RUN apt-get update -y && apt install -y ./justniffer_0.5.21.noble_amd64.deb
+RUN apt-get update -y && \
+for deb in /*.deb ; do apt-get install -y ./"$deb"; done && \
+rm  /*.deb
+
 
 
 CMD [ "tail", "-f", "/dev/null" ]
