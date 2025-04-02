@@ -4,8 +4,8 @@ services:
     container_name: justniffer
     image: docker.midesa.eu/justniffer-dev
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile
 
     volumes:
       - ..:/workspace

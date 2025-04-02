@@ -3,6 +3,7 @@ import re
 import sys
 from time import time
 from loguru import logger
+import os
 
 from justniffer.model import Conn
 
@@ -115,3 +116,4 @@ class Pippo:
 
 def u (*args) -> None:
     print ('fico')
+

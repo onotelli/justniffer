@@ -16,12 +16,18 @@ def decrypt_tls(encrypted_file: str, key_file: str):
 @app.command()
 def capture(interface: str = 'any', filter: str | None = None):
     from subprocess import run
-    from shlex import split    
+    from shlex import split
+    import os    
+    import sys
     filter_option = (f'-p "{filter}"') if filter is not None else ""
     from loguru import logger
     cmd = f'justniffer  -i {interface}  -l "%python(justniffer.test2:Pippo2)" {filter_option}   -m -N'
     logger.info(f'Running {cmd}')
-    run(split(cmd))
+    env = os.environ.copy()
+    virtual_env =  os.path.normpath(os.path.join(os.path.dirname(sys.executable),'..'))
+    env['VIRTUAL_ENV'] = virtual_env
+    logger.info(f'VIRTUAL_ENV={virtual_env}')
+    run(split(cmd), env=env)
 
 def main():
     app()       

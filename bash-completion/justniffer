@@ -35,7 +35,12 @@ _justniffer_completions() {
             return 0
             ;;
         -i|--interface)
-            COMPREPLY=( $(compgen -W "any $(ip link show | awk -F: '/^[0-9]+:/ {print $2}' | tr -d ' ')" -- "${cur}") )
+            local interfaces="any"
+            # Check if 'ip' command exists before using it
+            if command -v ip &>/dev/null; then
+                interfaces+=" $(ip link show 2>/dev/null | awk -F: '/^[0-9]+:/ {print $2}' | tr -d ' ')"
+            fi
+            COMPREPLY=( $(compgen -W "$interfaces" -- "${cur}") )
             return 0
             ;;
         -c|--config)
