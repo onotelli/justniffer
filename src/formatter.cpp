@@ -518,6 +518,35 @@ Res python_init(std::string scriptname)
 	Py_Initialize();
 	py::object main_module = py::import("__main__");
 	py::object main_namespace = main_module.attr("__dict__");
+	try{
+		const char *setup =R"DELIM(
+import sys
+import os
+
+def activate_virtualenv(venv_path):
+    if os.path.exists(venv_path):
+        site_packages = os.path.join(venv_path, 'lib', f'python{sys.version_info.major}.{sys.version_info.minor}', 'site-packages')
+        bin_path = os.path.join(venv_path, 'bin')
+        if os.path.exists(site_packages) and site_packages not in sys.path:
+            sys.path.insert(0, site_packages)
+        if os.path.exists(bin_path):
+            os.environ['PATH'] = os.pathsep.join([bin_path, os.environ.get('PATH', '')])
+        os.environ['VIRTUAL_ENV'] = venv_path
+        os.environ.pop('PYTHONHOME', None)
+
+def find_and_activate_virtualenv():
+    if 'VIRTUAL_ENV' in os.environ:
+        path = os.environ['VIRTUAL_ENV']
+        activate_virtualenv(path)
+
+find_and_activate_virtualenv()
+		)DELIM";
+
+		py::exec(setup, main_namespace, main_namespace);
+	}
+	catch(const py::error_already_set &){
+		PyErr_Print();
+	}
 	return Res(_scriptname, func, main_namespace);
 }
 
@@ -807,9 +836,20 @@ void close_originator::onInterrupted()
 
 python_handler_factory::python_handler_factory(const std::string &arg)
 {
-	Res res = python_init(arg);
-	py::exec_file(res.script_name.c_str(), res.nmspace, res.nmspace);
-	_pyclass = res.nmspace[res.func];
+    Res res = python_init(arg);
+    try {
+        py::object module = py::import(res.script_name.c_str());        
+        res.nmspace = module.attr("__dict__");
+        _pyclass = res.nmspace[res.func];
+    }
+    catch(const py::error_already_set &){
+        PyErr_Print();
+        throw;
+    }
+}
+
+python_handler_factory::~python_handler_factory(){
+	Py_Finalize();
 }
 
 handler::ptr python_handler_factory::create_handler()
@@ -894,25 +934,25 @@ void python_handler::onRequest(tcp_stream *pstream, const timeval *t)
 	std::string content = std::string(pstream->server.data, pstream->server.data + pstream->server.count_new);
 	py::object pyBytes = create_py_bytes(content.data(), content.size());
 	double dtime = timeval_to_python(t);
-	call_python_method("on_request", pyBytes, dtime);
+	call_python_method("on_request", tcp_stream_to_python(pstream), pyBytes, dtime);
 }
 void python_handler::onResponse(tcp_stream *pstream, const timeval *t)
 {
 	std::string content = std::string(pstream->client.data, pstream->client.data + pstream->client.count_new);
 	py::object pyBytes = create_py_bytes(content.data(), content.size());
 	double dtime = timeval_to_python(t);
-	call_python_method("on_response", pyBytes, dtime);
+	call_python_method("on_response", tcp_stream_to_python(pstream), pyBytes, dtime);
 }
 void python_handler::onClose(tcp_stream *pstream, const timeval *t, unsigned char *packet)
 {
 	double dtime = timeval_to_python(t);
-	call_python_method("on_close", dtime);
+	call_python_method("on_close", tcp_stream_to_python(pstream), dtime);
 }
 
 void python_handler::onTimedOut(tcp_stream *pstream, const timeval *t, unsigned char *packet)
 {
 	double dtime = timeval_to_python(t);
-	call_python_method("on_timed_out", dtime);
+	call_python_method("on_timed_out", tcp_stream_to_python(pstream), dtime);
 }
 void python_handler::onInterrupted()
 {

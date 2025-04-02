@@ -340,6 +340,7 @@ int main(int argc, char *argv[])
 		signal_thread  = boost::thread(&run_signal_service);
 		nids_run();
 		parser::theOnlyParser->process_truncated();
+		io_service.stop();
 		signal_thread.join();
 		// reached when parsing file
 		exit(0);

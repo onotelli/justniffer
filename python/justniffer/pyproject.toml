@@ -6,9 +6,10 @@ authors = ["Oreste Notelli <oreste.notelli@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.10"
 typer = "^0.15.1"
 loguru = "^0.7.3"
+scapy = "^2.6.1"
 
 
 [tool.poetry.group.dev.dependencies]

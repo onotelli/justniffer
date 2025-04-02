@@ -1426,6 +1426,7 @@ class python_handler_factory :public handler_factory
 public:
 	python_handler_factory(const std::string& arg);
 	virtual handler::ptr create_handler();
+	virtual ~python_handler_factory();
 private:	
 	std::string _arg;
 	py::object _pyclass;

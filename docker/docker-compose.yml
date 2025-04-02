@@ -1,0 +1,13 @@
+services:
+  app:
+    network_mode: host
+    container_name: justniffer
+    image: docker.midesa.eu/justniffer-dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    volumes:
+      - ..:/workspace
+    command: tail -f /dev/null
+
