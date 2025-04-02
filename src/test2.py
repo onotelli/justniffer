@@ -1,5 +1,6 @@
 from datetime import datetime
 import sys
+import re
 
 env_path = '/opt/midesa/projects/justniffer/tmp/env/test/lib/python3.10/site-packages'
 sys.path.insert(0, env_path)
@@ -15,18 +16,40 @@ class Pippo2:
         logger.debug(f'__init__ {counter}')
         self._conn = None
         self._time = None
+        self._request_time = None
+        self._response_time = None
+        self._request = b''
+        self._response = b''
+
     def on_open(self, conn, time) -> None:
-         self._conn = conn
-         self._time = time
+        logger.debug(f'on_open {conn}')
+        self._conn = conn
+        self._time = time
+
+    def on_request(self,  bytes, time) -> None:
+        logger.debug(f'on_request')
+        self._request_time = time
+        self._request = bytes
+
+    def on_response(self,  bytes, time) -> None:
+        logger.debug(f'on_response')
+        self._response_time = time
+        self._response = bytes
+
+
     def on_interrupted(self) -> None:
         logger.debug('on_interrupted')
 
     def result(self) -> str | None:
-        if self._conn:
-            return f'{datetime.fromtimestamp(self._time) if self._time else "N/A"} | {self._conn}\n'
-        else:
-            return None
-
+        req :bytes = b''
+        if self._conn and self._response_time :
+            pos = self._request.find(b'\n')
+            if pos != -1:
+                req  = self._request[:min(pos, 256)]
+            clean_res = re.sub(r'[\x00-\x1F\x7F]', '', req.decode(errors="ignore"))
+            print( f'{datetime.fromtimestamp(self._time) if self._time else "N/A"} | {self._conn} | {clean_res}')
+        return None
+    
     def __del__ (self) -> None:
         global counter
         counter -= 1
