@@ -1,4 +1,9 @@
 justniffer (0.5.21.noble) noble; urgency=low
+  * new timestamp format
+
+ -- Oreste Notelli <oreste.notelli@gmail.com>  Tue, 15 Apr 2025 22:19:00 +0200
+
+justniffer (0.5.19.noble) noble; urgency=low
   * capture in the middle
 
  -- Oreste Notelli <oreste.notelli@gmail.com>  Mon, 22 Mar 2025 18:00:00 +0100
