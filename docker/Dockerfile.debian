@@ -1,0 +1,25 @@
+ARG DEBIAN_VERSION=bookworm
+
+FROM debian:${DEBIAN_VERSION} AS builder
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && \
+    apt-get install -y \
+    build-essential \
+    libpcap-dev \
+    wget \
+    tar \
+    devscripts \
+    debhelper libboost-regex-dev libboost-program-options-dev libpcap-dev libboost-iostreams-dev
+
+
+
+COPY / /workspace/justniffer
+ARG DEBIAN_VERSION
+ENV DEBIAN_VERSION=${DEBIAN_VERSION}
+
+RUN /workspace/justniffer/docker/replace-version.sh
+RUN cd /workspace/justniffer && dpkg-buildpackage -d
+
+

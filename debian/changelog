@@ -1,4 +1,4 @@
-justniffer (0.5.22.noble) noble; urgency=low
+justniffer (0.5.22.bookworm) bookworm; urgency=low
   * new timestamp format
 
  -- Oreste Notelli <oreste.notelli@gmail.com>  Tue, 15 Apr 2025 22:19:00 +0200
