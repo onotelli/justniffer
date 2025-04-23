@@ -24,6 +24,9 @@
 #include <boost/iostreams/concepts.hpp>
 #include "utilities.h"
 
+#define DEFAULT_TIMEFORMAT "%Y-%m-%d %T"
+static const std::string default_timeformat (DEFAULT_TIMEFORMAT);
+
 class ascii_filter : public boost::iostreams::output_filter
 {
 public:
@@ -870,16 +873,22 @@ protected:
 class timestamp_handler : public timestamp_handler_base
 {
 public:
-	timestamp_handler() {}
-	timestamp_handler(const string &format) : fmt(format) {}
-	timestamp_handler(const string &format, const string &not_found) : timestamp_handler_base(not_found), fmt(format) {}
+	timestamp_handler(): is_default_format(false){}
+	timestamp_handler(const string &format) : fmt(format),  is_default_format(format.compare(default_timeformat)== 0) {}
+	timestamp_handler(const string &format, const string &not_found) : timestamp_handler_base(not_found), fmt(format), is_default_format(format.compare( default_timeformat) ==0) {}
 
 protected:
 	virtual void print_out_time_stamp(out_type out)
 	{
-		out << timestamp(&time, fmt) << "." << std::left << std::setfill('0') << std::setw(6) << time.tv_usec;
+		out <<timestamp(&time, fmt);
+		if (fmt == default_timeformat)
+			out << "." << std::left << std::setfill('0') << std::setw(6) << time.tv_usec;
 	}
 	string fmt;
+
+private:
+	bool is_default_format;
+	
 };
 
 class timestamp_handler2 : public timestamp_handler_base
@@ -899,6 +908,9 @@ template <class base>
 class request_timestamp_handler_base : public base
 {
 public:
+	request_timestamp_handler_base(): base(){}
+	request_timestamp_handler_base(const string &format) : base(format) {}
+	request_timestamp_handler_base(const string &format, const string &not_found) : base(format, not_found) {}	
 	virtual void onRequest(tcp_stream *pstream, const timeval *t) { this->time = *t; }
 };
 
@@ -906,6 +918,9 @@ template <class base>
 class connection_timestamp_handler_base : public base
 {
 public:
+	connection_timestamp_handler_base(): base(){}
+	connection_timestamp_handler_base(const string &format) : base(format) {}
+	connection_timestamp_handler_base(const string &format, const string &not_found) : base(format, not_found) {}	
 	virtual void onOpening(tcp_stream *pstream, const timeval *t) { this->time = *t; }
 };
 
@@ -913,6 +928,9 @@ template <class base>
 class response_timestamp_handler_base : public base
 {
 public:
+	response_timestamp_handler_base(): base(){}
+	response_timestamp_handler_base(const string &format) : base(format) {}
+	response_timestamp_handler_base(const string &format, const string &not_found) : base(format, not_found) {}	
 	virtual void onResponse(tcp_stream *pstream, const timeval *t) { this->time = *t; }
 };
 
@@ -920,47 +938,42 @@ template <class base>
 class close_timestamp_handler_base : public base
 {
 public:
+	close_timestamp_handler_base(): base(){}
+	close_timestamp_handler_base(const string &format) : base(format) {}
+	close_timestamp_handler_base(const string &format, const string &not_found) : base(format, not_found) {}	
 	virtual void onClose(tcp_stream *pstream, const timeval *t, unsigned char *packet) { this->time = *t; }
 };
 
 class request_timestamp_handler : public request_timestamp_handler_base<timestamp_handler>
 {
 public:
-	request_timestamp_handler(const string &format, const string &not_found)
-	{
-		fmt = format;
-		_not_found = not_found;
-	}
+	request_timestamp_handler(): request_timestamp_handler_base(){}
+	request_timestamp_handler(const string &format) : request_timestamp_handler_base(format) {}
+	request_timestamp_handler(const string &format, const string &not_found) : request_timestamp_handler_base(format, not_found) {}	
 };
 
 class connection_timestamp_handler : public connection_timestamp_handler_base<timestamp_handler>
 {
 public:
-	connection_timestamp_handler(const string &format, const string &not_found)
-	{
-		fmt = format;
-		_not_found = not_found;
-	}
+	connection_timestamp_handler(): connection_timestamp_handler_base(){}
+	connection_timestamp_handler(const string &format) : connection_timestamp_handler_base(format) {}
+	connection_timestamp_handler(const string &format, const string &not_found) : connection_timestamp_handler_base(format, not_found) {}	
 };
 
 class response_timestamp_handler : public response_timestamp_handler_base<timestamp_handler>
 {
 public:
-	response_timestamp_handler(const string &format, const string &not_found)
-	{
-		fmt = format;
-		_not_found = not_found;
-	}
+	response_timestamp_handler(): response_timestamp_handler_base(){}
+	response_timestamp_handler(const string &format) : response_timestamp_handler_base(format) {}
+	response_timestamp_handler(const string &format, const string &not_found) : response_timestamp_handler_base(format, not_found) {}	
 };
 
 class close_timestamp_handler : public close_timestamp_handler_base<timestamp_handler>
 {
 public:
-	close_timestamp_handler(const string &format, const string &not_found)
-	{
-		fmt = format;
-		_not_found = not_found;
-	}
+	close_timestamp_handler(): close_timestamp_handler_base(){}
+	close_timestamp_handler(const string &format) : close_timestamp_handler_base(format) {}
+	close_timestamp_handler(const string &format, const string &not_found) : close_timestamp_handler_base(format, not_found) {}	
 };
 
 class request_timestamp_handler2 : public request_timestamp_handler_base<timestamp_handler2>

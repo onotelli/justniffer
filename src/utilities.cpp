@@ -211,7 +211,7 @@ timeval operator -(const timeval& x, const timeval& y)
 
 string timestamp(const timeval* tv, const string &frm)
 {
-	static char tstr[32];
+	char tstr[32];
 	struct tm *t, gmt;
 	time_t tt = tv->tv_sec;
 	int days, hours, tz, len;
