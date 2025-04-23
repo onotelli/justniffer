@@ -1,0 +1,4 @@
+*.o
+/tmp
+.mypy_cache
+.vscode

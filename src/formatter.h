@@ -15,6 +15,8 @@
 #include <ostream>
 #include <iostream>
 #include <sstream>
+#include <iomanip>
+#include <sys/time.h>
 #include <nids2.h>
 #include <boost/shared_ptr.hpp>
 #include <boost/iostreams/categories.hpp>
@@ -896,7 +898,7 @@ public:
 protected:
 	virtual void print_out_time_stamp(out_type out)
 	{
-		out << timestamp(&time, fmt);
+		out << timestamp(&time, fmt) << "." << std::left << std::setfill('0') << std::setw(6) << time.tv_usec;
 	}
 	string fmt;
 };
