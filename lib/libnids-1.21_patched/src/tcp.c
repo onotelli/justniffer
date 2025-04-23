@@ -35,11 +35,11 @@ after(u_int seq1, u_int seq2)
   return ((int)(seq2 - seq1) < 0);
 }
 */
- inline _printf(const char *format, ...) {
+ inline __printf(const char *format, ...) {
   
 }
 
-void __printf(const char *format, ...) {
+void _printf(const char *format, ...) {
   va_list args;
   va_start(args, format);
   vfprintf(stderr, format, args);  // Print to stderr
@@ -186,6 +186,7 @@ void nids_free_tcp_stream(struct tcp_stream *a_tcp)
   while (i)
   {
     j = i->next;
+    _printf("free %d", i);
     free(i);
     i = j;
   }
@@ -947,7 +948,7 @@ void process_tcp(u_char *data, int skblen, struct timeval *ts)
       a_tcp = add_new_tcp(this_tcphdr, this_iphdr, ts, data);
       if (a_tcp)
       {
-        _printf("a_tcp->nids_state = NIDS_OPENING\n");
+        _printf("add_new_tcp a_tcp->nids_state = NIDS_OPENING\n");
         a_tcp->nids_state = NIDS_OPENING;
         {
           // printf("a_tcp->nids_state = NIDS_OPENING\n");
@@ -1029,14 +1030,19 @@ void process_tcp(u_char *data, int skblen, struct timeval *ts)
 
   if ((this_tcphdr->th_flags & TH_RST))
   {
-    _printf("TH_RST\n");
-    if (a_tcp->nids_state == NIDS_DATA)
+    _printf("TH_RST a_tcp->nids_state == NIDS_DATA %d \n", a_tcp->nids_state == NIDS_DATA);
+    //if (a_tcp->nids_state == NIDS_DATA)
+    
     {
       struct lurker_node *i;
 
       a_tcp->nids_state = NIDS_RESET;
       for (i = a_tcp->listeners; i; i = i->next)
+      {
+        _printf("NIDS_RESET %d \n", i);
         (i->item)(a_tcp, &i->data, ts, data);
+      }
+      
     }
     nids_free_tcp_stream(a_tcp);
     return;

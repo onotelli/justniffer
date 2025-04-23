@@ -10,6 +10,7 @@
 
 #ifndef _sniffer_formatter_h
 #define _sniffer_formatter_h
+#include "config.h"
 #include <vector>
 #include <map>
 #include <ostream>
@@ -22,7 +23,9 @@
 #include <boost/iostreams/categories.hpp>
 #include <boost/iostreams/operations.hpp>
 #include <boost/iostreams/concepts.hpp>
+#ifdef HAVE_BOOST_PYTHON
 #include <boost/python.hpp>
+#endif //HAVE_BOOST_PYTHON
 #include "utilities.h"
 
 #define DEFAULT_TIMEFORMAT "%Y-%m-%d %T"
@@ -337,7 +340,7 @@ private:
 	std::string _command, _user;
 };
 
-
+#ifdef HAVE_BOOST_PYTHON
 namespace py = boost::python;
 
 class python_printer : public printer
@@ -355,6 +358,7 @@ private:
 	py::object instance;
 	bool _finalized;
 }; 
+#endif //HAVE_BOOST_PYTHON
 
 class stream : public shared_obj<stream>, public tcp_stream
 {
@@ -1436,6 +1440,8 @@ private:
 };
 
 
+#ifdef HAVE_BOOST_PYTHON
+
 class python_handler_factory :public handler_factory
 {
 public:
@@ -1467,6 +1473,7 @@ private:
 
 
 };
+#endif //HAVE_BOOST_PYTHON
 
 
 #endif // _sniffer_formatter_h

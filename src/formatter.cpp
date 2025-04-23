@@ -39,7 +39,7 @@ void parser::nids_handler(struct tcp_stream *ts, void **yoda, struct timeval *t,
 	//     flag = "packet found";
 	// }
 	// cout << "ts->nids_state "<< (int) ts->nids_state << " " <<flag <<"\n";
-
+	cerr<< "ts->nids_state " << int(ts->nids_state) << "\n";
 	switch (ts->nids_state)
 	{
 	case NIDS_JUST_EST:

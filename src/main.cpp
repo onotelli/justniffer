@@ -164,7 +164,9 @@ int main(int argc, char *argv[])
 		(string(max_fragmented_ip_hosts).append(",d").c_str(), po::value<int>(&max_fragmented_ip_hosts_v)->default_value(1024), "Max concurrent fragmented ip host")
 		(string(force_read_pcap).append(",F").c_str(), "force the reading of the pcap file ignoring the snaplen value. WARNING: could give unexpected results")
 		(string(capture_in_the_middle).append(",m").c_str(), "capture in the middle. WARNING: could give unexpected results")
+		#ifdef HAVE_BOOST_PYTHON		
 		(string(python_function).append(",P").c_str(), po::value<string>(), "execute a python function 'app' in the python given script")
+		#endif //HAVE_BOOST_PYTHON
 		(string(no_newline).append(",N").c_str(), "no automatic newline at the end of each log");
 		po::variables_map vm;
 		po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -282,6 +284,7 @@ int main(int argc, char *argv[])
 			else
 				_printer = printer::ptr(new cmd_execute_printer(execute_cmd_arg.as<string>()));
 		}
+		#ifdef HAVE_BOOST_PYTHON
 		else if (vm.count(python_function))
 		{
 			if (!user_arg.empty())
@@ -290,6 +293,8 @@ int main(int argc, char *argv[])
 				_printer = printer::ptr(new python_printer(python_function_arg.as<string>()));
 		//cerr.flush();
 		}
+		#endif //HAVE_BOOST_PYTHON
+		
 		p.set_printer(_printer.get());
 
 		p.set_handle_truncated(vm.count(handle_truncated_cmd));
