@@ -186,6 +186,7 @@ void nids_free_tcp_stream(struct tcp_stream *a_tcp)
   while (i)
   {
     j = i->next;
+    _printf("free(%p) \n", i);
     free(i);
     i = j;
   }
@@ -1030,14 +1031,22 @@ void process_tcp(u_char *data, int skblen, struct timeval *ts)
   if ((this_tcphdr->th_flags & TH_RST))
   {
     _printf("TH_RST\n");
+    a_tcp->nids_state = NIDS_RESET;
     if (a_tcp->nids_state == NIDS_DATA)
     {
       struct lurker_node *i;
 
-      a_tcp->nids_state = NIDS_RESET;
       for (i = a_tcp->listeners; i; i = i->next)
         (i->item)(a_tcp, &i->data, ts, data);
     }
+    struct proc_node *i;
+    for (i = tcp_procs; i; i = i->next)
+    {
+      //void *data;
+      // printf("for (i = a_tcp->listeners; i; i = i->next) %X\n", i);
+      (i->item)(a_tcp, this_tcphdr, ts, data);
+    }
+
     nids_free_tcp_stream(a_tcp);
     return;
   }
