@@ -246,6 +246,10 @@ void parser::init_parse_elements()
 	elements["-"] = pelem(new break_keyword<handler_factory_t<basic_handler>>());
 	elements["%"] = pelem(new keyword_arg<string, handler_factory_t_arg<string, constant>>(string("%")));
 	elements["newline"] = pelem(new keyword_arg<string, handler_factory_t_arg<string, constant>>(string("\n")));
+	#ifdef HAVE_BOOST_PYTHON
+	elements["python"] = pelem(new keyword_params<python_handler_factory>());
+	#endif //HAVE_BOOST_PYTHON
+
 	_already_init = true;
 }
 

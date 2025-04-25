@@ -1,3 +1,6 @@
+justniffer (0.6.1.jammy) jammy; urgency=low
+  * python integration 
+
 justniffer (0.5.23.bookworm) bookworm; urgency=low
   * new timestamp format fixed
 
