@@ -29,7 +29,12 @@ using namespace std;
 namespace po = boost::program_options;
 namespace pos = boost::iostreams;
 static void show_usage(parser &p);
-static const char *copyrights = PACKAGE_NAME " " JUSTNIFFER_VERSION "\nWritten by Oreste Notelli <oreste.notelli@plecno.com>\nCopyright (c) 2007- " JUSTNIFFER_YEAR " Plecno s.r.l.";
+static const char *copyrights = PACKAGE_NAME " " JUSTNIFFER_VERSION "\nWritten by Oreste Notelli <oreste.notelli@plecno.com>\nCopyright (c) 2007- " JUSTNIFFER_YEAR " Plecno s.r.l."
+#ifdef HAVE_BOOST_PYTHON
+    "\nwith Python " HAVE_PYTHON " support"
+#endif
+    ;
+
 static po::options_description desc(string(copyrights).append("\n\nUsage").c_str());
 static void show_version()
 {
@@ -271,6 +276,7 @@ int main(int argc, char *argv[])
 		po::variable_value python_function_arg = vm[python_function];
 		po::variable_value execute_cmd_arg = vm[execute_cmd];
 		po::variable_value user_arg = vm[user_cmd];
+		p.set_user(user_arg.as<string>());
 		printer::ptr _printer;
 		if (execute_cmd_arg.empty() && python_function_arg.empty())
 		{

@@ -247,7 +247,7 @@ void parser::init_parse_elements()
 	elements["%"] = pelem(new keyword_arg<string, handler_factory_t_arg<string, constant>>(string("%")));
 	elements["newline"] = pelem(new keyword_arg<string, handler_factory_t_arg<string, constant>>(string("\n")));
 	#ifdef HAVE_BOOST_PYTHON
-	elements["python"] = pelem(new keyword_params<python_handler_factory>());
+	elements["python"] = pelem(new keyword_params_and_arg<python_handler_factory>(_user));
 	#endif //HAVE_BOOST_PYTHON
 
 	_already_init = true;
@@ -873,19 +873,31 @@ python_printer::~python_printer()
         Py_Finalize();
 }
 
-python_handler_factory::python_handler_factory(const std::string &arg)
+python_handler_factory::python_handler_factory(const std::string &arg, const std::string &user)
 {
-    Res res = python_init(arg);
-    try {
-        py::object module = py::import(res.script_name.c_str());        
-        res.nmspace = module.attr("__dict__");
-        _pyclass = res.nmspace[res.func];
-    }
-    catch(const py::error_already_set &){
-        PyErr_Print();
-        throw;
-    }
+	if (!user.empty()){
+		run_as r(user);
+		_init(arg);
+	}
+	else {
+		_init(arg);
+	}
 }
+
+void python_handler_factory::_init (const std::string &arg) 
+{
+	Res res = python_init(arg);
+	try {
+		py::object module = py::import(res.script_name.c_str());        
+		res.nmspace = module.attr("__dict__");
+		_pyclass = res.nmspace[res.func];
+	}
+	catch(const py::error_already_set &){
+		PyErr_Print();
+		throw;
+	}
+}
+
 
 python_handler_factory::~python_handler_factory(){
     Py_Finalize();

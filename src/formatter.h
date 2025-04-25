@@ -447,6 +447,7 @@ public:
 	void set_printer(printer *printer) { _printer = printer; }
 	void set_handle_truncated(bool value) { handle_truncated = value; }
 	void set_default_not_found(const std::string &default_not_found) { _default_not_found = default_not_found; }
+	void set_user(const std::string& user){_user = user;}
 	bool _already_init;
 	virtual int connection_number();
 	void process_truncated();
@@ -477,6 +478,7 @@ private:
 	handler_factories factories;
 	printer *_printer;
 	std::string _default_not_found;
+	std::string _user;
 
 public:
 	static parser *theOnlyParser;
@@ -1447,12 +1449,15 @@ private:
 class python_handler_factory :public handler_factory
 {
 public:
-	python_handler_factory(const std::string& arg);
+	python_handler_factory(const std::string& user ,const std::string& arg);
 	virtual handler::ptr create_handler();
 	virtual ~python_handler_factory();
 private:	
+	void _init (const std::string &arg); 
 	std::string _arg;
+	std::string _user;
 	py::object _pyclass;
+
 };
 
 
