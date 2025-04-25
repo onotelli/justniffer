@@ -666,8 +666,6 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 subdirs
-TAR
-PATCH
 BOOST_PYTHON_LIB
 PYTHON_EXTRA_LDFLAGS
 PYTHON_EXTRA_LIBS
@@ -19647,128 +19645,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 fi
-
-# Now proceed with libnids checks and configuration
-as_ac_File=`printf "%s\n" "ac_cv_file_lib/$LIBNIDS/README.original" | $as_tr_sh`
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for lib/$LIBNIDS/README.original" >&5
-printf %s "checking for lib/$LIBNIDS/README.original... " >&6; }
-if eval test \${$as_ac_File+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  test "$cross_compiling" = yes &&
-  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
-if test -r "lib/$LIBNIDS/README.original"; then
-  eval "$as_ac_File=yes"
-else
-  eval "$as_ac_File=no"
-fi
-fi
-eval ac_res=\$$as_ac_File
-	       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-printf "%s\n" "$ac_res" >&6; }
-if eval test \"x\$"$as_ac_File"\" = x"yes"
-then :
-
-else $as_nop
-   # Extract the first word of "patch", so it can be a program name with args.
-set dummy patch; ac_word=$2
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_prog_PATCH+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  if test -n "$PATCH"; then
-  ac_cv_prog_PATCH="$PATCH" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_prog_PATCH="yes"
-    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  test -z "$ac_cv_prog_PATCH" && ac_cv_prog_PATCH="no"
-fi
-fi
-PATCH=$ac_cv_prog_PATCH
-if test -n "$PATCH"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $PATCH" >&5
-printf "%s\n" "$PATCH" >&6; }
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
-
-  if test "x$PATCH" != "xyes";
-  then
-    as_fn_error $? "cannot find patch, download and build it: see http://www.gnu.org/software/patch/" "$LINENO" 5
-  fi
-  # Extract the first word of "tar", so it can be a program name with args.
-set dummy tar; ac_word=$2
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_prog_TAR+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  if test -n "$TAR"; then
-  ac_cv_prog_TAR="$TAR" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_prog_TAR="yes"
-    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi
-fi
-TAR=$ac_cv_prog_TAR
-if test -n "$TAR"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $TAR" >&5
-printf "%s\n" "$TAR" >&6; }
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
-
-  if test "x$TAR" != "xyes";
-  then
-    as_fn_error $? "cannot find tar" "$LINENO" 5
-  fi
-  # This check seems problematic, maybe remove or adjust? If it requires patching first, the check will fail before patching.
-  # AC_CHECK_FILE([lib/$LIBNIDS/src/nids2.h], [], [AC_MSG_ERROR([cannot find patched libnids - run configure again after patching?])])
-
-fi
-
 
 BASH_COMPLETION_DIR="`pkg-config --variable=completionsdir bash-completion 2>/dev/null || echo ""`"
 if test -z "$BASH_COMPLETION_DIR"

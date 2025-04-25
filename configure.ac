@@ -95,22 +95,6 @@ if test "x$have_python_devel" = "xyes"; then
   ])
 fi
 
-# Now proceed with libnids checks and configuration
-AC_CHECK_FILE([lib/$LIBNIDS/README.original], [],
-[ AC_CHECK_PROG([PATCH], [patch], [yes], [no])
-  if test "x$PATCH" != "xyes";
-  then
-    AC_MSG_ERROR([cannot find patch, download and build it: see http://www.gnu.org/software/patch/])
-  fi
-  AC_CHECK_PROG([TAR], [tar], [yes])
-  if test "x$TAR" != "xyes";
-  then
-    AC_MSG_ERROR([cannot find tar])
-  fi
-  # This check seems problematic, maybe remove or adjust? If it requires patching first, the check will fail before patching.
-  # AC_CHECK_FILE([lib/$LIBNIDS/src/nids2.h], [], [AC_MSG_ERROR([cannot find patched libnids - run configure again after patching?])])
-])
-
 BASH_COMPLETION_DIR="`pkg-config --variable=completionsdir bash-completion 2>/dev/null || echo ""`"
 AS_IF([test -z "$BASH_COMPLETION_DIR"], [
   AC_MSG_WARN([Could not determine bash-completion directory from pkg-config.])
