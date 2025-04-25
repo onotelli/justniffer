@@ -732,6 +732,143 @@ void close_originator::onInterrupted()
 
 #ifdef HAVE_BOOST_PYTHON
 
+///// python_printer /////
+
+python_printer::python_printer(std::string script, std::string user) : _script(script), _finalized(false), _user(user)
+{
+    _init();
+}
+
+python_printer::python_printer(std::string script) : _script(script), _finalized(false)
+{
+    _init();
+}
+
+struct Res
+{
+    Res(std::string script_name, std::string func, py::object nmspace) : script_name(script_name), func(func), nmspace(nmspace)
+    {
+    }
+    std::string script_name;
+    std::string func;
+    py::object nmspace;
+};
+
+Res python_init(std::string scriptname)
+{
+    std::string _scriptname = scriptname;
+    std::string func = "app";
+    size_t pos = scriptname.find(':');
+    if (pos != std::string::npos)
+    {
+        _scriptname = scriptname.substr(0, pos);
+        func = scriptname.substr(pos + 1);
+    }
+    Py_Initialize();
+    py::object main_module = py::import("__main__");
+    py::object main_namespace = main_module.attr("__dict__");
+    try{
+        const char *setup =R"DELIM(
+import sys
+import os
+import site 
+def activate_virtualenv(venv_path):
+    if os.path.exists(venv_path):
+        site_packages = os.path.join(venv_path, 'lib', f'python{sys.version_info.major}.{sys.version_info.minor}', 'site-packages')
+        bin_path = os.path.join(venv_path, 'bin')
+        site.addsitedir(site_packages)
+        if os.path.exists(site_packages) and site_packages not in sys.path:
+            sys.path.insert(0, site_packages)
+        if os.path.exists(bin_path):
+            os.environ['PATH'] = os.pathsep.join([bin_path, os.environ.get('PATH', '')])
+        os.environ['VIRTUAL_ENV'] = venv_path
+        os.environ.pop('PYTHONHOME', None)
+
+def find_and_activate_virtualenv():
+    
+    if 'VIRTUAL_ENV' in os.environ:
+        path = os.environ['VIRTUAL_ENV']
+        activate_virtualenv(path)
+
+find_and_activate_virtualenv()
+        )DELIM";
+
+        py::exec(setup, main_namespace, main_namespace);
+    }
+    catch(const py::error_already_set &){
+        PyErr_Print();
+    }
+    return Res(_scriptname, func, main_namespace);
+}
+
+void python_printer::_init()
+{
+    try
+    {
+        Res res = python_init(_script);
+
+        if (!_user.empty())
+        {
+            run_as r(_user);
+            _init_instance(res.script_name, res.func, res.nmspace);
+        }
+        else
+        {
+            _init_instance(res.script_name, res.func, res.nmspace);
+        }
+    }
+    catch (py::error_already_set const &)
+    {
+        PyErr_Print();
+        Py_Finalize();
+        _finalized = true;
+    }
+}
+
+void python_printer::_init_instance(std::string script_name, std::string func, py::object main_namespace)
+{
+    py::exec_file(script_name.c_str(), main_namespace, main_namespace);
+    instance = main_namespace[func];
+}
+
+py::object create_py_bytes(const char *data, size_t size)
+{
+    if (!data || size == 0)
+    {
+        return py::object(py::handle<>(PyBytes_FromStringAndSize("", 0)));
+    }
+    return py::object(py::handle<>(PyBytes_FromStringAndSize(data, size)));
+}
+
+void python_printer::doit(handlers::iterator start, handlers::iterator end, const timeval *t, connections_container *pconnections_container)
+{
+    try
+    {
+        if (!_finalized)
+        {
+            std::ostringstream _out(std::ios::binary);
+            for (handlers::iterator i = start; i != end; i++)
+                (*i)->append(_out, t, pconnections_container);
+            std::string binaryData = _out.str();
+            py::object pyBytes = create_py_bytes(binaryData.data(), binaryData.size());
+            if (!instance.is_none())
+                instance(pyBytes);
+        }
+    }
+    catch (py::error_already_set const &)
+    {
+        PyErr_Print();
+        Py_Finalize();
+        _finalized = true;
+    }
+}
+
+python_printer::~python_printer()
+{
+    if (!_finalized)
+        Py_Finalize();
+}
+
 python_handler_factory::python_handler_factory(const std::string &arg)
 {
     Res res = python_init(arg);
