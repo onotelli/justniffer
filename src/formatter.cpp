@@ -728,3 +728,132 @@ void close_originator::onInterrupted()
 {
 	stat = truncated;
 }
+
+
+#ifdef HAVE_BOOST_PYTHON
+
+python_handler_factory::python_handler_factory(const std::string &arg)
+{
+    Res res = python_init(arg);
+    try {
+        py::object module = py::import(res.script_name.c_str());        
+        res.nmspace = module.attr("__dict__");
+        _pyclass = res.nmspace[res.func];
+    }
+    catch(const py::error_already_set &){
+        PyErr_Print();
+        throw;
+    }
+}
+
+python_handler_factory::~python_handler_factory(){
+    Py_Finalize();
+}
+
+handler::ptr python_handler_factory::create_handler()
+{
+    return handler::ptr(new python_handler(_pyclass));
+}
+
+py::object tcp_stream_to_python(tcp_stream *pstream)
+{
+    py::object source = py::make_tuple(ip_to_str(pstream->addr.saddr), pstream->addr.source);
+    py::object dest = py::make_tuple(ip_to_str(pstream->addr.daddr), pstream->addr.dest);
+    return py::make_tuple(source, dest);
+}
+
+python_handler::python_handler(py::object &classObj)
+{
+    try
+    {
+        _instance = classObj();
+    }
+    catch (const py::error_already_set &)
+    {
+        PyErr_Print();
+    }
+}
+
+void python_handler::append(std::basic_ostream<char> &out, const timeval *t, connections_container *pconnections_container)
+{
+    try
+    {
+        py::object res = _instance.attr("result")();
+        if (!res.is_none()){
+            std::string result_str = py::extract<std::string>(res);
+            out << result_str;
+        }
+    }
+    catch (const py::error_already_set &)
+    {
+        PyErr_Print();
+    }
+}
+
+double timeval_to_python(const timeval *t)
+{
+    double totalSeconds = t->tv_sec + (t->tv_usec / 1000000.0);
+    return totalSeconds;
+}
+
+template <typename... Args>
+void python_handler::call_python_method(const char* method_name, Args&&... args)
+{
+    namespace py = boost::python;
+    
+    if (!PyObject_HasAttrString(_instance.ptr(), method_name)) {
+        return;
+    }
+    py::object attr = _instance.attr(method_name);
+    try {
+        attr(std::forward<Args>(args)...);
+    }
+    catch (const py::error_already_set& e) {
+        _handle_exception(e);
+    }
+}
+
+void python_handler::onOpening(tcp_stream *pstream, const timeval *t)
+{
+    call_python_method("on_opening", tcp_stream_to_python(pstream), timeval_to_python(t));
+}
+
+void python_handler::_handle_exception(const py::error_already_set &e)
+{
+    PyErr_Print();
+}
+void python_handler::onOpen(tcp_stream *pstream, const timeval *t)
+{
+    call_python_method("on_open", tcp_stream_to_python(pstream), timeval_to_python(t));
+}
+
+void python_handler::onRequest(tcp_stream *pstream, const timeval *t)
+{
+    std::string content = std::string(pstream->server.data, pstream->server.data + pstream->server.count_new);
+    py::object pyBytes = create_py_bytes(content.data(), content.size());
+    double dtime = timeval_to_python(t);
+    call_python_method("on_request", tcp_stream_to_python(pstream), pyBytes, dtime);
+}
+void python_handler::onResponse(tcp_stream *pstream, const timeval *t)
+{
+    std::string content = std::string(pstream->client.data, pstream->client.data + pstream->client.count_new);
+    py::object pyBytes = create_py_bytes(content.data(), content.size());
+    double dtime = timeval_to_python(t);
+    call_python_method("on_response", tcp_stream_to_python(pstream), pyBytes, dtime);
+}
+void python_handler::onClose(tcp_stream *pstream, const timeval *t, unsigned char *packet)
+{
+    double dtime = timeval_to_python(t);
+    call_python_method("on_close", tcp_stream_to_python(pstream), dtime);
+}
+
+void python_handler::onTimedOut(tcp_stream *pstream, const timeval *t, unsigned char *packet)
+{
+    double dtime = timeval_to_python(t);
+    call_python_method("on_timed_out", tcp_stream_to_python(pstream), dtime);
+}
+void python_handler::onInterrupted()
+{
+    call_python_method("on_interrupted");
+}
+#endif // HAVE_BOOST_PYTHON
