@@ -38,8 +38,8 @@ void parser::nids_handler(struct tcp_stream *ts, void **yoda, struct timeval *t,
 	//{
 	//     flag = "packet found";
 	// }
-	// cout << "ts->nids_state "<< (int) ts->nids_state << " " <<flag <<"\n";
-	cerr<< "ts->nids_state " << int(ts->nids_state) << "\n";
+	//cerr << "ts->nids_state "<< (int) ts->nids_state << "\n";
+
 	switch (ts->nids_state)
 	{
 	case NIDS_JUST_EST:
@@ -657,16 +657,16 @@ void close_originator::append(std::basic_ostream<char> &out, const timeval *t, c
 {
 	if (stat == closed)
 	{
-		if (ip_originator == sip)
+		if (ip_originator == sip && port_originator == sport)
 			out << "client";
-		else if (ip_originator == dip)
+		else if (ip_originator == dip && port_originator == dport)
 			out << "server";
 		else
-			out << _not_found; //<< ip_originator<< " " << dip<< " "<<sip;
+			out << _not_found;
 	}
 	else if (stat == timedout)
 	{
-		out << "timedout"; //<< ip_originator<< " " << dip<< " "<<sip;
+		out << "timedout";
 	}
 	else if (stat == truncated)
 	{
@@ -688,31 +688,40 @@ void close_originator::onClose(tcp_stream *pstream, const timeval *t, unsigned c
 		struct ip *this_iphdr = (struct ip *)packet;
 		struct tcphdr *this_tcphdr = (struct tcphdr *)(packet + 4 * this_iphdr->ip_hl);
 		ip_originator = this_iphdr->ip_src.s_addr;
+		port_originator = ntohs(this_tcphdr->th_sport);
 	}
 }
 
 void close_originator::onOpen(tcp_stream *pstream, const timeval *t)
 {
 	sip = pstream->addr.saddr;
+	sport = pstream->addr.source;
 	dip = pstream->addr.daddr;
+	dport = pstream->addr.dest;
 }
 
 void close_originator::onOpening(tcp_stream *pstream, const timeval *t)
 {
 	sip = pstream->addr.saddr;
+	sport = pstream->addr.source;
 	dip = pstream->addr.daddr;
+	dport = pstream->addr.dest;
 }
 
 void close_originator::onRequest(tcp_stream *pstream, const timeval *t)
 {
 	sip = pstream->addr.saddr;
+	sport = pstream->addr.source;
 	dip = pstream->addr.daddr;
+	dport = pstream->addr.dest;
 }
 
 void close_originator::onResponse(tcp_stream *pstream, const timeval *t)
 {
 	sip = pstream->addr.saddr;
+	sport = pstream->addr.source;
 	dip = pstream->addr.daddr;
+	dport = pstream->addr.dest;
 }
 
 void close_originator::onInterrupted()

@@ -1284,7 +1284,8 @@ class close_originator : public basic_handler
 public:
 	close_originator(const string &not_found)
 	{
-		stat = unknown, ip_originator = 0, sip = 0, dip = 0;
+		stat = unknown, ip_originator = 0, sip = 0, dip = 0, dport =0, sport = 0;
+		
 		_not_found = not_found;
 	}
 	virtual void append(std::basic_ostream<char> &out, const timeval *, connections_container *pconnections_container);
@@ -1306,6 +1307,7 @@ private:
 	};
 	status stat;
 	u_int32_t ip_originator, sip, dip;
+	uint16_t port_originator, sport, dport;
 	string _not_found;
 };
 

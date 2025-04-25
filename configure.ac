@@ -20,11 +20,6 @@ AM_MAINTAINER_MODE([disable])
 AM_CONFIG_HEADER([include/config.h]) # Use []
 AC_SUBST([BASH_COMPLETION_DIR])
 
-# Optional Python support
-AC_ARG_ENABLE([python],
-              AS_HELP_STRING([--disable-python], [Disable Python bindings build]),
-              [enable_python=$enableval],
-              [enable_python=yes]) # Default: try to enable if deps are found
 
 LIBNIDS="libnids-1.21_patched"
 NIDS2_INCLUDE="-I ../lib/$LIBNIDS/src"
@@ -77,36 +72,28 @@ AX_BOOST_BASE([1.74]) # Specify minimum required version
 AX_BOOST_REGEX
 AX_BOOST_PROGRAM_OPTIONS
 AX_BOOST_IOSTREAMS
-# AX_BOOST_PYTHON - Moved to conditional block below
 AX_BOOST_ASIO
 AX_BOOST_THREAD
 
-# Conditional Python and Boost.Python checks
-AS_IF([test "x$enable_python" = "xyes"], [
-  # Check for Python development files first
-  AX_PYTHON_DEVEL([>= 3.8], [], [
-     # Action if not found: Warn and disable python support
-     AC_MSG_WARN([Python development headers/libs not found or version < 2.7. Use --without-python to silence this warning.])
-     enable_python=no
-  ])
+AC_ARG_WITH([boost-python],
+    [AS_HELP_STRING([--with-boost-python], [Enable or disable Boost.Python support])],
+    [], [with_boost_python=yes])
 
-  # If Python dev files were found, check for Boost.Python
-  AS_IF([test "x$enable_python" = "xyes"], [
-    AX_BOOST_PYTHON([], [
-       # Action if found (empty means use default variables like BOOST_PYTHON_LIB)
-    ], [
-       # Action if not found: Warn and disable python support
-       AC_MSG_WARN([Boost.Python library not found (required for Python bindings). Use --without-python to silence this warning.])
-       enable_python=no
+have_python_devel=no
+
+if test "x$with_boost_python" = "xno"; then
+    AC_MSG_WARN([Boost.Python support disabled])
+else
+    AX_PYTHON_DEVEL([],[
+      have_python_devel=yes;
+    ],[
     ])
+fi
+if test "x$have_python_devel" = "xyes"; then
+  AX_BOOST_PYTHON([],[],[
+          AC_MSG_WARN([cazzo cazzo])      
   ])
-])
-
-# Set the conditional for Makefile.am and define for C++ code
-AM_CONDITIONAL([ENABLE_PYTHON], [test "x$enable_python" = "xyes"])
-AS_IF([test "x$enable_python" = "xyes"], [
-  AC_DEFINE([HAVE_PYTHON_BINDINGS], [1], [Define if Python bindings are enabled])
-])
+fi
 
 # Now proceed with libnids checks and configuration
 AC_CHECK_FILE([lib/$LIBNIDS/README.original], [],
