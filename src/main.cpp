@@ -276,7 +276,8 @@ int main(int argc, char *argv[])
 		po::variable_value python_function_arg = vm[python_function];
 		po::variable_value execute_cmd_arg = vm[execute_cmd];
 		po::variable_value user_arg = vm[user_cmd];
-		p.set_user(user_arg.as<string>());
+		if (!user_arg.empty())
+			p.set_user(user_arg.as<string>());
 		printer::ptr _printer;
 		if (execute_cmd_arg.empty() && python_function_arg.empty())
 		{

@@ -523,8 +523,9 @@ void outstream_printer::doit(handlers::iterator start, handlers::iterator end, c
 {
 	for (handlers::iterator i = start; i != end; i++)
 		(*i)->append(_out, t, pconnections_container);
-	_out << std::endl
-		 << std::flush;
+	if (!_skip_newline)	
+		_out << std::endl;
+	_out << std::flush;
 	//_out.sync();
 	fflush(stdout);
 }
@@ -738,6 +739,13 @@ void close_originator::onInterrupted()
 
 ///// python_printer /////
 
+static int initializations = 0;
+
+void python_finalize(){
+	if (--initializations <=0)
+		Py_Finalize();
+}
+
 python_printer::python_printer(std::string script, std::string user) : _script(script), _finalized(false), _user(user)
 {
     _init();
@@ -768,7 +776,9 @@ Res python_init(std::string scriptname)
         _scriptname = scriptname.substr(0, pos);
         func = scriptname.substr(pos + 1);
     }
-    Py_Initialize();
+	if (initializations <=0)  
+    	Py_Initialize();
+	++initializations;
     py::object main_module = py::import("__main__");
     py::object main_namespace = main_module.attr("__dict__");
     try{
@@ -824,7 +834,7 @@ void python_printer::_init()
     catch (py::error_already_set const &)
     {
         PyErr_Print();
-        Py_Finalize();
+        python_finalize();
         _finalized = true;
     }
 }
@@ -862,7 +872,7 @@ void python_printer::doit(handlers::iterator start, handlers::iterator end, cons
     catch (py::error_already_set const &)
     {
         PyErr_Print();
-        Py_Finalize();
+        python_finalize();
         _finalized = true;
     }
 }
@@ -870,8 +880,12 @@ void python_printer::doit(handlers::iterator start, handlers::iterator end, cons
 python_printer::~python_printer()
 {
     if (!_finalized)
-        Py_Finalize();
+        python_finalize();
 }
+
+
+// python_handler_factory
+
 
 python_handler_factory::python_handler_factory(const std::string &arg, const std::string &user)
 {
@@ -882,6 +896,7 @@ python_handler_factory::python_handler_factory(const std::string &arg, const std
 	else {
 		_init(arg);
 	}
+	//_pyhandler = handler::ptr(new python_handler(_pyclass));
 }
 
 void python_handler_factory::_init (const std::string &arg) 
@@ -898,14 +913,15 @@ void python_handler_factory::_init (const std::string &arg)
 	}
 }
 
-
 python_handler_factory::~python_handler_factory(){
-    Py_Finalize();
+	//
+    python_finalize();
 }
 
 handler::ptr python_handler_factory::create_handler()
 {
     return handler::ptr(new python_handler(_pyclass));
+    //return _pyhandler;
 }
 
 py::object tcp_stream_to_python(tcp_stream *pstream)
@@ -987,6 +1003,7 @@ void python_handler::onRequest(tcp_stream *pstream, const timeval *t)
     double dtime = timeval_to_python(t);
     call_python_method("on_request", tcp_stream_to_python(pstream), pyBytes, dtime);
 }
+
 void python_handler::onResponse(tcp_stream *pstream, const timeval *t)
 {
     std::string content = std::string(pstream->client.data, pstream->client.data + pstream->client.count_new);
@@ -994,6 +1011,7 @@ void python_handler::onResponse(tcp_stream *pstream, const timeval *t)
     double dtime = timeval_to_python(t);
     call_python_method("on_response", tcp_stream_to_python(pstream), pyBytes, dtime);
 }
+
 void python_handler::onClose(tcp_stream *pstream, const timeval *t, unsigned char *packet)
 {
     double dtime = timeval_to_python(t);
@@ -1005,8 +1023,10 @@ void python_handler::onTimedOut(tcp_stream *pstream, const timeval *t, unsigned 
     double dtime = timeval_to_python(t);
     call_python_method("on_timed_out", tcp_stream_to_python(pstream), dtime);
 }
+
 void python_handler::onInterrupted()
 {
     call_python_method("on_interrupted");
 }
+
 #endif // HAVE_BOOST_PYTHON

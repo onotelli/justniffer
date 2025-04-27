@@ -1457,7 +1457,6 @@ private:
 	std::string _arg;
 	std::string _user;
 	py::object _pyclass;
-
 };
 
 
