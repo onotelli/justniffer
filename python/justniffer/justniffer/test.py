@@ -3,7 +3,7 @@ from enum import Enum, auto
 from dataclasses import dataclass
 from justniffer.model import Conn, ExchangeBase
 from justniffer.logging import logger
-from justniffer.tsl_info import get_TLSInfo, TLSContent, TLSInfo, ServerHelloMsg, TLSVersion
+from justniffer.tsl_info import  TLSVersion, parse_tls_content as get_TLSInfo, TlsRecordInfo as TLSInfo
 
 CONNECTION_TIMEOUT = 5
 
@@ -114,13 +114,13 @@ class TLSInfoCollector(Collector):
                 tls_info = get_TLSInfo(self._request)
                 if tls_info is not None and isinstance(tls_info, TLSInfo):
                     server_name_list = get_sni(tls_info)
-                    for msg in tls_info.msgs or []:
+                    for msg in tls_info.messages or []:
                         if sid is None:
                             sid = getattr(msg, 'sid',  None)
             if self._response is not None:
                 tls_info = get_TLSInfo(self._response)
                 if tls_info is not None and isinstance(tls_info, TLSInfo) :
-                    for msg in tls_info.msgs:
+                    for msg in tls_info.messages:
                         cipher = getattr(msg, 'cipher',  None)
                         version = getattr(msg, 'version',  None)
                         if sid is None: 
@@ -141,20 +141,14 @@ class TLSInfoCollector(Collector):
                     logger.warning(self._request)
     
         return connection.tls
-        res: list[TLSContent] = []
-        if self._request is not None:
-            res.append(get_TLSInfo(self._request))
-        if self._response is not None:
-            res.append(get_TLSInfo(self._response))
-        return res
 
 
 
-def get_sni(tls: TLSContent | None) -> list[str] | None:
-    if hasattr(tls, 'msgs'):
-        msgs = getattr(tls, 'msgs', list())
+def get_sni(tls: TLSInfo | None) -> list[str] | None:
+    if hasattr(tls, 'messages'):
+        msgs = getattr(tls, 'messages', list())
         for msg in msgs:
-            name = getattr(msg,  'sni_list', None)
+            name = getattr(msg,  'sni_hostnames', None)
             if name is not None:
                 return name
     return None
