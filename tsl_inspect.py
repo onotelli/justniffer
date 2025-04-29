@@ -68,7 +68,7 @@ def print_tls_info(tls_packet: TLS):
                 elif isinstance(handshake, TLSServerHello):
                     print("\n[ServerHello]")
                     print(f"  TLS Version: {handshake.version}")
-                    print(f"  Selected Cipher Suite: {_cipher_name(handshake.cipher)}")
+                    print(f"  Selected Cipher Suite: {_cipher_name(handshake.cipher)}")# type: ignore
                 elif isinstance(handshake, TLSCertificate):
                     print("\n[Certificate]")
                     print(f"  Certificates: {len(handshake.certs)} presented")# type: ignore

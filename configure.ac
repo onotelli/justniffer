@@ -91,7 +91,7 @@ else
 fi
 if test "x$have_python_devel" = "xyes"; then
   AX_BOOST_PYTHON([],[],[
-          AC_MSG_WARN([cazzo cazzo])      
+          AC_MSG_WARN([no python boost libraries available])      
   ])
 fi
 
