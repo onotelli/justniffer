@@ -6,13 +6,14 @@ from dataclasses import dataclass
 from justniffer.model import Conn
 from justniffer.logging import logger
 from justniffer.tsl_info import TLSVersion, parse_tls_content as get_TLSInfo, TlsRecordInfo as TLSInfo
-
+from justniffer.http_info import parse_http_content
 
 CONNECTION_TIMEOUT = 5
 
 METHODS = ('GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS', 'TRACE', 'CONNECT')
 counts = 0
 
+SEP = ' '
 
 def _to_str(value: Any | None) -> str:
     if isinstance(value, str):
@@ -85,13 +86,17 @@ class ResponseEvent(ContentEvent):
         super().__init__(content=content, ts=time, status=Status.response)
 
 
+def _get_content(events: Iterable[Event], class_: type) -> bytes:
+    return b''.join(map(lambda event: cast(ContentEvent, event).content, filter(lambda event: isinstance(event, class_), events)))
+
+
 def response(events: Iterable[Event]) -> bytes:
-    response = b''.join(map(lambda event: cast(ContentEvent, event).content, filter(lambda event: isinstance(event, ResponseEvent), events)))
+    response = _get_content(events, ResponseEvent)
     return response
 
 
 def request(events: Iterable[Event]) -> bytes:
-    request = b''.join(map(lambda event: cast(ContentEvent, event).content, filter(lambda event: isinstance(event, RequestEvent), events)))
+    request = _get_content(events, RequestEvent)
     return request
 
 
@@ -102,7 +107,12 @@ class Extractor(ABC):
 
 class RequestSize(Extractor):
     def value(self, connection: Connection, events: list[Event]) -> str | None:
-        pass
+        return str(len(request(events)))
+
+
+class ResponseSize(Extractor):
+    def value(self, connection: Connection, events: list[Event]) -> str | None:
+        return str(len(response(events)))
 
 
 class ResponseTime(Extractor):
@@ -132,23 +142,45 @@ class ConnectionID(Extractor):
         return hex(pos_hash)
 
 
-class TLSInfoExtractor(Extractor):
+def to_date_string(dt: float):
+    # with milliseconds
+    return datetime.fromtimestamp(dt).strftime('%Y-%m-%d %H:%M:%S.%f')
 
+
+class RequestTimestamp(Extractor):
     def value(self, connection: Connection, events: list[Event]) -> str | None:
-        req = request(events)
-        resp = response(events)
+        req: TimedEvent | None = cast(TimedEvent, next(filter(lambda event: isinstance(event, TimedEvent) and event.status is Status.request, events), None))
+        if req is not None:
+            return to_date_string(req.ts)
+        else:
+            return None
+
+
+class ContentExtractor(ABC):
+    @property
+    @abstractmethod
+    def name(self) -> str: ...
+
+    @abstractmethod
+    def value(self, connection: Connection, events: list[Event], request: bytes, response: bytes) -> str | None: ...
+
+
+class TLSInfoExtractor(ContentExtractor):
+    name = 'TLS'  # type: ignore
+
+    def value(self, connection: Connection, events: list[Event], request: bytes, response: bytes) -> str | None:
         if connection.tls is None:
             server_name_list,  cipher, version, sid = None, None, None, None
             common_name, organization_name, expires = None, None, None
-            if req is not None:
-                tls_info = get_TLSInfo(req)
+            if request is not None:
+                tls_info = get_TLSInfo(request)
                 if tls_info is not None and isinstance(tls_info, TLSInfo):
                     server_name_list = get_sni(tls_info)
                     for msg in tls_info.messages or []:
                         if sid is None:
                             sid = getattr(msg, 'sid',  None)
-            if resp is not None:
-                tls_info = get_TLSInfo(resp)
+            if response is not None:
+                tls_info = get_TLSInfo(response)
                 if tls_info is not None and isinstance(tls_info, TLSInfo):
                     for msg in tls_info.messages:
                         if cipher is None:
@@ -165,18 +197,17 @@ class TLSInfoExtractor(Extractor):
                                 expires = certificate.expires
                     if version is None:
                         version = tls_info.version
-            if (sid is not None and resp is not None):
+            if (sid is not None and response is not None):
                 if version is None:
-                    logger.warning(req)
-                    logger.warning(resp)
+                    logger.warning(request)
+                    logger.warning(response)
                 if cipher is None:
-                    logger.warning(req)
-                    logger.warning(resp)
-
+                    logger.warning(request)
+                    logger.warning(response)
                 connection.tls = TLSConnectionInfo(server_name_list, sid, version, cipher, common_name, organization_name, expires)
             else:
                 if connection.conn[1][1] == 443:
-                    logger.warning(req)
+                    logger.warning(request)
 
         return repr(connection.tls) if connection.tls else None
 
@@ -189,6 +220,27 @@ def get_sni(tls: TLSInfo | None) -> list[str] | None:
             if name is not None:
                 return name
     return None
+
+
+class HttpInfoExtractor(ContentExtractor):
+    name = 'HTTP'  # type: ignore
+
+    def value(self, connection: Connection, events: list[Event], request: bytes, response: bytes) -> str | None:
+
+        res = parse_http_content(request, response)
+        request_obj, response_obj = res
+        method = request_obj.method if request_obj else None
+        url = request_obj.url if request_obj else None
+        host_list = request_obj.headers.get('Host') if request_obj else None
+        if host_list is None:
+            host_list = [_to_str(None)]
+        host = host_list[0]
+        code = response_obj.code if response_obj else None
+        message = response_obj.message if response_obj else None
+        if request_obj is None and response_obj is None:
+            return None
+        else:
+            return f'{_to_str(method)} {_to_str(url)} {_to_str(host)} {_to_str(code)} {_to_str(message)}'
 
 
 class DestIPPort(Extractor):
@@ -213,18 +265,30 @@ def remove_connection(conn: Conn) -> Connection:
     return connection
 
 
+class ProtocolSelector(ContentExtractor):
+    _subexector: tuple[ContentExtractor, ...] = (TLSInfoExtractor(), HttpInfoExtractor())
+    name = ''  # type: ignore
+
+    def value(self, connection: Connection, events: list[Event], request: bytes, response: bytes) -> str | None:
+        for e in self._subexector:
+            res = e.value(connection, events, request, response)
+            if res is not None:
+                return e.name + SEP + res
+        return None
+
+
 class Exchange:
     _events: list[Event]
     _conn: Conn | None
-    _extractors: tuple[Extractor, ...]
+    _extractors: tuple[Extractor | ContentExtractor, ...]
 
     @property
     def _sep(self) -> str:
-        return ' '
+        return SEP
 
     def __init__(self) -> None:
         global counts
-        self._extractors = (ConnectionID(), DestIPPort(), ResponseTime(), TLSInfoExtractor())
+        self._extractors = (RequestTimestamp(), ConnectionID(), DestIPPort(), ResponseTime(), RequestSize(), ResponseSize(), ProtocolSelector())
         self._events = []
         self._events.append(Event(Status.init))
         counts += 1
@@ -291,7 +355,32 @@ class Exchange:
         return str(res)
 
     def value(self, connection: Connection) -> str:
-        return self._sep.join(_to_str(e.value(connection, self._events)) for e in self._extractors)
+        final_value = ''
+        request_ = None
+        response_ = None
+
+        def get_request() -> bytes:
+            nonlocal request_
+            if request_ is None:
+                request_ = request(self._events)
+            return request_
+
+        def get_response() -> bytes:
+            nonlocal response_
+            if response_ is None:
+                response_ = response(self._events)
+            return response_
+
+        for idx, e in enumerate(self._extractors):
+            if idx != 0:
+                final_value += self._sep
+            if isinstance(e, ContentExtractor):
+                value = _to_str(e.value(connection, self._events, get_request(), get_response()))
+            else:
+                value = _to_str(e.value(connection, self._events))
+            final_value += value
+
+        return final_value
 
     def __del__(self) -> None:
         global counts
