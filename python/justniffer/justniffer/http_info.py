@@ -47,7 +47,7 @@ class BaseProtocol:
 
 class ReqProtocol(BaseProtocol, HttpRequest):
     url: str
-
+    
     def __init__(self) -> None:
         super().__init__()
         self.method = 'GET'
@@ -77,8 +77,12 @@ def parse_http_content(request: bytes, response: bytes) -> tuple[HttpRequest | N
     response_parser.feed_data(response)
     req.method = request_parser.get_method().decode('utf-8')  # type: ignore
     resp.code = response_parser.get_status_code()  # type: ignore
-    if response_parser.get_http_version() == '0.0':
+    req_version = request_parser.get_http_version()
+    resp_version = response_parser.get_http_version()
+    req.version =  req_version  # type: ignore
+    resp.version =  resp_version # type: ignore
+    if  resp_version == '0.0':
         req = None
-    if request_parser.get_http_version() == '0.0':
+    if req_version == '0.0':
         resp = None
     return req, resp

@@ -23,6 +23,8 @@ def _to_str(value: Any | None) -> str:
     else:
         return str(value)
 
+def float_to_str(v:float ) -> str:
+    return f'{v:.4f}'
 
 @dataclass
 class TLSConnectionInfo:
@@ -128,7 +130,7 @@ class ResponseTime(Extractor):
             if last_request and first_response:
                 break
         if last_request is not None and first_response is not None:
-            return str(first_response.ts - last_request.ts)
+            return float_to_str(first_response.ts - last_request.ts)
         else:
             return None
 
@@ -237,10 +239,11 @@ class HttpInfoExtractor(ContentExtractor):
         host = host_list[0]
         code = response_obj.code if response_obj else None
         message = response_obj.message if response_obj else None
+        version = response_obj.version if response_obj else None
         if request_obj is None and response_obj is None:
             return None
         else:
-            return f'{_to_str(method)} {_to_str(url)} {_to_str(host)} {_to_str(code)} {_to_str(message)}'
+            return f'{_to_str(version)} {_to_str(method)} {_to_str(url)} {_to_str(host)} {_to_str(code)}'
 
 
 class DestIPPort(Extractor):
