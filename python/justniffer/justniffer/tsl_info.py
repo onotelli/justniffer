@@ -2,12 +2,15 @@ import ssl
 from dataclasses import dataclass, field
 from enum import Enum, IntEnum
 from typing import Any
+from datetime import datetime
+from time import mktime
 
 from scapy.packet import Packet, Raw
 from scapy.layers.tls.all import TLS
 from scapy.layers.tls.handshake import (
     TLSClientHello,
     TLSServerHello,
+    TLSCertificate
 )
 from scapy.layers.tls.record import TLSChangeCipherSpec
 from scapy.layers.tls.crypto import suites as scapy_suites
@@ -215,28 +218,35 @@ def _parse_tls_version(version_code: int | None) -> TLSVersion | None:
         logger.warning(f'tls version code not recognized: {version_code} (0x{version_code:04x})')
     return res
 
-@dataclass(frozen=True)
+@dataclass
 class BaseTlsMessageInfo:
     name: str
 
-@dataclass(frozen=True)
+@dataclass
 class ClientHelloInfo(BaseTlsMessageInfo):
     sid: bytes | None
     ciphers: list[str] = field(default_factory=list)
     sni_hostnames: list[str] = field(default_factory=list)
     versions: list[TLSVersion | None] = field(default_factory=list)
 
-@dataclass(frozen=True)
+@dataclass
+class Certificate:
+    common_name: str
+    organization_name: str
+    expires: datetime
+
+@dataclass
 class ServerHelloInfo(BaseTlsMessageInfo):
     sid: bytes | None
     cipher: str
     version: TLSVersion | None
+    certificate : Certificate | None
 
-@dataclass(frozen=True)
+@dataclass
 class GenericTlsMessageInfo(BaseTlsMessageInfo):
     pass
 
-@dataclass(frozen=True)
+@dataclass
 class TlsRecordInfo:
     name: str
     type: TlsContentType | None
@@ -282,7 +292,7 @@ def _parse_client_hello(msg: TLSClientHello) -> ClientHelloInfo:
         versions=supported_versions
     )
 
-def _parse_server_hello(msg: TLSServerHello) -> ServerHelloInfo:
+def _parse_server_hello(tls_packet: TLS, msg: TLSServerHello) -> ServerHelloInfo:
     extensions = _extract_extensions(msg)
     selected_version: TLSVersion | None = None
 
@@ -294,25 +304,45 @@ def _parse_server_hello(msg: TLSServerHello) -> ServerHelloInfo:
         selected_version = _parse_tls_version(getattr(msg, 'version', None))
 
     cipher_suite = _get_cipher_name(getattr(msg, 'cipher', None))
-
+    certificate = None
+    for msg in getattr(tls_packet.payload, 'msg' , list()):
+        if isinstance(msg, TLSCertificate):
+            certificate = _parse_certificate(msg)
+    
     return ServerHelloInfo(
         name=msg.__class__.__name__,
         sid=getattr(msg, 'sid', None),
         cipher=cipher_suite,
-        version=selected_version
+        version=selected_version, 
+        certificate=certificate
     )
 
-def _parse_handshake_message(msg: Packet) -> ClientHelloInfo | ServerHelloInfo | GenericTlsMessageInfo:
+def _parse_certificate(msg):
+    certificate = None
+    for cert in msg.certs or []:
+        l, v = cert
+        common_name =v.subject.get('commonName')
+        organization_name = v.issuer.get('organizationName')
+        expires = datetime.fromtimestamp(mktime(v.notAfter))
+        certificate = Certificate(common_name, organization_name, expires)
+        break
+    return certificate
+
+def _parse_handshake_message(tls_packet: TLS, msg: Packet) -> ClientHelloInfo | ServerHelloInfo | GenericTlsMessageInfo | Certificate:
     if isinstance(msg, TLSClientHello):
         return _parse_client_hello(msg)
     elif isinstance(msg, TLSServerHello):
-        return _parse_server_hello(msg)
+        return _parse_server_hello(tls_packet, msg)
+    elif isinstance(msg, TLSCertificate):
+        certificate = _parse_certificate(msg)
+        assert certificate is not None
+        return certificate
     else:
-        _type = msg.load[0]
+        _type = getattr(msg, 'load', [-1])[0]
         msg_class: type = Raw
         if  _type == 2:
             msg_class = TLSServerHello
-            return _parse_server_hello( msg_class(_remove_key_share_extension(msg.load)))
+            return _parse_server_hello( tls_packet, msg_class(_remove_key_share_extension(msg.load)))
         elif  _type == 1:
             msg_class = TLSClientHello
             return _parse_client_hello( msg_class(_remove_key_share_extension(msg.load)))
@@ -333,21 +363,39 @@ def parse_tls_content(content: bytes) -> TlsRecordInfo | None:
 
         record_version = _parse_tls_version(getattr(tls_packet, 'version', None))
         record_type = TlsContentType.from_int(getattr(tls_packet, 'type', None))
-        parsed_messages = []
+        parsed_messages :list[ClientHelloInfo | ServerHelloInfo | GenericTlsMessageInfo] = []
+        server_hello = None
+        certificate = None
+        def _append_message(msg: ClientHelloInfo | ServerHelloInfo | GenericTlsMessageInfo | Certificate):
+            nonlocal server_hello, certificate
+
+            if isinstance(msg, ServerHelloInfo):
+                server_hello = msg
+                parsed_messages.append(msg)
+            elif isinstance(msg, Certificate):
+                certificate = msg
+            else:
+                parsed_messages.append(msg)
+
+        def _setup_messages():
+            nonlocal server_hello, certificate
+            if server_hello is not None and certificate is not None:
+                server_hello.certificate = certificate
 
         if hasattr(tls_packet, 'msg') and isinstance(tls_packet.msg, list):
             for msg_layer in tls_packet.msg:
                 if record_type == TlsContentType.HANDSHAKE:
-                    parsed_messages.append(_parse_handshake_message(msg_layer))
+                    _append_message(_parse_handshake_message(tls_packet, msg_layer))
+                    
                 elif isinstance(msg_layer, TLSChangeCipherSpec):
-                    parsed_messages.append(GenericTlsMessageInfo(name='ChangeCipherSpec'))
+                    _append_message(GenericTlsMessageInfo(name='ChangeCipherSpec'))
                 elif isinstance(msg_layer, Raw):
                     logger.warning(f'encountered raw message layer inside tls record: {msg_layer.load!r}')
-                    parsed_messages.append(GenericTlsMessageInfo(name='Raw'))
+                    _append_message(GenericTlsMessageInfo(name='Raw'))
                 else:
                     name = msg_layer.__class__.__name__ if isinstance(msg_layer, Packet) else 'UnknownObject'
-                    parsed_messages.append(GenericTlsMessageInfo(name=name))
-
+                    _append_message(GenericTlsMessageInfo(name=name))
+        _setup_messages()
         return TlsRecordInfo(
             name=tls_packet.__class__.__name__,
             type=record_type,
@@ -356,6 +404,6 @@ def parse_tls_content(content: bytes) -> TlsRecordInfo | None:
         )
 
     except Exception as e:
-        logger.error(f'error parsing tls content: {e}', exc_info=True)
+        logger.exception(f'error parsing tls content: {e}', exc_info=True)
         return None
 

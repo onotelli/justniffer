@@ -1,31 +1,50 @@
-from typing import Any, cast
+from abc import abstractmethod, ABC
+from typing import Any, Iterable,  cast
+from datetime import datetime
 from enum import Enum, auto
 from dataclasses import dataclass
-from justniffer.model import Conn, ExchangeBase
+from justniffer.model import Conn
 from justniffer.logging import logger
-from justniffer.tsl_info import  TLSVersion, parse_tls_content as get_TLSInfo, TlsRecordInfo as TLSInfo
+from justniffer.tsl_info import TLSVersion, parse_tls_content as get_TLSInfo, TlsRecordInfo as TLSInfo
+
 
 CONNECTION_TIMEOUT = 5
 
 METHODS = ('GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS', 'TRACE', 'CONNECT')
 counts = 0
 
+
+def _to_str(value: Any | None) -> str:
+    if isinstance(value, str):
+        return value
+    elif value is None:
+        return '-'
+    else:
+        return str(value)
+
+
 @dataclass
 class TLSConnectionInfo:
-    server_name_list :list[str] | None
+    server_name_list: list[str] | None
     sid: bytes
     version: TLSVersion | None
     cipher: str | None
+    common_name: str | None
+    organization_name: str | None
+    expires: datetime | None
+
     def __repr__(self) -> str:
-        return f'{self.server_name_list[0] if self.server_name_list else None} {self.version} {self.cipher}'
+        return f'{_to_str(self.server_name_list[0] if self.server_name_list else None)} {_to_str(self.version)} {_to_str(self.cipher)} {_to_str(self.common_name)} {_to_str(self.organization_name)} {_to_str(self.expires.strftime("%Y-%m-%d %H:%M:%S") if self.expires else None)}'
+
 
 @dataclass
 class Connection:
-    conn : Conn
+    conn: Conn
     tls: TLSConnectionInfo | None = None
 
 
-connections:dict[Conn, Connection] = {}
+connections: dict[Conn, Connection] = {}
+
 
 class Status(Enum):
     init = auto()
@@ -45,103 +64,121 @@ class Event:
 
 @dataclass
 class TimedEvent(Event):
-    ts: float | None = None
+    ts: float
 
 
-class Collector(ExchangeBase):
-
-    def name(self) -> str:
-        return self.__class__.__name__
-
-    def value(self, connection:Connection) -> Any: ...
-
-    def update_res(self, res: dict, connection:Connection) -> None:
-        res[self.name()] = self.value(connection)
+@dataclass
+class ContentEvent(TimedEvent):
+    ts: float
+    content: bytes
 
 
-class ResponseTime(Collector):
-    _response_time: float | None
-    _request_time: float | None
+@dataclass
+class RequestEvent(ContentEvent):
+    def __init__(self, content: bytes, time: float):
+        super().__init__(content=content, ts=time, status=Status.request)
 
-    def __init__(self) -> None:
-        super()
-        self._response_time = None
-        self._request_time = None
 
-    def on_request(self, conn: Conn, content, time: float) -> None:
-        self._request_time = time
+@dataclass
+class ResponseEvent(ContentEvent):
+    def __init__(self, content: bytes, time: float):
+        super().__init__(content=content, ts=time, status=Status.response)
 
-    def on_response(self, conn: Conn, content, time: float) -> None:
-        self._response_time = time
 
-    def value(self, connection: Connection) -> Any:
-        if self._response_time is not None and self._request_time is not None:
-            return self._response_time - self._request_time
+def response(events: Iterable[Event]) -> bytes:
+    response = b''.join(map(lambda event: cast(ContentEvent, event).content, filter(lambda event: isinstance(event, ResponseEvent), events)))
+    return response
+
+
+def request(events: Iterable[Event]) -> bytes:
+    request = b''.join(map(lambda event: cast(ContentEvent, event).content, filter(lambda event: isinstance(event, RequestEvent), events)))
+    return request
+
+
+class Extractor(ABC):
+    @abstractmethod
+    def value(self, connection: Connection, events: list[Event]) -> str | None: ...
+
+
+class RequestSize(Extractor):
+    def value(self, connection: Connection, events: list[Event]) -> str | None:
+        pass
+
+
+class ResponseTime(Extractor):
+
+    def value(self, connection: Connection, events: list[Event]) -> str | None:
+        last_request = None
+        first_response = None
+        for event in events:
+            if last_request is None and isinstance(event, TimedEvent) and event.status is Status.request:
+                last_request = event
+            if first_response is None and isinstance(event, TimedEvent) and event.status is Status.response:
+                first_response = event
+            if last_request and first_response:
+                break
+        if last_request is not None and first_response is not None:
+            return str(first_response.ts - last_request.ts)
         else:
             return None
+
+
 MAX_BITS = 2**64
-class ConnectionID(Collector):
-    def value(self, connection:Connection) -> Any:
+
+
+class ConnectionID(Extractor):
+    def value(self, connection: Connection, events: list[Event]) -> Any:
         pos_hash = hash(connection.conn) % (MAX_BITS)
-        return hex(pos_hash )
+        return hex(pos_hash)
 
-class TLSInfoCollector(Collector):
-    _request: bytes | None
-    _response: bytes | None
 
-    def __init__(self) -> None:
-        super()
-        self._request = None
-        self._response = None
+class TLSInfoExtractor(Extractor):
 
-    def on_request(self, conn: Conn, content: bytes, time: float) -> None:
-        if (self._request is None):
-            self._request = content
-        else:
-            self._request += content
-
-    def on_response(self, conn: Conn, content: bytes, time: float) -> None:
-        if (self._response is None):
-            self._response = content
-        else:
-            self._response += content
-
-    def value(self, connection:Connection) -> Any:
-        
+    def value(self, connection: Connection, events: list[Event]) -> str | None:
+        req = request(events)
+        resp = response(events)
         if connection.tls is None:
-            server_name_list,  cipher , version , sid= None, None, None, None
-            if self._request is not None:
-                tls_info = get_TLSInfo(self._request)
+            server_name_list,  cipher, version, sid = None, None, None, None
+            common_name, organization_name, expires = None, None, None
+            if req is not None:
+                tls_info = get_TLSInfo(req)
                 if tls_info is not None and isinstance(tls_info, TLSInfo):
                     server_name_list = get_sni(tls_info)
                     for msg in tls_info.messages or []:
                         if sid is None:
                             sid = getattr(msg, 'sid',  None)
-            if self._response is not None:
-                tls_info = get_TLSInfo(self._response)
-                if tls_info is not None and isinstance(tls_info, TLSInfo) :
+            if resp is not None:
+                tls_info = get_TLSInfo(resp)
+                if tls_info is not None and isinstance(tls_info, TLSInfo):
                     for msg in tls_info.messages:
-                        cipher = getattr(msg, 'cipher',  None)
-                        version = getattr(msg, 'version',  None)
-                        if sid is None: 
+                        if cipher is None:
+                            cipher = getattr(msg, 'cipher',  None)
+                        if version is None:
+                            version = getattr(msg, 'version',  None)
+                        if sid is None:
                             sid = getattr(msg, 'sid', None)
+                        if common_name is None:
+                            certificate = getattr(msg, 'certificate', None)
+                            if certificate is not None:
+                                common_name = certificate.common_name
+                                organization_name = certificate.organization_name
+                                expires = certificate.expires
                     if version is None:
                         version = tls_info.version
-            if (sid is not None):
+            if (sid is not None and resp is not None):
                 if version is None:
-                    logger.warning(self._request)
-                    logger.warning(self._response)
+                    logger.warning(req)
+                    logger.warning(resp)
                 if cipher is None:
-                    logger.warning(self._request)
-                    logger.warning(self._response)
-                
-                connection.tls = TLSConnectionInfo(server_name_list, sid, version, cipher)
+                    logger.warning(req)
+                    logger.warning(resp)
+
+                connection.tls = TLSConnectionInfo(server_name_list, sid, version, cipher, common_name, organization_name, expires)
             else:
                 if connection.conn[1][1] == 443:
-                    logger.warning(self._request)
-    
-        return connection.tls
+                    logger.warning(req)
 
+        return repr(connection.tls) if connection.tls else None
 
 
 def get_sni(tls: TLSInfo | None) -> list[str] | None:
@@ -154,72 +191,12 @@ def get_sni(tls: TLSInfo | None) -> list[str] | None:
     return None
 
 
-class DestIP(Collector):
-    ip: str
-    port: int
+class DestIPPort(Extractor):
 
-    def on_opening(self, conn: Conn, time: float) -> None:
-        self._setup_info(conn)
+    def value(self, connection: Connection, events: list[Event]) -> str:
+        ip, port = connection.conn[1]
+        return f'{ip}:{port}'
 
-    def _setup_info(self, conn):
-        self.ip, self.port = conn[-1]
-
-    def on_open(self, conn: Conn, time: float) -> None:
-        self._setup_info(conn)
-
-    def on_request(self, conn: Conn, content: bytes, time: float) -> None:
-        self._setup_info(conn)
-
-    def on_response(self, conn: Conn, content: bytes, time: float) -> None:
-        self._setup_info(conn)
-
-    def on_close(self, conn: Conn, time: float) -> None:
-        self._setup_info(conn)
-
-    def on_timed_out(self, conn: Conn, time: float) -> None:
-        self._setup_info(conn)
-
-    def value(self, connection:Connection) -> Any:
-        return self.ip, self.port
-
-
-class Composite(Collector):
-    _elements: tuple[Collector, ...]
-
-    def __init__(self, elements: tuple[Collector, ...]) -> None:
-        super()
-        self._elements = elements
-
-    def on_opening(self, conn: Conn, time: float) -> None:
-        for e in self._elements:
-            e.on_opening(conn, time)
-
-    def on_open(self, conn: Conn, time) -> None:
-        for e in self._elements:
-            e.on_open(conn, time)
-
-    def on_request(self, conn: Conn, content: bytes, time: float) -> None:
-        for e in self._elements:
-            e.on_request(conn, content, time)
-
-    def on_response(self, conn: Conn, content: bytes, time: float) -> None:
-        for e in self._elements:
-            e.on_response(conn, content, time)
-
-    def on_close(self, conn: Conn, time: float) -> None:
-        for e in self._elements:
-            e.on_close(conn,  time)
-
-    def on_timed_out(self, conn: Conn, time: float) -> None:
-        for e in self._elements:
-            e.on_timed_out(conn,  time)
-
-    def on_interrupted(self) -> None:
-        for e in self._elements:
-            e.on_interrupted()
-
-    def value(self, connection:Connection) -> Any:
-        return [e.value(connection) for e in self._elements]
 
 def setup_connection(conn: Conn) -> Connection:
     connection = connections.get(conn)
@@ -229,19 +206,25 @@ def setup_connection(conn: Conn) -> Connection:
     logger.debug(f'connections = {len(connections)}')
     return connection
 
-def remove_connection (conn:Conn) -> Connection:
+
+def remove_connection(conn: Conn) -> Connection:
     connection = connections.pop(conn)
     logger.debug(f'connections = {len(connections)}')
     return connection
-    
 
-class Exchange(Composite):
+
+class Exchange:
     _events: list[Event]
     _conn: Conn | None
+    _extractors: tuple[Extractor, ...]
+
+    @property
+    def _sep(self) -> str:
+        return ' '
 
     def __init__(self) -> None:
         global counts
-        super().__init__((ConnectionID(),DestIP(), ResponseTime(), TLSInfoCollector()))
+        self._extractors = (ConnectionID(), DestIPPort(), ResponseTime(), TLSInfoExtractor())
         self._events = []
         self._events.append(Event(Status.init))
         counts += 1
@@ -257,61 +240,58 @@ class Exchange(Composite):
             setup_connection(conn)
 
     def on_opening(self, conn: Conn, time: float) -> None:
-        super().on_opening(conn, time)
         self._setup_conn(conn)
         self._events.append(TimedEvent(Status.opening, time))
         logger.debug(f'on_opening {id(self)=}  {conn=} ')
 
     def on_open(self, conn: Conn, time) -> None:
-        super().on_open(conn, time)
         self._setup_conn(conn)
         self._events.append(TimedEvent(Status.open, time))
         logger.debug(f'on_open {id(self)=}  {conn} {type(time)}')
 
     def on_request(self, conn: Conn, content: bytes, time: float) -> None:
-        super().on_request(conn, content, time)
         self._setup_conn(conn)
-        self._events.append(TimedEvent(Status.request, time))
+        self._events.append(RequestEvent(content=content, time=time))
         logger.debug(f'on_request {id(self)=} {conn=}')
         logger.debug(repr(content))
 
     def on_response(self, conn: Conn, content: bytes, time: float) -> None:
-        super().on_response(conn, content, time)
         self._setup_conn(conn)
-        self._events.append(TimedEvent(Status.response, time))
+        self._events.append(ResponseEvent(content=content, time=time))
         logger.debug(f'on_response {id(self)=}  {conn=} ')
         logger.debug(repr(content))
 
     def on_close(self, conn: Conn, time: float) -> None:
-        super().on_close(conn,  time)
         self._setup_conn(conn)
         self._events.append(TimedEvent(Status.close, time))
         logger.debug(f'on_close {id(self)=}  {conn=} ')
         self._connection_to_be_removed = True
 
     def on_interrupted(self) -> None:
-        super().on_interrupted()
         self._events.append(Event(Status.interrupted))
         logger.debug(f'on_interrupted  {id(self)=} ')
         self._connection_to_be_removed = True
 
     def on_timed_out(self, conn: Conn, time: float) -> None:
-        super().on_timed_out(conn, time)
         self._events.append(TimedEvent(Status.timed_out, time))
         logger.debug(f'on_timed_out  {id(self)=} {conn=} ')
         self._connection_to_be_removed = True
 
     def result(self) -> str | None:
+        res = None
         if self._conn is None:
             logger.warning(f'{id(self)=} {counts=} {self._conn=} {self._events}')
         else:
             connection = connections[self._conn]
-            logger.info(self.value(connection))
+            res = self.value(connection)
             if self._connection_to_be_removed:
                 remove_connection(self._conn)
-            
+
             # logger.info(f'{id(self)=} {counts=} {self._conn=} {self._events}')
-        return None
+        return str(res)
+
+    def value(self, connection: Connection) -> str:
+        return self._sep.join(_to_str(e.value(connection, self._events)) for e in self._extractors)
 
     def __del__(self) -> None:
         global counts

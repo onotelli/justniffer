@@ -11,7 +11,8 @@ RUN apt-get update && \
     wget \
     tar \
     devscripts \
-    debhelper libboost-regex-dev libboost-program-options-dev libpcap-dev libboost-iostreams-dev
+    debhelper libboost-regex-dev libboost-program-options-dev libpcap-dev\
+    libboost-iostreams-dev libboost-python-dev
 
 
 
