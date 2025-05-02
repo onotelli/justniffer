@@ -5,7 +5,7 @@ from enum import Enum, auto
 from dataclasses import dataclass
 from justniffer.model import Conn
 from justniffer.logging import logger
-from justniffer.tsl_info import TLSVersion, parse_tls_content as get_TLSInfo, TlsRecordInfo as TLSInfo
+from justniffer.tls_info import TLSVersion, parse_tls_content as get_TLSInfo, TlsRecordInfo as TLSInfo
 from justniffer.http_info import parse_http_content
 
 CONNECTION_TIMEOUT = 5
@@ -15,6 +15,7 @@ counts = 0
 
 SEP = ' '
 
+
 def _to_str(value: Any | None) -> str:
     if isinstance(value, str):
         return value
@@ -23,8 +24,10 @@ def _to_str(value: Any | None) -> str:
     else:
         return str(value)
 
-def float_to_str(v:float ) -> str:
+
+def float_to_str(v: float) -> str:
     return f'{v:.4f}'
+
 
 @dataclass
 class TLSConnectionInfo:
@@ -155,7 +158,10 @@ class RequestTimestamp(Extractor):
         if req is not None:
             return to_date_string(req.ts)
         else:
-            return None
+            req = cast(TimedEvent, next(filter(lambda event: isinstance(event, TimedEvent), events), None))
+            if req is not None:
+                return to_date_string(req.ts)
+        return None
 
 
 class ContentExtractor(ABC):

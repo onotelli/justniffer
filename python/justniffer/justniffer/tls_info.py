@@ -1,7 +1,7 @@
 import ssl
 from dataclasses import dataclass, field
 from enum import Enum, IntEnum
-from typing import Any
+from typing import Any, cast
 from datetime import datetime
 from time import mktime
 
@@ -170,6 +170,7 @@ class TLSVersion(Enum):
     TLS_1_1 = 770
     TLS_1_0 = 769
     SSL_3_0 = 768
+    GREASE = -1
 
     def __str__(self) -> str:
         return self.name
@@ -178,11 +179,9 @@ class TLSVersion(Enum):
     def from_int(cls, value: int | None) -> 'TLSVersion| None':
         if value is None:
             return None
-        try:
-            return cls(value)
-        except ValueError:
-            logger.debug(f'unknown tls version code: {value} (0x{value:04x})')
-            return None
+        else:
+            return cast(TLSVersion,cls._value2member_map_.get(value, cls.GREASE))
+
 
 _CIPHER_SUITE_MAP: dict[int, str] = {}
 
@@ -214,8 +213,6 @@ def _get_cipher_name(code: int | None) -> str:
 
 def _parse_tls_version(version_code: int | None) -> TLSVersion | None:
     res = TLSVersion.from_int(version_code)
-    if res is None and version_code is not None:
-        logger.warning(f'tls version code not recognized: {version_code} (0x{version_code:04x})')
     return res
 
 @dataclass
@@ -281,6 +278,8 @@ def _parse_client_hello(msg: TLSClientHello) -> ClientHelloInfo:
     versions_ext = extensions.get(TlsExtensionType.SUPPORTED_VERSIONS)
     if versions_ext and hasattr(versions_ext, 'versions'):
         supported_versions = [_parse_tls_version(v) for v in versions_ext.versions]
+        if None in supported_versions:
+            logger.warning(f'could not parse all supported versions from {versions_ext!r}')
 
     cipher_suites = [_get_cipher_name(c) for c in msg.ciphers or []]
 
@@ -405,5 +404,6 @@ def parse_tls_content(content: bytes) -> TlsRecordInfo | None:
 
     except Exception as e:
         logger.exception(f'error parsing tls content: {e}', exc_info=True)
+        logger.error(content)
         return None
 

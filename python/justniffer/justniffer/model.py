@@ -1,5 +1,5 @@
-Endopoint = tuple[str,int]
-Conn=tuple[Endopoint,Endopoint]
+Endpoint = tuple[str,int]
+Conn=tuple[Endpoint,Endpoint]
 
 class ExchangeBase:
 

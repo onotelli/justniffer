@@ -72,17 +72,23 @@ def parse_http_content(request: bytes, response: bytes) -> tuple[HttpRequest | N
     req: ReqProtocol | None = ReqProtocol()
     resp: ResProtocol | None = ResProtocol()
     request_parser = HttpRequestParser(req)
-    request_parser.feed_data(request)
+    try:
+        request_parser.feed_data(request)
+    except:
+        pass
     response_parser = HttpResponseParser(resp)
-    response_parser.feed_data(response)
+    try:
+        response_parser.feed_data(response)
+    except:
+        pass
     req.method = request_parser.get_method().decode('utf-8')  # type: ignore
     resp.code = response_parser.get_status_code()  # type: ignore
     req_version = request_parser.get_http_version()
     resp_version = response_parser.get_http_version()
     req.version =  req_version  # type: ignore
-    resp.version =  resp_version # type: ignore
-    if  resp_version == '0.0':
+    resp.version =  resp_version # type: ignore 
+    if  req_version == '0.0':
         req = None
-    if req_version == '0.0':
+    if resp_version == '0.0':
         resp = None
     return req, resp
