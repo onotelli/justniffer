@@ -105,7 +105,7 @@ class ExchangeBase:
 ```
 
 ### **Usage Example:**  
-    sudo justniffer -i any  -l "%python(justniffer.simpletest)" -N
+    sudo PYTHONPATH=. justniffer -i any  -l "%python(simpletest)" -N
 
 ### **Example Python Handler (`simpletest.py`)**
 ```python
