@@ -67,7 +67,7 @@ def _remove_key_share_extension(raw_bytes: bytes) -> bytes:
         ext_block_end = ext_block_start + ext_block_length
 
         if ext_block_end > len(raw_bytes):
-            logger.warning('malformed extensions block: length exceeds available bytes. returning original bytes.')
+            logger.warning('malformed extensions block: length exceeds available bytes. returning original bytes')
             return raw_bytes
         if ext_block_length == 0:
             return raw_bytes
@@ -78,7 +78,7 @@ def _remove_key_share_extension(raw_bytes: bytes) -> bytes:
         key_share_removed = False
         while pos < len(ext_block):
             if pos + 4 > len(ext_block):
-                logger.warning('malformed extension entry (too short for header) near end of block. stopping parse.')
+                logger.warning('malformed extension entry (too short for header) near end of block. stopping parse')
                 return raw_bytes
 
             ext_type_bytes = ext_block[pos: pos+2]
@@ -88,8 +88,8 @@ def _remove_key_share_extension(raw_bytes: bytes) -> bytes:
 
             if ext_data_end > len(ext_block):
                 logger.warning(f'malformed extension entry (type 0x{ext_type_bytes.hex()}): '
-                               f'length {ext_len} exceeds remaining block size {len(ext_block) - ext_data_start}. '
-                               'stopping parse.')
+                               f'length {ext_len} exceeds remaining block size {len(ext_block) - ext_data_start} '
+                               'stopping parse')
                 return raw_bytes
 
             if ext_type_bytes == TlsExtensionType.KEY_SHARE.to_bytes(2, 'big'):
@@ -119,10 +119,10 @@ def _remove_key_share_extension(raw_bytes: bytes) -> bytes:
         return new_raw_handshake
 
     except IndexError:
-        logger.warning('indexerror during key share removal, likely malformed packet structure. returning original bytes.')
+        logger.warning('indexerror during key share removal, likely malformed packet structure. returning original bytes')
         return raw_bytes
     except Exception as e:
-        logger.error(f'unexpected error during key share removal: {e}. returning original bytes.', exc_info=True)
+        logger.error(f'unexpected error during key share removal: {e}. returning original bytes', exc_info=True)
         return raw_bytes
 
 class TlsHandshakeType(IntEnum):
@@ -202,7 +202,7 @@ def _init_cipher_maps():
     except Exception as e:
         logger.warning(f'could not get standard cipher list from ssl module: {e}')
 
-    logger.debug(f'initialized cipher suite map with {len(_CIPHER_SUITE_MAP)} entries.')
+    logger.debug(f'initialized cipher suite map with {len(_CIPHER_SUITE_MAP)} entries')
 
 _init_cipher_maps()
 
@@ -357,7 +357,7 @@ def parse_tls_content(content: bytes) -> TlsRecordInfo | None:
                 logger.debug(f'parsed as non-standard tls/ssl class: {tls_packet.__class__.__name__}')
                 return None
             else:
-                logger.debug('content does not appear to be a tls record.')
+                logger.debug('content does not appear to be a tls record')
                 return None
 
         record_version = _parse_tls_version(getattr(tls_packet, 'version', None))

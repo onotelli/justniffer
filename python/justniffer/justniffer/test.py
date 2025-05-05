@@ -8,9 +8,7 @@ from justniffer.logging import logger
 from justniffer.tls_info import TLSVersion, parse_tls_content as get_TLSInfo, TlsRecordInfo as TLSInfo
 from justniffer.http_info import parse_http_content
 
-CONNECTION_TIMEOUT = 5
 
-METHODS = ('GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS', 'TRACE', 'CONNECT')
 counts = 0
 
 SEP = ' '
@@ -46,6 +44,8 @@ class TLSConnectionInfo:
 @dataclass
 class Connection:
     conn: Conn
+    time: float
+    requests: int = 0
     tls: TLSConnectionInfo | None = None
 
 
@@ -120,6 +120,23 @@ class ResponseSize(Extractor):
         return str(len(response(events)))
 
 
+class ConnectionTime(Extractor):
+    def value(self, connection: Connection, events: list[Event]) -> str | None:
+        opening_ts = None
+        open_ts = None
+        for event in events:
+            if opening_ts is None and isinstance(event, TimedEvent) and event.status is Status.opening:
+                opening_ts = event
+            if open_ts is None and isinstance(event, TimedEvent) and event.status is Status.open:
+                open_ts = event
+            if opening_ts and open_ts:
+                break
+        if open_ts is not None and opening_ts is not None:
+            return float_to_str(open_ts.ts - opening_ts.ts)
+        else:
+            return None
+
+
 class ResponseTime(Extractor):
 
     def value(self, connection: Connection, events: list[Event]) -> str | None:
@@ -138,17 +155,81 @@ class ResponseTime(Extractor):
             return None
 
 
+class RequestTime(Extractor):
+
+    def value(self, connection: Connection, events: list[Event]) -> str | None:
+        last_request = None
+        first_request = None
+        for event in events:
+            if first_request is None and isinstance(event, TimedEvent) and event.status is Status.request:
+                first_request = event
+            if isinstance(event, TimedEvent) and event.status is Status.request:
+                last_request = event
+        if last_request is not None and first_request is not None:
+            return float_to_str(last_request.ts - first_request.ts)
+        else:
+            return None
+
+
 MAX_BITS = 2**64
 
 
 class ConnectionID(Extractor):
     def value(self, connection: Connection, events: list[Event]) -> Any:
         pos_hash = hash(connection.conn) % (MAX_BITS)
-        return hex(pos_hash)
+        return hex(pos_hash)[2:].zfill(16)    
+
+
+class ConnectionDuration(Extractor):
+    def value(self, connection: Connection, events: list[Event]) -> Any:
+        timed_events: list[TimedEvent] = list(filter(lambda event: isinstance(event, TimedEvent), events))  # type: ignore
+        if len(timed_events) > 0:
+            e = timed_events[-1]
+            return float_to_str(e.ts - connection.time)
+        else:
+            return None
+
+class ConnectionRequests(Extractor):
+    def value(self, connection: Connection, events: list[Event]) -> Any:
+        return str(connection.requests)
+
+class ConnectionState(Extractor):
+    _state_map = {
+        # (open, closed, data): status
+        (False, False, False): None,
+        (False, True, False): 'refused',
+        (False, True, True): 'closed',
+        (True, False, False): 'truncated',
+        (True, False, True): 'started',
+        (True, True, False): 'closed',
+        (True, True, True): 'unique',
+    }
+
+    def value(self, connection: Connection, events: list[Event]) -> Any:
+        is_open = is_closed = has_data = is_truncated = False
+
+        for event in events:
+            if isinstance(event, TimedEvent):
+                match event.status:
+                    case Status.open:
+                        is_open = True
+                    case Status.close:
+                        is_closed = True
+                    case Status.request | Status.response:
+                        has_data = True
+            elif event.status is Status.interrupted:
+                is_truncated = True
+
+        if not is_open and not is_closed and has_data:
+            return 'truncated' if is_truncated else 'continue'
+
+        return self._state_map.get(
+            (is_open, is_closed, has_data),
+            None
+        )
 
 
 def to_date_string(dt: float):
-    # with milliseconds
     return datetime.fromtimestamp(dt).strftime('%Y-%m-%d %H:%M:%S.%f')
 
 
@@ -244,7 +325,6 @@ class HttpInfoExtractor(ContentExtractor):
             host_list = [_to_str(None)]
         host = host_list[0]
         code = response_obj.code if response_obj else None
-        message = response_obj.message if response_obj else None
         version = response_obj.version if response_obj else None
         if request_obj is None and response_obj is None:
             return None
@@ -252,17 +332,26 @@ class HttpInfoExtractor(ContentExtractor):
             return f'{_to_str(version)} {_to_str(method)} {_to_str(url)} {_to_str(host)} {_to_str(code)}'
 
 
-class DestIPPort(Extractor):
+class IPPort(Extractor, ABC):
+    index: int
 
     def value(self, connection: Connection, events: list[Event]) -> str:
-        ip, port = connection.conn[1]
+        ip, port = connection.conn[self.index]
         return f'{ip}:{port}'
 
 
-def setup_connection(conn: Conn) -> Connection:
+class DestIPPort(IPPort):
+    index = 1
+
+
+class SourceIPPort(IPPort):
+    index = 0
+
+
+def setup_connection(conn: Conn, time: float) -> Connection:
     connection = connections.get(conn)
     if connection is None:
-        connection = Connection(conn)
+        connection = Connection(conn, time)
         connections[conn] = connection
     logger.debug(f'connections = {len(connections)}')
     return connection
@@ -297,7 +386,10 @@ class Exchange:
 
     def __init__(self) -> None:
         global counts
-        self._extractors = (RequestTimestamp(), ConnectionID(), DestIPPort(), ResponseTime(), RequestSize(), ResponseSize(), ProtocolSelector())
+        self._extractors = (RequestTimestamp(), ConnectionID(), ConnectionState(), ConnectionRequests(),
+                            SourceIPPort(), DestIPPort(),
+                            ConnectionTime(), RequestTime(), ResponseTime(), ConnectionDuration(),
+                            RequestSize(), ResponseSize(), ProtocolSelector())
         self._events = []
         self._events.append(Event(Status.init))
         counts += 1
@@ -305,37 +397,37 @@ class Exchange:
         logger.debug(f'__init__ {counts=} {id(self)=} ')
         self._connection_to_be_removed = False
 
-    def _setup_conn(self, conn: Conn) -> None:
+    def _setup_conn(self, conn: Conn, time: float) -> None:
         if self._conn is not None:
             assert self._conn == conn
         else:
             self._conn = conn
-            setup_connection(conn)
+            setup_connection(conn, time)
 
     def on_opening(self, conn: Conn, time: float) -> None:
-        self._setup_conn(conn)
+        self._setup_conn(conn, time)
         self._events.append(TimedEvent(Status.opening, time))
         logger.debug(f'on_opening {id(self)=}  {conn=} ')
 
     def on_open(self, conn: Conn, time) -> None:
-        self._setup_conn(conn)
+        self._setup_conn(conn, time)
         self._events.append(TimedEvent(Status.open, time))
         logger.debug(f'on_open {id(self)=}  {conn} {type(time)}')
 
     def on_request(self, conn: Conn, content: bytes, time: float) -> None:
-        self._setup_conn(conn)
+        self._setup_conn(conn, time)
         self._events.append(RequestEvent(content=content, time=time))
         logger.debug(f'on_request {id(self)=} {conn=}')
         logger.debug(repr(content))
 
     def on_response(self, conn: Conn, content: bytes, time: float) -> None:
-        self._setup_conn(conn)
+        self._setup_conn(conn, time)
         self._events.append(ResponseEvent(content=content, time=time))
         logger.debug(f'on_response {id(self)=}  {conn=} ')
         logger.debug(repr(content))
 
     def on_close(self, conn: Conn, time: float) -> None:
-        self._setup_conn(conn)
+        self._setup_conn(conn, time)
         self._events.append(TimedEvent(Status.close, time))
         logger.debug(f'on_close {id(self)=}  {conn=} ')
         self._connection_to_be_removed = True
@@ -356,6 +448,8 @@ class Exchange:
             logger.warning(f'{id(self)=} {counts=} {self._conn=} {self._events}')
         else:
             connection = connections[self._conn]
+            if filter(lambda event: isinstance(event, TimedEvent) and event.status is Status.request, self._events):
+                connection.requests += 1
             res = self.value(connection)
             if self._connection_to_be_removed:
                 remove_connection(self._conn)
