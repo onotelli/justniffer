@@ -7,7 +7,7 @@ Justniffer is a network traffic analysis tool that allows you to analyze and tra
 
 Justniffer is written in C++ and uses the libpcap network packet analysis library to capture network packets. Justniffer is able to decode network packets so that the data can be viewed in a clear and easy-to-read format, allowing for efficient traffic analysis.
 
-Justniffer can be used:
+Justniffer can be used for:
 
 - Analyzing HTTP traffic in a development environment to identify any issues
 - Analyzing HTTP traffic in a production environment to monitor performance
