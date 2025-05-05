@@ -19,8 +19,6 @@ In very complex and distributed systems is often useful to understand how commun
 
 Other times it is desirable to collect access logs from web services implemented on different environments (various web servers, application servers, python web frameworks, etc.) or web services that are not accessible and therefore traceable only on client side.
 
-Ideally, an egress proxy should be in place to monitor this traffic. However, there are situations where one is unavailable or when the proxy itself is the entity that needs to be traced.
-
 Justniffer can capture traffic in promiscuous mode so it can be installed on dedicated and independent station within the same network "collision domain" of the gateway of the systems that must be analyzed, collecting all traffic without affecting the system performances and requiring invasive installation of new software in production environments.
 
 ###  Can rebuild and save HTTP content on files
@@ -37,9 +35,7 @@ justniffer can also be used to retrieve files sent over the network.
 
 ### It is extensible
 
-Can be extended by external scripts. A python script has been developed to recover all files sent via HTTP (images, text, html, javascript, etc.). 
-
-see  [EXTENDING](EXTENDING)
+Can be extended by external scripts. A python script has been developed to recover all files sent via HTTP (images, text, html, javascript, etc.).
 
 
 ### Features Summary
