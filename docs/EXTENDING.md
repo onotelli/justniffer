@@ -3,7 +3,7 @@
 Justniffer can be extended using **external scripts** in three different ways:  
 - **Bash Scripts** – Execute a script at every log entry.  
 - **Python Functions** – Process logs with a function called on each entry.  
-- **Python Handlers** – Implement structured event handling for network traffic.  
+- **Python Handlers** – Implement structured event handling for network traffic advanced analysis.  
 
 Each method offers flexibility depending on the level of customization and control required.  
 
@@ -39,7 +39,7 @@ This method is ideal for **quick inline processing** of log entries.
 
 ## 🔹 **Extending Justniffer with a Python Function**  
 
-You can process logs using a **Python function**, where each log entry is passed as a byte string to a specified function.  
+You can process logs using a Python function, where each log entry is passed as a byte string to a specified function (using byte strings instead of regular strings allows the function to handle binary content as well)
 
 ### **Usage Example:**  
 Run Justniffer with a Python script:  
@@ -54,9 +54,8 @@ def app(log: bytes):
     print(log.decode('utf-8', errors='ignore').split())
 ```
 
-### **Explanation:**  
 
-This method is useful for **basic log manipulation and text processing**.  
+This method is useful for basic log manipulation and text processing. It is more optimized than the Bash script example because it does not spawn a new process for each log entry. Instead, it directly calls the function, with the Python module being imported only once.
 
 ---
 
@@ -132,8 +131,8 @@ class ExchangeBase:
 
 ```
 
-### **Explanation:**  
-- **Handles different connection events**, including opening, requests, responses, and closure.  
+
+- Handles different connection events:  **opening**, **request**, **response**, and **closing**  
 - Can be used to **track and analyze network traffic flows**.  
 - Allows **custom processing logic** through method overrides.  
 

@@ -19,6 +19,8 @@ In very complex and distributed systems is often useful to understand how commun
 
 Other times it is desirable to collect access logs from web services implemented on different environments (various web servers, application servers, python web frameworks, etc.) or web services that are not accessible and therefore traceable only on client side.
 
+Ideally, an egress proxy should be active to monitor network traffic. However, there are situations where a proxy is unavailable, requires monitoring itself, or is impractical to deploy in production environments - especially when troubleshooting network traffic.
+
 Justniffer can capture traffic in promiscuous mode so it can be installed on dedicated and independent station within the same network "collision domain" of the gateway of the systems that must be analyzed, collecting all traffic without affecting the system performances and requiring invasive installation of new software in production environments.
 
 ###  Can rebuild and save HTTP content on files
@@ -35,7 +37,10 @@ justniffer can also be used to retrieve files sent over the network.
 
 ### It is extensible
 
-Can be extended by external scripts. A python script has been developed to recover all files sent via HTTP (images, text, html, javascript, etc.).
+Can be extended by external scripts.
+
+
+-see  [EXTENDING](EXTENDING)
 
 
 ### Features Summary
@@ -153,8 +158,6 @@ Can be extended by external scripts. A python script has been developed to recov
 
 Be sure you have installed third-party tools and libraries:
 
-- patch
-- tar
 - autotools
 - make
 - libc6
@@ -163,8 +166,11 @@ Be sure you have installed third-party tools and libraries:
 - gcc 
 - libboost-iostreams          
 - libboost-program-options
-- libboost-regex  
-
+- libboost-regex
+- libboost-thread
+- bash-completion
+- libboost-python (optional)
+ 
 
 unpacked the source package, type:
 
@@ -173,16 +179,26 @@ unpacked the source package, type:
     $ make install
 
 ## Install on Ubuntu
+
     sudo apt install software-properties-common
     sudo add-apt-repository ppa:oreste-notelli/ppa
     sudo apt update
     sudo apt install justniffer
 
+## Install on Debian
 
+download the .deb file from 
+[https://github.com/onotelli/justniffer/releases](https://github.com/onotelli/justniffer/releases)
+and install it with:
+
+    sudo apt install ./justniffer_<version>.deb
+
+---
 ## EXAMPLES
 
 ### Example 1. Retrieving http network traffic in access_log format
     $ justniffer -i eth0
+
 output:
 
     192.168.2.2 - - [15/Apr/2009:17:19:57 +0200] "GET /sflogo.php?group_id=205860&type=2 HTTP/1.1" 200 0 "" "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8) Gecko/2009032711 Ubuntu/8.10 (intrepid) Firefox/3.0.8)"
@@ -195,6 +211,7 @@ output:
 For example http response time (see man page for a complete keyword list)
 
     $ justniffer -i eth0 -a " %response.time"
+
 output:
 
     192.168.2.5 - - [22/Apr/2009:22:27:36 +0200] "GET /sflogo.php?group_id=205860&type=2 HTTP/1.1" 200 0 "http://justniffer.sourceforge.net/" "Mozilla/5.0 (X11;U; Linux i686; en-US; rv:1.9.0.8) Gecko/2009032711 Ubuntu/8.10 (intrepid) Firefox/3.0.8)" 0.427993 
@@ -206,6 +223,7 @@ output:
 (add -u or -x options to encode unprintable characters):
 
     $ justniffer -i eth0 -r
+
 output:
 
     GET /doc/maint-guide/ch-upload.en.html HTTP/1.1

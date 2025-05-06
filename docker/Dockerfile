@@ -1,7 +1,9 @@
 ARG BASE_IMAGE=ubuntu:24.04
+ARG PYTHON_VERSION
 
 FROM ${BASE_IMAGE} AS dev_env
-
+ARG PYTHON_VERSION
+ENV PYTHON_VERSION=${PYTHON_VERSION}
 RUN apt-get update -y && \
     apt-get install -y libboost-python-dev \
         libboost-regex-dev libboost-program-options-dev libboost-iostreams-dev \
