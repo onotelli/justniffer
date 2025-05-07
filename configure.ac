@@ -10,8 +10,8 @@ dnl
 
 AC_PREREQ([2.71])
 AC_COPYRIGHT([2007-2025 (c) Plecno s.r.l]) # Use [] for strings with special chars like ()
-AC_INIT([justniffer],[0.6.1],[info@plecno.com])
-AC_DEFINE([JUSTNIFFER_VERSION], ["0.6.1"], [justniffer version])
+AC_INIT([justniffer],[0.6.2],[info@plecno.com])
+AC_DEFINE([JUSTNIFFER_VERSION], ["0.6.2"], [justniffer version])
 AC_DEFINE([JUSTNIFFER_YEAR], ["2025"], [justniffer year])
 #AC_CONFIG_MACRO_DIR([included])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign]) # Added foreign, -Wall -Werror are good practice

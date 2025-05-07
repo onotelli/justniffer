@@ -38,7 +38,7 @@ void parser::nids_handler(struct tcp_stream *ts, void **yoda, struct timeval *t,
 	//{
 	//     flag = "packet found";
 	// }
-	//cerr << "ts->nids_state "<< (int) ts->nids_state << "\n";
+	// cerr << "ts->nids_state "<< (int) ts->nids_state << "\n";
 
 	switch (ts->nids_state)
 	{
@@ -246,9 +246,9 @@ void parser::init_parse_elements()
 	elements["-"] = pelem(new break_keyword<handler_factory_t<basic_handler>>());
 	elements["%"] = pelem(new keyword_arg<string, handler_factory_t_arg<string, constant>>(string("%")));
 	elements["newline"] = pelem(new keyword_arg<string, handler_factory_t_arg<string, constant>>(string("\n")));
-	#ifdef HAVE_BOOST_PYTHON
+#ifdef HAVE_BOOST_PYTHON
 	elements["python"] = pelem(new keyword_params_and_arg<python_handler_factory>(_user));
-	#endif //HAVE_BOOST_PYTHON
+#endif // HAVE_BOOST_PYTHON
 
 	_already_init = true;
 }
@@ -523,7 +523,7 @@ void outstream_printer::doit(handlers::iterator start, handlers::iterator end, c
 {
 	for (handlers::iterator i = start; i != end; i++)
 		(*i)->append(_out, t, pconnections_container);
-	if (!_skip_newline)	
+	if (!_skip_newline)
 		_out << std::endl;
 	_out << std::flush;
 	//_out.sync();
@@ -734,55 +734,56 @@ void close_originator::onInterrupted()
 	stat = truncated;
 }
 
-
 #ifdef HAVE_BOOST_PYTHON
 
 ///// python_printer /////
 
 static int initializations = 0;
 
-void python_finalize(){
-	if (--initializations <=0)
+void python_finalize()
+{
+	if (--initializations <= 0)
 		Py_Finalize();
 }
 
 python_printer::python_printer(std::string script, std::string user) : _script(script), _finalized(false), _user(user)
 {
-    _init();
+	_init();
 }
 
 python_printer::python_printer(std::string script) : _script(script), _finalized(false)
 {
-    _init();
+	_init();
 }
 
 struct Res
 {
-    Res(std::string script_name, std::string func, py::object nmspace) : script_name(script_name), func(func), nmspace(nmspace)
-    {
-    }
-    std::string script_name;
-    std::string func;
-    py::object nmspace;
+	Res(std::string script_name, std::string func, py::object nmspace) : script_name(script_name), func(func), nmspace(nmspace)
+	{
+	}
+	std::string script_name;
+	std::string func;
+	py::object nmspace;
 };
 
 Res python_init(std::string scriptname)
 {
-    std::string _scriptname = scriptname;
-    std::string func = "app";
-    size_t pos = scriptname.find(':');
-    if (pos != std::string::npos)
-    {
-        _scriptname = scriptname.substr(0, pos);
-        func = scriptname.substr(pos + 1);
-    }
-	if (initializations <=0)  
-    	Py_Initialize();
+	std::string _scriptname = scriptname;
+	std::string func = "app";
+	size_t pos = scriptname.find(':');
+	if (pos != std::string::npos)
+	{
+		_scriptname = scriptname.substr(0, pos);
+		func = scriptname.substr(pos + 1);
+	}
+	if (initializations <= 0)
+		Py_Initialize();
 	++initializations;
-    py::object main_module = py::import("__main__");
-    py::object main_namespace = main_module.attr("__dict__");
-    try{
-        const char *setup =R"DELIM(
+	py::object main_module = py::import("__main__");
+	py::object main_namespace = main_module.attr("__dict__");
+	try
+	{
+		const char *setup = R"DELIM(
 import sys
 import os
 import site 
@@ -807,226 +808,240 @@ def find_and_activate_virtualenv():
 find_and_activate_virtualenv()
         )DELIM";
 
-        py::exec(setup, main_namespace, main_namespace);
-    }
-    catch(const py::error_already_set &){
-        PyErr_Print();
-    }
-    return Res(_scriptname, func, main_namespace);
+		py::exec(setup, main_namespace, main_namespace);
+	}
+	catch (const py::error_already_set &)
+	{
+		PyErr_Print();
+	}
+	return Res(_scriptname, func, main_namespace);
 }
 
 void python_printer::_init()
 {
-    try
-    {
-        Res res = python_init(_script);
+	try
+	{
+		Res res = python_init(_script);
 
-        if (!_user.empty())
-        {
-            run_as r(_user);
-            _init_instance(res.script_name, res.func, res.nmspace);
-        }
-        else
-        {
-            _init_instance(res.script_name, res.func, res.nmspace);
-        }
-    }
-    catch (py::error_already_set const &)
-    {
-        PyErr_Print();
-        python_finalize();
-        _finalized = true;
-    }
+		if (!_user.empty())
+		{
+			run_as r(_user);
+			_init_instance(res.script_name, res.func, res.nmspace);
+		}
+		else
+		{
+			_init_instance(res.script_name, res.func, res.nmspace);
+		}
+	}
+	catch (py::error_already_set const &)
+	{
+		PyErr_Print();
+		python_finalize();
+		_finalized = true;
+	}
 }
 
 void python_printer::_init_instance(std::string script_name, std::string func, py::object main_namespace)
 {
-    py::exec_file(script_name.c_str(), main_namespace, main_namespace);
-    instance = main_namespace[func];
+	py::exec_file(script_name.c_str(), main_namespace, main_namespace);
+	instance = main_namespace[func];
 }
 
 py::object create_py_bytes(const char *data, size_t size)
 {
-    if (!data || size == 0)
-    {
-        return py::object(py::handle<>(PyBytes_FromStringAndSize("", 0)));
-    }
-    return py::object(py::handle<>(PyBytes_FromStringAndSize(data, size)));
+	if (!data || size == 0)
+	{
+		return py::object(py::handle<>(PyBytes_FromStringAndSize("", 0)));
+	}
+	return py::object(py::handle<>(PyBytes_FromStringAndSize(data, size)));
 }
 
 void python_printer::doit(handlers::iterator start, handlers::iterator end, const timeval *t, connections_container *pconnections_container)
 {
-    try
-    {
-        if (!_finalized)
-        {
-            std::ostringstream _out(std::ios::binary);
-            for (handlers::iterator i = start; i != end; i++)
-                (*i)->append(_out, t, pconnections_container);
-            std::string binaryData = _out.str();
-            py::object pyBytes = create_py_bytes(binaryData.data(), binaryData.size());
-            if (!instance.is_none())
-                instance(pyBytes);
-        }
-    }
-    catch (py::error_already_set const &)
-    {
-        PyErr_Print();
-        python_finalize();
-        _finalized = true;
-    }
+	try
+	{
+		if (!_finalized)
+		{
+			std::ostringstream _out(std::ios::binary);
+			for (handlers::iterator i = start; i != end; i++)
+				(*i)->append(_out, t, pconnections_container);
+			std::string binaryData = _out.str();
+			py::object pyBytes = create_py_bytes(binaryData.data(), binaryData.size());
+			if (!instance.is_none())
+				instance(pyBytes);
+		}
+	}
+	catch (py::error_already_set const &)
+	{
+		PyErr_Print();
+		python_finalize();
+		_finalized = true;
+	}
 }
 
 python_printer::~python_printer()
 {
-    if (!_finalized)
-        python_finalize();
+	if (!_finalized)
+		python_finalize();
 }
-
 
 // python_handler_factory
 
-
 python_handler_factory::python_handler_factory(const std::string &arg, const std::string &user)
 {
-	if (!user.empty()){
+	if (!user.empty())
+	{
 		run_as r(user);
 		_init(arg);
 	}
-	else {
+	else
+	{
 		_init(arg);
 	}
 	//_pyhandler = handler::ptr(new python_handler(_pyclass));
 }
 
-void python_handler_factory::_init (const std::string &arg) 
+void python_handler_factory::_init(const std::string &arg)
 {
 	Res res = python_init(arg);
-	try {
-		py::object module = py::import(res.script_name.c_str());        
+	try
+	{
+		py::object module = py::import(res.script_name.c_str());
 		res.nmspace = module.attr("__dict__");
 		_pyclass = res.nmspace[res.func];
 	}
-	catch(const py::error_already_set &){
+	catch (const py::error_already_set &)
+	{
 		PyErr_Print();
 		throw;
 	}
 }
 
-python_handler_factory::~python_handler_factory(){
+python_handler_factory::~python_handler_factory()
+{
 	//
-    python_finalize();
+	python_finalize();
 }
 
 handler::ptr python_handler_factory::create_handler()
 {
-    return handler::ptr(new python_handler(_pyclass));
-    //return _pyhandler;
+	return handler::ptr(new python_handler(_pyclass));
+	// return _pyhandler;
 }
 
 py::object tcp_stream_to_python(tcp_stream *pstream)
 {
-    py::object source = py::make_tuple(ip_to_str(pstream->addr.saddr), pstream->addr.source);
-    py::object dest = py::make_tuple(ip_to_str(pstream->addr.daddr), pstream->addr.dest);
-    return py::make_tuple(source, dest);
+	py::object source = py::make_tuple(ip_to_str(pstream->addr.saddr), pstream->addr.source);
+	py::object dest = py::make_tuple(ip_to_str(pstream->addr.daddr), pstream->addr.dest);
+	return py::make_tuple(source, dest);
 }
 
 python_handler::python_handler(py::object &classObj)
 {
-    try
-    {
-        _instance = classObj();
-    }
-    catch (const py::error_already_set &)
-    {
-        PyErr_Print();
-    }
-}
-
-void python_handler::append(std::basic_ostream<char> &out, const timeval *t, connections_container *pconnections_container)
-{
-    try
-    {
-        py::object res = _instance.attr("result")();
-        if (!res.is_none()){
-            std::string result_str = py::extract<std::string>(res);
-            out << result_str;
-        }
-    }
-    catch (const py::error_already_set &)
-    {
-        PyErr_Print();
-    }
+	try
+	{
+		_instance = classObj();
+	}
+	catch (const py::error_already_set &)
+	{
+		PyErr_Print();
+	}
 }
 
 double timeval_to_python(const timeval *t)
 {
-    double totalSeconds = t->tv_sec + (t->tv_usec / 1000000.0);
-    return totalSeconds;
+	double totalSeconds = t->tv_sec + (t->tv_usec / 1000000.0);
+	return totalSeconds;
+}
+
+void python_handler::append(std::basic_ostream<char> &out, const timeval *t, connections_container *pconnections_container)
+{
+	try
+	{
+		py::object res = _instance.attr("result")(timeval_to_python(t));
+		if (!res.is_none())
+		{
+			std::string result_str = py::extract<std::string>(res);
+			out << result_str;
+		}
+	}
+	catch (const py::error_already_set &)
+	{
+		PyErr_Print();
+	}
 }
 
 template <typename... Args>
-void python_handler::call_python_method(const char* method_name, Args&&... args)
+void python_handler::call_python_method(const char *method_name, Args &&...args)
 {
-    namespace py = boost::python;
-    
-    if (!PyObject_HasAttrString(_instance.ptr(), method_name)) {
-        return;
-    }
-    py::object attr = _instance.attr(method_name);
-    try {
-        attr(std::forward<Args>(args)...);
-    }
-    catch (const py::error_already_set& e) {
-        _handle_exception(e);
-    }
+	namespace py = boost::python;
+
+	if (!PyObject_HasAttrString(_instance.ptr(), method_name))
+	{
+		return;
+	}
+	py::object attr = _instance.attr(method_name);
+	try
+	{
+		attr(std::forward<Args>(args)...);
+	}
+	catch (const py::error_already_set &e)
+	{
+		_handle_exception(e);
+	}
 }
 
 void python_handler::onOpening(tcp_stream *pstream, const timeval *t)
 {
-    call_python_method("on_opening", tcp_stream_to_python(pstream), timeval_to_python(t));
+	call_python_method("on_opening", tcp_stream_to_python(pstream), timeval_to_python(t));
 }
 
 void python_handler::_handle_exception(const py::error_already_set &e)
 {
-    PyErr_Print();
+	PyErr_Print();
 }
 void python_handler::onOpen(tcp_stream *pstream, const timeval *t)
 {
-    call_python_method("on_open", tcp_stream_to_python(pstream), timeval_to_python(t));
+	call_python_method("on_open", tcp_stream_to_python(pstream), timeval_to_python(t));
 }
 
 void python_handler::onRequest(tcp_stream *pstream, const timeval *t)
 {
-    std::string content = std::string(pstream->server.data, pstream->server.data + pstream->server.count_new);
-    py::object pyBytes = create_py_bytes(content.data(), content.size());
-    double dtime = timeval_to_python(t);
-    call_python_method("on_request", tcp_stream_to_python(pstream), pyBytes, dtime);
+	std::string content = std::string(pstream->server.data, pstream->server.data + pstream->server.count_new);
+	py::object pyBytes = create_py_bytes(content.data(), content.size());
+	double dtime = timeval_to_python(t);
+	call_python_method("on_request", tcp_stream_to_python(pstream), pyBytes, dtime);
 }
 
 void python_handler::onResponse(tcp_stream *pstream, const timeval *t)
 {
-    std::string content = std::string(pstream->client.data, pstream->client.data + pstream->client.count_new);
-    py::object pyBytes = create_py_bytes(content.data(), content.size());
-    double dtime = timeval_to_python(t);
-    call_python_method("on_response", tcp_stream_to_python(pstream), pyBytes, dtime);
+	std::string content = std::string(pstream->client.data, pstream->client.data + pstream->client.count_new);
+	py::object pyBytes = create_py_bytes(content.data(), content.size());
+	double dtime = timeval_to_python(t);
+	call_python_method("on_response", tcp_stream_to_python(pstream), pyBytes, dtime);
 }
 
 void python_handler::onClose(tcp_stream *pstream, const timeval *t, unsigned char *packet)
 {
-    double dtime = timeval_to_python(t);
-    call_python_method("on_close", tcp_stream_to_python(pstream), dtime);
+	struct ip *this_iphdr = (struct ip *)packet;
+	struct tcphdr *this_tcphdr = (struct tcphdr *)(packet + 4 * this_iphdr->ip_hl);
+	u_int32_t ip_originator;
+	uint16_t port_originator;
+	ip_originator = this_iphdr->ip_src.s_addr;
+	port_originator = ntohs(this_tcphdr->th_sport);
+	double dtime = timeval_to_python(t);
+	call_python_method("on_close", tcp_stream_to_python(pstream), dtime, ip_to_str(ip_originator), port_originator);
 }
 
 void python_handler::onTimedOut(tcp_stream *pstream, const timeval *t, unsigned char *packet)
 {
-    double dtime = timeval_to_python(t);
-    call_python_method("on_timed_out", tcp_stream_to_python(pstream), dtime);
+	double dtime = timeval_to_python(t);
+	call_python_method("on_timed_out", tcp_stream_to_python(pstream), dtime);
 }
 
 void python_handler::onInterrupted()
 {
-    call_python_method("on_interrupted");
+	call_python_method("on_interrupted");
 }
 
 #endif // HAVE_BOOST_PYTHON

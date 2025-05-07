@@ -1,3 +1,6 @@
+justniffer (0.6.2.jammy) jammy; urgency=low
+  * python on_close method: Added 'ip' and 'port' arguments for the peer that closed the connection
+
 justniffer (0.6.1.jammy) jammy; urgency=low
   * python integration 
 
