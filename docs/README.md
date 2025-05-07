@@ -1,6 +1,8 @@
 
 # Justniffer 
 
+[EXTENDING](EXTENDING) [MAN](MAN)
+
 ## Network TCP Packet Sniffer
 
 Justniffer is a network protocol analyzer that captures network traffic and produces logs in a customized way, can emulate Apache web server log files, track response times and extract all "intercepted" files from the HTTP traffic.
@@ -200,7 +202,8 @@ and install it with:
 ---
 ## EXAMPLES
 
-### Example 1. Retrieving http network traffic in access_log format
+<br>
+## Example 1. Retrieving http network traffic in access_log format
     $ justniffer -i eth0
 
 output:
@@ -211,6 +214,8 @@ output:
     192.168.2.2 - - [15/Apr/2009:17:20:18 +0200] "GET /csi?v=3&s=web&action=&tran=undefined&ei=MvvlSdjOEciRsAbY0rGpCw&e=19592,20292&rt=prt.175,xjs.557,ol.558 HTTP/1.1" 204 0 "http://www.google.it/search?q=subversion+tagging&ie=utf-8&oe=utf-8&aq=t&rls=com.ubuntu:en-US:unofficial&client=firefox-a" "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8 Gecko/2009032711 Ubuntu/8.10 (intrepid) Firefox/3.0.8)"
     192.168.2.2 - - [15/Apr/2009:17:20:07 +0200] "GET /HTTP/1.1" 200 0 "" "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8) Gecko/2009032711 Ubuntu/8.10 (intrepid) Firefox/3.0.8)"
 
+
+<br>
 ## Example 2. Like Example 1 but appending other fields,
 For example http response time (see man page for a complete keyword list)
 
@@ -223,6 +228,7 @@ output:
     192.168.2.5 - - [22/Apr/2009:22:27:51 +0200] "GET /complete/search?output=firefox&client=firefox&hl=en-US&q=add+a HTTP/1.1" 200 128 "" "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8) Gecko/2009032711 Ubuntu/8.10 (intrepid) Firefox/3.0.8)"0.266929 
     192.168.2.5 - - [22/Apr/2009:22:27:21 +0200] "GET /extern_js/f/CgJlbiswCjgVLCswDjgFLCswFjgJLCswFzgBLCswGDgDLCswITgWLCswJTjJiAEsKzAmOAQsKzAnOAAs/-wB3HvFrpXA.js HTTP/1.1" 304 0 "http://www.google.com/search?q=gnusticker&hl=en&safe=off&start=20&sa=N" "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8) Gecko/2009032711 Ubuntu/8.10 (intrepid) Firefox/3.0.8)" 2.025879
 
+<br>
 ## Example 3. Capture all tcp traffic
 (add -u or -x options to encode unprintable characters):
 
@@ -255,6 +261,8 @@ output:
     Expires: Thu, 23 Apr 2009 20:38:51 GMT
     Cache-Control: max-age=86400
 
+<br>
+
 ## Example 4. Define a completely custom log format
 
     $ justniffer -i eth0 -l "%request.timestamp %source.ip %dest.ip %request.header.host %request.url" 
@@ -268,12 +276,15 @@ output:
     06/28/11 13:30:49 192.168.2.2 216.34.181.71 static.sourceforge.net /include/coremetrics/v40/eluminate.js 
     06/28/11 13:30:51 192.168.2.2 199.93.61.126 c.fsdn.com /sf/images/phoneix/grad_white_dual_100.png 
 
+<br>
+
 ## Example 5. Read from a capture file
 NOTE: capture file must be performed with unlimited snaplen for catching whole packets. Justniffer can work only works on pcap files with whole packets.
 tcpdump command example: tcpdump -w /tmp/file.cap -s0 -i ath0
 
     $ justniffer -f /file.cap
 
+<br>
 ## Example 6. Parameters for setting a more precise formatting
 Many keyword has parameters for setting a more precise formatting:
 
@@ -306,11 +317,14 @@ output:
     06/28/11 15:10:28 www.google.com www.google.com/ig?hl=en 0.116146
     06/28/11 15:10:28 NoHostFound N/A/ig?hl=en 0.116146 
 
+<br>
+
 ## Example 7. Capture only http traffic
 the -p option let you to specify a tcpdump compatible filter (see pcap-filter(7)): "port 80 or port 8080" capture only http traffic (usually using tcp port 80 and 8080)
 
     $ justniffer -i eth0 -r -p "port 80 or port 8080"
 
+<br>
 ## Example 8. Extend with an external executable
 the -e option let you to specify an external executable (usually a script) to which , for every log, the output will be redirect to. If you want to perform complex extraction operations, you can write your own script that will receive from the standard input all content specified by the -l option. A complete ad useful example is provided with justniffer-grab-http-traffic
     $ justniffer -l "%response" -e ./myscript.sh -i ath0
@@ -332,6 +346,7 @@ myscript.sh
 
       
 
+<br>
     
 ## Example 9. Capture smtp traffic (usually using tcp port 25)
     $ justniffer -i eth0 -r -p "port 25"
@@ -411,11 +426,13 @@ output:
       
 
     
+<br>
 ## Example 10. Trace performances
 The following keywords are used to obtain logs that give an overview on the performance of services based on HTTP protocol measuring connection time, response time, tcp connection timeouts, keep alive requests, etc. (see man for more information)
 
     $ sudo justniffer -i eth0 -u -p "port 80 or port 8080" -l "%request.header.host %request.url %connection.time %idle.time.0  %request.time %response.time.begin %response.time.end %idle.time.1 %connection %close.originator"
 
+<br>
 ## Example 11. Grep keywords
 The "grep keywords"can be used to capture portions of text using regular expressions. In this example we want to collect:
 
@@ -433,6 +450,7 @@ output:
     /plecno_res/src/builder.js application/javascript 192.168.10.2
     /plecno_res/src/effects.js application/javascript 192.168.10.2
 
+<br>
 ## Example 12. capture tcp traffic without the 3-way handshake (capture in the middle)
 Sometimes, justniffer does not capture traffic because it was primarily designed to measure the nature and timing of TCP connections. It might not have sufficient information to retrieve certain details without the 3-way handshake packets at the beginning of the connection (e.g., client IP/port, connection reuse, etc.).
 

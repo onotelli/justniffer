@@ -1,5 +1,7 @@
 # **Extending Justniffer**  
 
+[HOME](/) [MAN](MAN)
+
 Justniffer can be extended using **external scripts** in three different ways:  
 - **Bash Scripts** – Execute a script at every log entry.  
 - **Python Functions** – Process logs with a function called on each entry.  
