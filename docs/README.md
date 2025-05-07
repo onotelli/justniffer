@@ -5,7 +5,11 @@
 
 Justniffer is a network protocol analyzer that captures network traffic and produces logs in a customized way, can emulate Apache web server log files, track response times and extract all "intercepted" files from the HTTP traffic.
 
+Additionally, Justniffer provides insights into connection behavior, including how connections are reused for keep-alive sessions, identifying whether the client or server closes the connection, and analyzing idle times.
+
 It lets you interactively trace tcp traffic from a live network or from a previously saved capture file. Justniffer's native capture file format is libpcap format, which is also the format used by tcpdump and various other tools.
+
+It is highly customizable, especially through the use of Python handler classes, allowing you to tailor its functionality to specific needs
 
 ### Reliable TCP Flow Rebuilding
 
@@ -19,7 +23,7 @@ In very complex and distributed systems is often useful to understand how commun
 
 Other times it is desirable to collect access logs from web services implemented on different environments (various web servers, application servers, python web frameworks, etc.) or web services that are not accessible and therefore traceable only on client side.
 
-Ideally, an egress proxy should be active to monitor network traffic. However, there are situations where a proxy is unavailable, requires monitoring itself, or is impractical to deploy in production environments - especially when troubleshooting network traffic.
+Ideally, an egress proxy should be active to monitor network traffic. However, there are cases where a proxy is unavailable, needs to be monitored itself, or is impractical to deploy in production environments - especially while troubleshooting network traffic
 
 Justniffer can capture traffic in promiscuous mode so it can be installed on dedicated and independent station within the same network "collision domain" of the gateway of the systems that must be analyzed, collecting all traffic without affecting the system performances and requiring invasive installation of new software in production environments.
 
@@ -111,31 +115,31 @@ Can be extended by external scripts.
 
         |  ---   request/last packet  --->    |    |
 
-        |  <------     ack     -----------    |----+--------------------+
+        |  <------     ack     -----------    |----+---------------------+
 
-        |                                     |    |                    |
+        |                                     |    |                     |
 
-        |                                     |    |                    |
+        |                                     |    |                     |
 
         |                                     |    |%response.time.begin |   
 
-        |                                     |    |                    |
+        |                                     |    |                     |
 
-        |  <--  response/first packet ----    |----+                    | response 
+        |  <--  response/first packet ----    |----+                     | response 
 
-        |  -------     ack     ---------->    |    |                    | time
+        |  -------     ack     ---------->    |    |                     | time
 
-        |                                     |    |                    |
+        |                                     |    |                     |
 
         |  <--  response/....         ----    |    |%response.time.end   |
 
-        |  -------     ack     ---------->    |    |                    |
+        |  -------     ack     ---------->    |    |                     |
 
-        |                                     |    |                    |
+        |                                     |    |                     |
 
-        |  <--  response/last packet  ----    |    |                    |
+        |  <--  response/last packet  ----    |    |                     |
 
-        |  -------     ack     ---------->    |----+--------------------+
+        |  -------     ack     ---------->    |----+---------------------+
 
         |                                     |    |
 

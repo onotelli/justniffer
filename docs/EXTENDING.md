@@ -9,9 +9,9 @@ Each method offers flexibility depending on the level of customization and contr
 
 ---
 
-## 🔹 **Extending Justniffer with a Bash Script**  
+## 🔹 **Extending with a Bash Script**  
 
-Justniffer allows calling external executable scripts using the `-e` option, which is triggered at every log entry.  
+Justniffer allows the execution of external scripts using the -e option, which is triggered for every log entry. Instead of being printed, the log is passed to the script via stdin, and the script is responsible for processing the input and printing the output.
 
 ### **Usage Example:**  
 Run Justniffer with a Bash script for log processing:  
@@ -37,7 +37,7 @@ This method is ideal for **quick inline processing** of log entries.
 
 ---
 
-## 🔹 **Extending Justniffer with a Python Function**  
+## 🔹 **Extending with a Python Function**  
 
 You can process logs using a Python function, where each log entry is passed as a byte string to a specified function (using byte strings instead of regular strings allows the function to handle binary content as well)
 
@@ -59,7 +59,7 @@ This method is useful for basic log manipulation and text processing. It is more
 
 ---
 
-## 🔹 **Extending Justniffer with Python Handlers**  
+## 🔹 **Extending with Python Handlers**  
 
 For structured event-driven handling, implement a **Python class** that reacts to different network events.  
 
@@ -87,7 +87,7 @@ class ExchangeBase:
         pass
 
     # called when the connection is closed (note that if called before the on_open, it means teh connecion has been refusted or filtered)
-    def on_close(self, conn: Conn, time: float) -> None:
+    def on_close(self, conn: Conn, time: float,  source_ip: str, source_port: int) -> None:
         pass
 
     # when the sniffer had been interrupted  in the middle of a connection
@@ -99,7 +99,7 @@ class ExchangeBase:
         pass
 
     # called to get the result to be logged, if None, no log will be generated
-    def result(self) -> str | None:
+    def result(self, time: float) -> str | None:
         pass
 ```
 
@@ -137,4 +137,9 @@ class ExchangeBase:
 - Allows **custom processing logic** through method overrides.  
 
 This approach is recommended for **advanced traffic monitoring and structured event handling**.  
+
+A Python project in the `python` folder serves as an example of how to dissect the protocol and extract the necessary information.  
+
+For instance, the TLS extractor retrieves the **SNI (Server Name Indication)**, the **cipher algorithm**, and, in the case of **TLS 1.2**, the **certificate’s common name, issuer, and expiration date**.
+
 
