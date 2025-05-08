@@ -61,7 +61,6 @@
 
     -N, --no-newline            Prevent automatic newline insertion at the end of logs.
 
-    #####################################################################
 
 
 
@@ -152,31 +151,31 @@ The main feature of justniffer is to analize network traffic to monitor performa
 
             |  ---   request/last packet  --->    |    |
 
-            |  <------     ack     -----------    |----+--------------------+
+            |  <------     ack     -----------    |----+---------------------+
 
-            |                                     |    |                    |
+            |                                     |    |                     |
 
-            |                                     |    |                    |
+            |                                     |    |                     |
 
             |                                     |    |%response.time.begin |   
 
-            |                                     |    |                    |
+            |                                     |    |                     |
 
-            |  <--  response/first packet ----    |----+                    | response 
+            |  <--  response/first packet ----    |----+                     | response 
 
-            |  -------     ack     ---------->    |    |                    | time
+            |  -------     ack     ---------->    |    |                     | time
 
-            |                                     |    |                    |
+            |                                     |    |                     |
 
             |  <--  response/....         ----    |    |%response.time.end   |
 
-            |  -------     ack     ---------->    |    |                    |
+            |  -------     ack     ---------->    |    |                     |
 
-            |                                     |    |                    |
+            |                                     |    |                     |
 
-            |  <--  response/last packet  ----    |    |                    |
+            |  <--  response/last packet  ----    |    |                     |
 
-            |  -------     ack     ---------->    |----+--------------------+
+            |  -------     ack     ---------->    |----+---------------------+
 
             |                                     |    |
 
@@ -333,6 +332,7 @@ configuration file example:
 
 elapsed time from last response and when the connection is closed. the "not applicable" string is replaced in case the keyword value cannot be applicable. if not provided the -n value or the default value "-" is used
 
+
 ### %close.timestamp([format])
 is replaced by the close timestamp. You can use optional format specification (see TIMESTAMP FORMAT)
 
@@ -355,11 +355,20 @@ is replaced by the connection timestamp. You can use optional format specificati
 ### %connection.timestamp2([not applicable string])
 is replaced by the connection timestamp using format "seconds.microseconds" the "not applicable" string is replaced in case the keyword value cannot be applicable. if not provided the -n value or the default value "-" is used
 
+### %dest.ip
+is replaced by the destination IP address
+
+### %dest.port
+is replaced by the destination TCP port
+
 ### %idle.time.0
 elapsed time form when the connection is established and the request is started the "not applicable" string is replaced in case the keyword value cannot be applicable. if not provided the -n value or the default value "-" is used
 
 ### %idle.time.1
 elapsed time form when the last response and the next request (or the connection closing) the "not applicable" string is replaced in case the keyword value cannot be applicable. if not provided the -n value or the default value "-" is used
+
+### %python(module:[handler_class])
+is replaced by the result of the specified Python module handler class
 
 ### %response.time.begin
 elapsed time form when the request and the response start the "not applicable" string is replaced in case the keyword value cannot be applicable. if not provided the -n value or the default value "-" is used
@@ -369,18 +378,6 @@ elapsed time form the response start and the response end the "not applicable" s
 
 ### %response.timestamp([format])
 elapsed time for the whole response the "not applicable" string is replaced in case the keyword value cannot be applicable. if not provided the -n value or the default value "-" is used
-
-### %dest.ip
-is replaced by the destination IP address
-
-### %dest.port
-is replaced by the destination TCP port
-
-### %source.ip
-is replaced by the source IP address
-
-### %source.port
-is replaced by the source TCP port
 
 ### %request
 is replaced by the the whole request ( (it is multiline and may contain unprintable characters)
@@ -411,6 +408,9 @@ is replaced by the result of the specified regular expression applied on the who
 
 ### %request.header
 is replaced by the request header (it is multiline)
+
+### %request.header.allow([not found string])
+is replaced by the request Allow header value The optional "not found" string is replaced in case the keyword value was not found. If not provided the -n value or the default value "-" is used
 
 ### %request.header.host([not found string])
 is replaced by the request Host header value. The optional "not found" string is replaced in case the keyword value was not found. if not provided the -n value or the default value "-" is used
@@ -502,9 +502,6 @@ is replaced by the result of the specified regular expression applied on the who
 ### %response.header
 is replaced by the response header (it is multiline)
 
-### %request.header.allow([not found string])
-is replaced by the request Allow header value The optional "not found" string is replaced in case the keyword value was not found. If not provided the -n value or the default value "-" is used
-
 ### %response.header.server([not found string])
 is replaced by the response Server header value The optional "not found" string is replaced in case the keyword value was not found. If not provided the -n value or the default value "-" is used
 
@@ -576,6 +573,12 @@ is replaced by the response Set-Cookie header value The optional "not found" str
 
 ### %response.header.grep(<regular-expression>)
 is replaced by the result of the specified regular expression applied on the response header [Perl regular expression syntax, see perlre(1) or perl(1)]. The most nested subgroup is returned (e.g. to obtain the request URL: "%request.header.grep(^[^\s]*\s*([^\s]*))"
+
+### %source.ip
+is replaced by the source IP address
+
+### %source.port
+is replaced by the source TCP port
 
 ### %tab
 is replaced by a tab
