@@ -1,5 +1,5 @@
 # JUSTNIFFER
-[HOME](/justniffer) [EXTENDING](EXTENDING)
+[HOME](/..) [EXTENDING](EXTENDING)
 
     Section: (8)
     Updated: March 22, 2025
