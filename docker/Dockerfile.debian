@@ -1,26 +1,28 @@
 ARG DEBIAN_VERSION=bookworm
+ARG BASE_IMAGE=debian:${DEBIAN_VERSION}
+ARG PYTHON_VERSION
 
-FROM debian:${DEBIAN_VERSION} AS builder
+FROM ${BASE_IMAGE} AS dev_env
+ARG PYTHON_VERSION
+ENV PYTHON_VERSION=${PYTHON_VERSION}
+RUN apt-get update -y && \
+    apt-get install -y libboost-python-dev \
+        libboost-regex-dev libboost-program-options-dev libboost-iostreams-dev \
+        libboost-thread-dev libpcap0.8-dev python3-dev python-is-python3 g++ gcc make \
+        dpkg-dev debhelper
+    
 
-ENV DEBIAN_FRONTEND=noninteractive
-
-RUN apt-get update && \
-    apt-get install -y \
-    build-essential \
-    libpcap-dev \
-    wget \
-    tar \
-    devscripts \
-    debhelper libpcap-dev libboost-regex-dev libboost-program-options-dev libboost-thread-dev\
-    libboost-iostreams-dev libboost-python-dev
-
-
-
-COPY / /workspace/justniffer
+FROM dev_env AS build_env
+COPY / /workspace
 ARG DEBIAN_VERSION
 ENV DEBIAN_VERSION=${DEBIAN_VERSION}
 
-RUN /workspace/justniffer/replace-version.sh
-RUN cd /workspace/justniffer && dpkg-buildpackage -d
+RUN DEBIAN_VERSION=${DEBIAN_VERSION} /workspace/replace-version.sh
+RUN cd /workspace && dpkg-buildpackage -d
+
+
+
+
+CMD [ "tail", "-f", "/dev/null" ]
 
 
