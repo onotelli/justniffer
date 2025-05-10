@@ -1,8 +1,5 @@
 *~
 # /src/
-/src/justniffer
-/src/.deps
-src/.cproject
 .project
 .settings
 .pydevproject
@@ -18,7 +15,6 @@ lib/libnids-1.21_patched/configure.lineno
 lib/libnids-1.21_patched/src/config.h
 include/config.h
 python/justniffer-grab-http-traffic
-/justniffer
 __pycache__
 ws/test
 build-stamp
@@ -27,6 +23,12 @@ debian/justniffer.debhelper.log
 debian/justniffer.substvars
 debian/justniffer/
 .vscode
-/tmp
 .debhelper
 autom4te.cache
+/justniffer*.ddeb
+/justniffer*.deb
+/justniffer*.changes
+/justniffer*.buildinfo
+/justniffer*.dsc
+/justniffer*.tar.xz
+
