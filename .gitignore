@@ -31,4 +31,5 @@ autom4te.cache
 /justniffer*.buildinfo
 /justniffer*.dsc
 /justniffer*.tar.xz
+/justniffer*.upload
 /.env

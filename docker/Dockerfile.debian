@@ -13,12 +13,13 @@ RUN apt-get update -y && \
     
 
 FROM dev_env AS build_env
-COPY / /workspace
+COPY /main /workspace/main
 ARG DEBIAN_VERSION
 ENV DEBIAN_VERSION=${DEBIAN_VERSION}
 
-RUN DEBIAN_VERSION=${DEBIAN_VERSION} /workspace/replace-version.sh
-RUN cd /workspace && dpkg-buildpackage -d
+RUN cd /workspace/main; \
+    DEBIAN_VERSION=${DEBIAN_VERSION} ./replace-version.sh; \
+    dpkg-buildpackage -d
 
 
 
