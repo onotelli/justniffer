@@ -134,7 +134,7 @@ class ExchangeBase:
         pass
 
     # called to get the result to be logged, if none is returned no log will be generated
-    def result(self, time: float) -> str | None:
+    def result(self, time: float | None) -> str | None:
         pass
 ```
 
@@ -183,7 +183,7 @@ class Exchange:
         if self._response is None: 
             self._response = content 
 
-    def result(self, time:float) -> str | None:
+    def result(self, time:float | None) -> str | None:
         for m in METHODS:
             if self._request.startswith(m):
                 line = self._request.decode(errors='ignore').split('\r')[0]
