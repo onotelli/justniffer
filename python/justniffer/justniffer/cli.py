@@ -1,34 +1,31 @@
-from typer import Typer
+from typer import Typer, Option, Exit, echo
 from justniffer.logging import logger
 
 app = Typer()
 
+
+def version_callback(value: bool):
+    if value:
+        import importlib.metadata
+        __version__ = importlib.metadata.version('justniffer')
+        from justniffer import commands
+        echo(f'Justniffer CLI Version: {__version__}')
+        echo(commands.get_justniffer_version())
+        raise Exit()
+
+
 @app.command()
-def decrypt_tls(encrypted_file: str, key_file: str):
-    from justniffer import dec
-    logger.info(f'Decrypting {encrypted_file=} with {key_file=}')
-    res = dec.read_private_key( key_file)
-    dec.decript_data_file(encrypted_file, res) # type: ignore
-    
-    breakpoint()
-    logger.info(f'res = {res=}')
-    
-@app.command()
-def capture(interface: str = 'any', filter: str | None = None):
-    from subprocess import run
-    from shlex import split
-    import os    
-    import sys
-    filter_option = (f'-p "{filter}"') if filter is not None else ""
-    from loguru import logger
-    cmd = f'justniffer  -i {interface}  -l "%python(justniffer.test2:Pippo2)" {filter_option}   -m -N'
-    logger.info(f'Running {cmd}')
-    env = os.environ.copy()
-    virtual_env =  os.path.normpath(os.path.join(os.path.dirname(sys.executable),'..'))
-    env['VIRTUAL_ENV'] = virtual_env
-    logger.info(f'VIRTUAL_ENV={virtual_env}')
-    run(split(cmd), env=env)
+def run(interface: str | None = None, filecap: str | None = None) -> None:
+    from justniffer import commands
+    commands.exec_justniffer_cmd(interface=interface, filecap=filecap)
+
+
+@app.callback()
+def common(
+    version: bool = Option(None, '--version', callback=version_callback)
+):
+    pass
+
 
 def main():
-    app()       
-
+    app()

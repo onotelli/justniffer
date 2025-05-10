@@ -950,8 +950,13 @@ python_handler::python_handler(py::object &classObj)
 
 double timeval_to_python(const timeval *t)
 {
-	double totalSeconds = t->tv_sec + (t->tv_usec / 1000000.0);
-	return totalSeconds;
+	if (t){
+		double totalSeconds = t->tv_sec + (t->tv_usec / 1000000.0);
+		return totalSeconds;
+	} else {
+		return NULL;
+	}
+
 }
 
 void python_handler::append(std::basic_ostream<char> &out, const timeval *t, connections_container *pconnections_container)

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "justniffer"
-version = "0.1.2"
+version = "0.2.0a0"
 description = ""
 authors = ["Oreste Notelli <oreste.notelli@plecno.com>"]
 readme = "README.md"
@@ -14,9 +14,9 @@ httptools = "^0.6.4"
 
 
 [tool.poetry.group.dev.dependencies]
-ipython = "^8.30.0"
-pudb = "^2024.1.3"
 pytest = "^8.3.5"
+pudb = "^2025.1"
+ipython = "8.36.0"
 
 [build-system]
 requires = ["poetry-core"]
