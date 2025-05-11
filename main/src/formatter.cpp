@@ -198,7 +198,7 @@ void parser::init_parse_elements()
 	elements["request.header.grep"] = pelem(new keyword_params_and_arg<regex_handler_factory_t<regex_handler_request_header>>(_default_not_found));
 
 	elements["response"] = pelem(new keyword_arg<string, regex_handler_factory_t<regex_handler_all_response>>(string(".*")));
-	elements["response.timestamp"] = pelem(new keyword_arg_and_optional_params<handler_factory_t_arg2<string, string, response_timestamp_handler>>("%D %T", _default_not_found));
+	elements["response.timestamp"] = pelem(new keyword_arg_and_optional_params<handler_factory_t_arg2<string, string, response_timestamp_handler>>(DEFAULT_TIMEFORMAT, _default_not_found));
 	elements["response.timestamp2"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, response_timestamp_handler2>>(_default_not_found));
 	elements["response.size"] = pelem(new keyword<handler_factory_t<response_size_handler>>());
 	elements["response.time"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, response_time_handler>>(_default_not_found));

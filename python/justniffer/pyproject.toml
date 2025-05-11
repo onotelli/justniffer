@@ -11,6 +11,7 @@ typer = "^0.15.1"
 loguru = "^0.7.3"
 scapy = "^2.6.1"
 httptools = "^0.6.4"
+dynaconf = "^3.2.11"
 
 
 [tool.poetry.group.dev.dependencies]

@@ -1,5 +1,5 @@
 from abc import abstractmethod, ABC
-from typing import Any, Iterable,  cast
+from typing import Any, Iterable,  cast, Literal
 from datetime import datetime
 from enum import Enum, auto
 from dataclasses import dataclass
@@ -7,24 +7,19 @@ from justniffer.model import Conn, ExchangeBase
 from justniffer.logging import logger
 from justniffer.tls_info import TLSVersion, parse_tls_content as get_TLSInfo, TlsRecordInfo as TLSInfo
 from justniffer.http_info import parse_http_content, DEFAULT_CHARSET
+from justniffer.formatters import ExtractorResponse, get_formatter, to_str
 
 
 counts = 0
 
-SEP = ' '
 
+@dataclass
+class EndpointAddress:
+    ip: str
+    port: int
 
-def _to_str(value: Any | None) -> str:
-    if isinstance(value, str):
-        return value
-    elif value is None:
-        return '-'
-    else:
-        return str(value)
-
-
-def float_to_str(v: float) -> str:
-    return f'{v:.4f}'
+    def __to_output_str__(self) -> str:
+        return f'{self.ip}:{self.port}'
 
 
 @dataclass
@@ -37,8 +32,8 @@ class TLSConnectionInfo:
     organization_name: str | None
     expires: datetime | None
 
-    def __repr__(self) -> str:
-        return f'{_to_str(self.server_name_list[0] if self.server_name_list else None)} {_to_str(self.version)} {_to_str(self.cipher)} {_to_str(self.common_name)} {_to_str(self.organization_name)} {_to_str(self.expires.strftime("%Y-%m-%d %H:%M:%S") if self.expires else None)}'
+    def __to_output_str__(self) -> str:
+        return f'{to_str(self.server_name_list[0] if self.server_name_list else None)} {to_str(self.version)} {to_str(self.cipher)} {to_str(self.common_name)} {to_str(self.organization_name)} {to_str(self.expires.strftime("%Y-%m-%d %H:%M:%S") if self.expires else None)}'
 
 
 @dataclass
@@ -118,23 +113,31 @@ def request(events: Iterable[Event]) -> bytes:
     return request
 
 
-class Extractor(ABC):
+class BaseExtractor:
+    @property
+    def name(self) -> str:
+        __name__ = self.__class__.__name__
+        return __name__[0].lower()+__name__[1:]
+
+
+class Extractor(ABC, BaseExtractor):
+
     @abstractmethod
-    def value(self, connection: Connection, events: list[Event], time: float | None) -> str | None: ...
+    def value(self, connection: Connection, events: list[Event], time: float | None) -> ExtractorResponse | None: ...
 
 
 class RequestSize(Extractor):
-    def value(self, connection: Connection, events: list[Event], time: float | None) -> str | None:
-        return str(len(request(events)))
+    def value(self, connection: Connection, events: list[Event], time: float | None) -> int | None:
+        return len(request(events))
 
 
 class ResponseSize(Extractor):
-    def value(self, connection: Connection, events: list[Event], time: float | None) -> str | None:
-        return str(len(response(events)))
+    def value(self, connection: Connection, events: list[Event], time: float | None) -> int | None:
+        return len(response(events))
 
 
 class ConnectionTime(Extractor):
-    def value(self, connection: Connection, events: list[Event], time: float | None) -> str | None:
+    def value(self, connection: Connection, events: list[Event], time: float | None) -> float | None:
         opening_ts = None
         open_ts = None
         for event in events:
@@ -145,14 +148,14 @@ class ConnectionTime(Extractor):
             if opening_ts and open_ts:
                 break
         if open_ts is not None and opening_ts is not None:
-            return float_to_str(open_ts.ts - opening_ts.ts)
+            return open_ts.ts - opening_ts.ts
         else:
             return None
 
 
 class ResponseTime(Extractor):
 
-    def value(self, connection: Connection, events: list[Event], time: float | None) -> str | None:
+    def value(self, connection: Connection, events: list[Event], time: float | None) -> float | None:
         last_request = None
         first_response = None
         for event in events:
@@ -163,14 +166,14 @@ class ResponseTime(Extractor):
             if last_request and first_response:
                 break
         if last_request is not None and first_response is not None:
-            return float_to_str(first_response.ts - last_request.ts)
+            return first_response.ts - last_request.ts
         else:
             return None
 
 
 class RequestTime(Extractor):
 
-    def value(self, connection: Connection, events: list[Event], time: float | None) -> str | None:
+    def value(self, connection: Connection, events: list[Event], time: float | None) -> float | None:
         last_request = None
         first_request = None
         for event in events:
@@ -179,7 +182,7 @@ class RequestTime(Extractor):
             if isinstance(event, TimedEvent) and event.status is Status.request:
                 last_request = event
         if last_request is not None and first_request is not None:
-            return float_to_str(last_request.ts - first_request.ts)
+            return last_request.ts - first_request.ts
         else:
             return None
 
@@ -188,13 +191,13 @@ MAX_BITS = 2**64
 
 
 class ConnectionID(Extractor):
-    def value(self, connection: Connection, events: list[Event], time: float | None) -> Any:
+    def value(self, connection: Connection, events: list[Event], time: float | None) -> str:
         pos_hash = hash(connection.conn) % (MAX_BITS)
         return hex(pos_hash)[2:].zfill(16)
 
 
 class CloseOriginator(Extractor):
-    def value(self, connection: Connection, events: list[Event], time: float | None) -> Any:
+    def value(self, connection: Connection, events: list[Event], time: float | None) -> Literal['client', 'server'] | None:
         close_event: CloseEvent | None = cast(CloseEvent, next(filter(lambda event: isinstance(event, CloseEvent) and event.status is Status.close, events), None))
         if close_event is not None:
             source_ip, source_port = connection.conn[0]
@@ -207,28 +210,28 @@ class CloseOriginator(Extractor):
 
 
 class ConnectionDuration(Extractor):
-    def value(self, connection: Connection, events: list[Event], time: float | None) -> Any:
+    def value(self, connection: Connection, events: list[Event], time: float | None) -> float | None:
         timed_events: list[TimedEvent] = list(filter(lambda event: isinstance(event, TimedEvent), events))  # type: ignore
         if len(timed_events) > 0:
             e = timed_events[-1]
-            return float_to_str(e.ts - connection.time)
+            return e.ts - connection.time
         else:
             return None
 
 
 class IdleTime(Extractor):
-    def value(self, connection: Connection, events: list[Event], time: float | None) -> Any:
+    def value(self, connection: Connection, events: list[Event], time: float | None) -> float | None:
         m = max(connection.last_request or 0, connection.last_response or 0)
         if time is None:
             res = None
         else:
             res = time - m if m else None
-        return float_to_str(res) if res is not None else None
+        return res if res is not None else None
 
 
 class ConnectionRequests(Extractor):
-    def value(self, connection: Connection, events: list[Event], time: float | None) -> Any:
-        return str(connection.requests)
+    def value(self, connection: Connection, events: list[Event], time: float | None) -> int:
+        return connection.requests
 
 
 class ConnectionState(Extractor):
@@ -243,7 +246,7 @@ class ConnectionState(Extractor):
         (True, True, True): 'unique',
     }
 
-    def value(self, connection: Connection, events: list[Event], time: float | None) -> Any:
+    def value(self, connection: Connection, events: list[Event], time: float | None) -> str | None:
         is_open = is_closed = has_data = is_truncated = False
 
         for event in events:
@@ -267,36 +270,29 @@ class ConnectionState(Extractor):
         )
 
 
-def to_date_string(dt: float):
-    return datetime.fromtimestamp(dt).strftime('%Y-%m-%d %H:%M:%S.%f')
-
-
 class RequestTimestamp(Extractor):
-    def value(self, connection: Connection, events: list[Event], time: float | None) -> str | None:
+    def value(self, connection: Connection, events: list[Event], time: float | None) -> datetime | None:
         req: TimedEvent | None = cast(TimedEvent, next(filter(lambda event: isinstance(event, TimedEvent) and event.status is Status.request, events), None))
         if req is not None:
-            return to_date_string(req.ts)
+            return datetime.fromtimestamp(req.ts)
         else:
             req = cast(TimedEvent, next(filter(lambda event: isinstance(event, TimedEvent), events), None))
             if req is not None:
-                return to_date_string(req.ts)
+                return datetime.fromtimestamp(req.ts)
         return None
 
 
-class ContentExtractor(ABC):
-    @property
-    @abstractmethod
-    def name(self) -> str: ...
+class ContentExtractor(ABC, BaseExtractor):
 
     @abstractmethod
-    def value(self, connection: Connection, events: list[Event], time: float | None, request: bytes, response: bytes) -> str | None: ...
+    def value(self, connection: Connection, events: list[Event], time: float | None, request: bytes, response: bytes) -> ExtractorResponse | None: ...
 
 
 class PlainTextExtractor(ContentExtractor):
     name = 'PLAIN'  # type: ignore
     _length = 10
 
-    def value(self, connection: Connection, events: list[Event], time: float | None, request: bytes, response: bytes) -> str | None:
+    def value(self, connection: Connection, events: list[Event], time: float | None, request: bytes, response: bytes) -> ExtractorResponse | None:
         req = None
         res = None
         length = self._length
@@ -307,7 +303,7 @@ class PlainTextExtractor(ContentExtractor):
         if req is None and res is None:
             return None
         else:
-            return f'{_to_str(req)} {_to_str(res)}'
+            return f'{to_str(req)} {to_str(res)}'
 
     def _sample(self, request: bytes):
         return request[:self._length].decode(DEFAULT_CHARSET, errors='ignore').strip('\n')
@@ -316,7 +312,7 @@ class PlainTextExtractor(ContentExtractor):
 class TLSInfoExtractor(ContentExtractor):
     name = 'TLS'  # type: ignore
 
-    def value(self, connection: Connection, events: list[Event], time: float | None, request: bytes, response: bytes) -> str | None:
+    def value(self, connection: Connection, events: list[Event], time: float | None, request: bytes, response: bytes) -> TLSConnectionInfo | None:
         if connection.tls is None:
             server_name_list,  cipher, version, sid = None, None, None, None
             common_name, organization_name, expires = None, None, None
@@ -357,7 +353,7 @@ class TLSInfoExtractor(ContentExtractor):
                 if connection.conn[1][1] == 443:
                     logger.warning(request)
 
-        return repr(connection.tls) if connection.tls else None
+        return connection.tls
 
 
 def get_sni(tls: TLSInfo | None) -> list[str] | None:
@@ -370,6 +366,16 @@ def get_sni(tls: TLSInfo | None) -> list[str] | None:
     return None
 
 
+@dataclass(kw_only=True)
+class HttpInfo:
+    method: str | None = None
+    url: str | None = None
+    host: str | None = None
+    code: int | None = None
+    version: str | None = None
+    content_type: str | None = None
+
+
 class HttpInfoExtractor(ContentExtractor):
     name = 'HTTP'  # type: ignore
 
@@ -379,7 +385,7 @@ class HttpInfoExtractor(ContentExtractor):
             return values[0]
         return None
 
-    def value(self, connection: Connection, events: list[Event], time: float | None, request: bytes, response: bytes) -> str | None:
+    def value(self, connection: Connection, events: list[Event], time: float | None, request: bytes, response: bytes) -> HttpInfo | None:
 
         res = parse_http_content(request, response)
         request_obj, response_obj = res
@@ -387,7 +393,7 @@ class HttpInfoExtractor(ContentExtractor):
         url = request_obj.url if request_obj else None
         host_list = request_obj.headers.get('Host') if request_obj else None
         if host_list is None:
-            host_list = [_to_str(None)]
+            host_list = [to_str(None)]
         host = host_list[0]
         code = response_obj.code if response_obj else None
         version = response_obj.version if response_obj else None
@@ -395,15 +401,15 @@ class HttpInfoExtractor(ContentExtractor):
             return None
         else:
             content_type = self._get_header(response_obj.headers, 'Content-Type') if response_obj else None
-            return f'{_to_str(version)} {_to_str(method)} {_to_str(url)} {_to_str(host)} {_to_str(code)} {_to_str(content_type)}'
+            return HttpInfo(method=method, url=url, host=host, code=code, version=version, content_type=content_type)
 
 
 class IPPort(Extractor, ABC):
     index: int
 
-    def value(self, connection: Connection, events: list[Event], time: float | None) -> str:
+    def value(self, connection: Connection, events: list[Event], time: float | None) -> EndpointAddress:
         ip, port = connection.conn[self.index]
-        return f'{ip}:{port}'
+        return EndpointAddress(ip, port)
 
 
 class DestIPPort(IPPort):
@@ -430,14 +436,14 @@ def remove_connection(conn: Conn) -> Connection:
 
 
 class ProtocolSelector(ContentExtractor):
-    _subexector: tuple[ContentExtractor, ...] = (TLSInfoExtractor(), HttpInfoExtractor(), PlainTextExtractor())
-    name = ''  # type: ignore
 
-    def value(self, connection: Connection, events: list[Event], time: float | None, request: bytes, response: bytes) -> str | None:
+    _subexector: tuple[ContentExtractor, ...] = (TLSInfoExtractor(), HttpInfoExtractor(), PlainTextExtractor())
+
+    def value(self, connection: Connection, events: list[Event], time: float | None, request: bytes, response: bytes) -> tuple[str, ExtractorResponse] | None:
         for e in self._subexector:
             res = e.value(connection, events, time, request, response)
             if res is not None:
-                return e.name + SEP + res
+                return e.name or '',  res
         return None
 
 
@@ -445,10 +451,8 @@ class Exchange(ExchangeBase):
     _events: list[Event]
     _conn: Conn | None
     _extractors: tuple[Extractor | ContentExtractor, ...]
-
-    @property
-    def _sep(self) -> str:
-        return SEP
+    # _formatter = JSONFormatter()
+    _formatter = get_formatter()
 
     def __init__(self) -> None:
         global counts
@@ -531,10 +535,10 @@ class Exchange(ExchangeBase):
             # logger.info(f'{id(self)=} {counts=} {self._conn=} {self._events}')
         return str(res)
 
-    def value(self, connection: Connection, time: float | None) -> str:
-        final_value = ''
+    def value(self, connection: Connection, time: float | None) -> Any:
         request_ = None
         response_ = None
+        values = {}
 
         def get_request() -> bytes:
             nonlocal request_
@@ -548,15 +552,13 @@ class Exchange(ExchangeBase):
                 response_ = response(self._events)
             return response_
         for idx, e in enumerate(self._extractors):
-            if idx != 0:
-                final_value += self._sep
             if isinstance(e, ContentExtractor):
-                value = _to_str(e.value(connection, self._events, time, get_request(), get_response()))
+                value = e.value(connection, self._events, time, get_request(), get_response())
             else:
-                value = _to_str(e.value(connection, self._events, time))
-            final_value += value
+                value = e.value(connection, self._events, time)
+            values[e.name] = value
 
-        return final_value
+        return self._formatter.format(values)
 
     def __del__(self) -> None:
         global counts

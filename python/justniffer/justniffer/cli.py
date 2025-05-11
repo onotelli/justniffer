@@ -23,12 +23,12 @@ def _interfaces(incomplete: str) -> Iterable[str]:
 @app.command()
 def run(interface: str | None = Option(None, autocompletion=_interfaces),
         filecap: str | None = None,
-        capture_filter: str | None = None,
+        packet_filter: str | None = None,
         capture_in_the_middle: bool = False) -> None:
     from justniffer import commands
     commands.exec_justniffer_cmd(interface=interface,
                                  filecap=filecap,
-                                 capture_filter=capture_filter,
+                                 packet_filter=packet_filter,
                                  capture_in_the_middle=capture_in_the_middle)
 
 

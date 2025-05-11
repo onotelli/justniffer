@@ -1,4 +1,4 @@
-from subprocess import PIPE, getoutput, run, CalledProcessError
+from subprocess import PIPE, getoutput, run, CalledProcessError, Popen
 import re
 from os import getuid, environ
 from justniffer.logging import logger
@@ -20,7 +20,7 @@ def get_justniffer_version() -> str:
 
 def _extract_versions(text: str) -> tuple[str, str]:
     python_version = re.search(r'Python (\d+\.\d+)', text)
-    justniffer_version = re.search(r'justniffer (\d+\.\d+\.\d+)', text)
+    justniffer_version = re.search(r'justniffer (.+)', text)
     if justniffer_version is None or python_version is None:
         raise Exception('Failed to parse justniffer version')
     return justniffer_version.group(1), python_version.group(1)
@@ -51,15 +51,15 @@ def _get_sudoer_prefix() -> str:
 
 def exec_justniffer_cmd(*, interface: str | None,
                         filecap: str | None,
-                        capture_filter: str | None,
+                        packet_filter: str | None,
                         capture_in_the_middle: bool) -> None:
     args = []
     if interface is not None:
         args.append(f'-i {interface}')
     if filecap is not None:
         args.append(f'-f {filecap}')
-    if capture_filter is not None:
-        args.append(f'-p {capture_filter}')
+    if packet_filter is not None:
+        args.append(f'-p {packet_filter}')
     if capture_in_the_middle:
         args.append('-m')
 
@@ -68,25 +68,23 @@ def exec_justniffer_cmd(*, interface: str | None,
         sudoer_prefix = _get_sudoer_prefix()
     else:
         sudoer_prefix = ''
-    env = _find_virtualenv()
+    env = _fix_virtualenv()
     cmd = f'{sudoer_prefix}{justniffer_cmd()} {args_str} -l "%python(justniffer.handlers)"'
     logger.debug(cmd)
     check_justniffer_version()
     try:
-        run(cmd, shell=True, check=True, stderr=PIPE, env=env)
+        run(cmd, shell=True, check=True, env=env)
     except CalledProcessError as e:
-        if e.returncode != 139:
-            logger.error(e.stderr.decode('utf-8'))
+        pass
 
 
 VIRTUAL_ENV_VAR = 'VIRTUAL_ENV'
 
 
-def _find_virtualenv() -> dict[str, str] | None:
-    env: dict[str, str] | None = None
+def _fix_virtualenv() -> dict[str, str] | None:
+    env: dict[str, str] = environ.copy()
     if VIRTUAL_ENV_VAR not in environ:
         p = PosixPath(sys.executable)
         virtual_env = p.parent.parent
-        env = {}
         env[VIRTUAL_ENV_VAR] = str(virtual_env)
     return env
