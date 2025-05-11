@@ -382,8 +382,8 @@ elapsed time for the whole response the "not applicable" string is replaced in c
 ### %request
 is replaced by the the whole request ( (it is multiline and may contain unprintable characters)
 
-### %request.timestamp([format])
-is replaced by the request timestamp. You can use optional format specification (see TIMESTAMP FORMAT)
+### %request.timestamp
+is replaced by the request timestamp
 
 ### %request.timestamp2([not applicable string])
 is replaced by the request timestamp using format "seconds.microseconds" the "not applicable" string is replaced in case the keyword value cannot be applicable. if not provided the -n value or the default value "-" is used
@@ -472,8 +472,8 @@ is replaced by the result of the specified regular expression applied on the req
 ### %response
 is replaced by the while response (it is multiline and may contain unprintable characters)
 
-### %response.timestamp([format])
-is replaced by the response timestamp. You can use optional format specification (see TIMESTAMP FORMAT)
+### %response.timestamp
+is replaced by the response timestamp
 
 ### %request.timestamp2([not applicable string]))
 is replaced by the response timestamp using format "seconds.microseconds" the "not applicable" string is replaced in case the keyword value cannot be applicable. if not provided the -n value or the default value "-" is used
