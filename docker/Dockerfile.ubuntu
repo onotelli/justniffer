@@ -1,0 +1,10 @@
+ARG BASE_IMAGE=ubuntu:24.04
+
+FROM ${BASE_IMAGE} AS dev_env
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update -y &&  apt install -y wget && \
+    wget https://github.com/onotelli/justniffer/releases/download/v0.6.7/justniffer_0.6.7.noble_amd64.deb 
+RUN apt install -y ./justniffer_0.6.7.noble_amd64.deb 
+    
+
+CMD [ "tail", "-f", "/dev/null" ]

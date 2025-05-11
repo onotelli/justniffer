@@ -1,5 +1,5 @@
 from typer import Typer, Option, Exit, echo
-from justniffer.logging import logger
+from typing import Iterable
 
 app = Typer()
 
@@ -14,10 +14,22 @@ def version_callback(value: bool):
         raise Exit()
 
 
+def _interfaces(incomplete: str) -> Iterable[str]:
+    import psutil
+    interfaces = list(psutil.net_if_addrs().keys()) + ['any']
+    return [iface for iface in interfaces if iface.startswith(incomplete)]
+
+
 @app.command()
-def run(interface: str | None = None, filecap: str | None = None) -> None:
+def run(interface: str | None = Option(None, autocompletion=_interfaces),
+        filecap: str | None = None,
+        capture_filter: str | None = None,
+        capture_in_the_middle: bool = False) -> None:
     from justniffer import commands
-    commands.exec_justniffer_cmd(interface=interface, filecap=filecap)
+    commands.exec_justniffer_cmd(interface=interface,
+                                 filecap=filecap,
+                                 capture_filter=capture_filter,
+                                 capture_in_the_middle=capture_in_the_middle)
 
 
 @app.callback()

@@ -17,6 +17,7 @@ httptools = "^0.6.4"
 pytest = "^8.3.5"
 pudb = "^2025.1"
 ipython = "8.36.0"
+psutil = "^7.0.0"
 
 [build-system]
 requires = ["poetry-core"]
