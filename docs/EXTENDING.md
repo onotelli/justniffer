@@ -138,8 +138,8 @@ class ExchangeBase:
         pass
 ```
 
-The `result` method is typically called after a request/response transaction has completed.
-It serves as the final step in processing, allowing the system to log or return a result based on the interaction.
+The `result` method is typically called after a request/response transaction (the exhange) has completed.
+It serves as the final step in processing, allowing the system to log or return the result.
 
 ### Object Life Cycle:
 Here's a general flow of the object's lifecycle based on your sequence:
@@ -150,7 +150,7 @@ Here's a general flow of the object's lifecycle based on your sequence:
 - **on_request** – A request fragment is received, meaning data from the client has been processed.
 - **on_response** – A response fragment is received, meaning data from the server has been processed.
 - **on_close or on_interrupted or on_timed_out** – The connection is closed, interrupted, or times out.
-- **result** – The transaction is complete, and this method is called to retrieve the final outcome for logging or further processing.
+- **result** – The transaction is complete, and this method is called to retrieve the final outcome for logging.
 - **Deleted** – The object is removed, either manually or by garbage collection when it's no longer needed.
 
 This lifecycle ensures a structured sequence of events where each interaction is captured at the right stage.

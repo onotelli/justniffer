@@ -38,6 +38,7 @@ def check_justniffer_version() -> None:
 
 
 def _get_sudoer_prefix() -> str:
+    return ''
     if getuid() == 0:
         return ''
     else:
