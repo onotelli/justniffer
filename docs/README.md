@@ -452,7 +452,7 @@ output:
 
 <br>
 ## Example 12. capture tcp traffic without the 3-way handshake (capture in the middle)
-Sometimes, justniffer does not capture traffic because it was primarily designed to measure the nature and timing of TCP connections. It might not have sufficient information to retrieve certain details without the 3-way handshake packets at the beginning of the connection (e.g., client IP/port, connection reuse, etc.).
+Justniffer usually does not capture traffic if it starts after a connection has already been established. It was primarily designed to measure the nature and timing of TCP connections, meaning it may lack sufficient information to retrieve certain details without the initial 3-way handshake packets (e.g., client IP/port, connection reuse, etc.)
 
 However, in some cases, it can still be useful to trace traffic even without these precise details, so use it with an understanding of what you are obtaining.
 
