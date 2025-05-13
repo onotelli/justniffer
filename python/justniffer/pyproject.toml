@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "justniffer"
-version = "0.2.0a0"
+version = "0.2.0a1"
 description = ""
 authors = ["Oreste Notelli <oreste.notelli@plecno.com>"]
 readme = "README.md"

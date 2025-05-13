@@ -5,6 +5,7 @@ Literal['json', 'str']
 
 class Settings(Protocol):
     formatter: Literal['json', 'str']
+    envvar_prefix: str
 
 settings :Settings= cast(Settings, Dynaconf(
     envvar_prefix='JUSTNIFFER',

@@ -3,6 +3,8 @@ from typing import Any, Iterable,  cast, Literal
 from datetime import datetime
 from enum import Enum, auto
 from dataclasses import dataclass
+import re
+import string
 from justniffer.model import Conn, ExchangeBase
 from justniffer.logging import logger
 from justniffer.tls_info import TLSVersion, parse_tls_content as get_TLSInfo, TlsRecordInfo as TLSInfo
@@ -289,7 +291,7 @@ class ContentExtractor(ABC, BaseExtractor):
 
 
 class PlainTextExtractor(ContentExtractor):
-    name = 'PLAIN'  # type: ignore
+    name = 'UNKNOWN'  # type: ignore
     _length = 10
 
     def value(self, connection: Connection, events: list[Event], time: float | None, request: bytes, response: bytes) -> ExtractorResponse | None:
@@ -306,7 +308,9 @@ class PlainTextExtractor(ContentExtractor):
             return f'{to_str(req)} {to_str(res)}'
 
     def _sample(self, request: bytes):
-        return request[:self._length].decode(DEFAULT_CHARSET, errors='ignore').strip('\n')
+        decoded_text = request[:self._length].decode(DEFAULT_CHARSET, errors='ignore')
+        cleaned_text = ''.join(c for c in decoded_text if c in string.printable)
+        return cleaned_text
 
 
 class TLSInfoExtractor(ContentExtractor):

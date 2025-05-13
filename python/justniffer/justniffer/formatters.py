@@ -80,5 +80,4 @@ FORMATTERS = {
 }
 
 def get_formatter() -> Formatter:
-    logger.info(f'formatter = {settings.formatter}')
     return FORMATTERS[settings.formatter]

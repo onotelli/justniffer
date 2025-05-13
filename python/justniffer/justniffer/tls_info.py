@@ -348,60 +348,77 @@ def _parse_handshake_message(tls_packet: TLS, msg: Packet) -> ClientHelloInfo | 
         name = msg.__class__.__name__ if isinstance(msg, Packet) else 'UnknownObject'
         return GenericTlsMessageInfo(name=name)
 
+
+tls_types = {
+    0x14: 'Change Cipher Spec',
+    0x15: 'Alert',
+    0x16: 'Handshake',
+    0x17: 'Application Data'
+}
+
+def is_tls_packet(data: bytes) -> bool:
+    packet_type = False
+    if len(data) > 1:
+        packet_type = tls_types.get(data[0], None) != None
+    return packet_type
+
+
 def parse_tls_content(content: bytes) -> TlsRecordInfo | None:
     try:
-        tls_packet: Packet = TLS(content)
+        if is_tls_packet(content):
+            tls_packet: Packet = TLS(content)
 
-        if not isinstance(tls_packet, TLS):
-            if 'TLS' in tls_packet.__class__.__name__ or 'SSL' in tls_packet.__class__.__name__:
-                logger.debug(f'parsed as non-standard tls/ssl class: {tls_packet.__class__.__name__}')
-                return None
-            else:
-                logger.debug('content does not appear to be a tls record')
-                return None
-
-        record_version = _parse_tls_version(getattr(tls_packet, 'version', None))
-        record_type = TlsContentType.from_int(getattr(tls_packet, 'type', None))
-        parsed_messages :list[ClientHelloInfo | ServerHelloInfo | GenericTlsMessageInfo] = []
-        server_hello = None
-        certificate = None
-        def _append_message(msg: ClientHelloInfo | ServerHelloInfo | GenericTlsMessageInfo | Certificate):
-            nonlocal server_hello, certificate
-
-            if isinstance(msg, ServerHelloInfo):
-                server_hello = msg
-                parsed_messages.append(msg)
-            elif isinstance(msg, Certificate):
-                certificate = msg
-            else:
-                parsed_messages.append(msg)
-
-        def _setup_messages():
-            nonlocal server_hello, certificate
-            if server_hello is not None and certificate is not None:
-                server_hello.certificate = certificate
-
-        if hasattr(tls_packet, 'msg') and isinstance(tls_packet.msg, list):
-            for msg_layer in tls_packet.msg:
-                if record_type == TlsContentType.HANDSHAKE:
-                    _append_message(_parse_handshake_message(tls_packet, msg_layer))
-                    
-                elif isinstance(msg_layer, TLSChangeCipherSpec):
-                    _append_message(GenericTlsMessageInfo(name='ChangeCipherSpec'))
-                elif isinstance(msg_layer, Raw):
-                    logger.warning(f'encountered raw message layer inside tls record: {msg_layer.load!r}')
-                    _append_message(GenericTlsMessageInfo(name='Raw'))
+            if not isinstance(tls_packet, TLS):
+                if 'TLS' in tls_packet.__class__.__name__ or 'SSL' in tls_packet.__class__.__name__:
+                    logger.debug(f'parsed as non-standard tls/ssl class: {tls_packet.__class__.__name__}')
+                    return None
                 else:
-                    name = msg_layer.__class__.__name__ if isinstance(msg_layer, Packet) else 'UnknownObject'
-                    _append_message(GenericTlsMessageInfo(name=name))
-        _setup_messages()
-        return TlsRecordInfo(
-            name=tls_packet.__class__.__name__,
-            type=record_type,
-            version=record_version,
-            messages=parsed_messages
-        )
+                    logger.debug('content does not appear to be a tls record')
+                    return None
 
+            record_version = _parse_tls_version(getattr(tls_packet, 'version', None))
+            record_type = TlsContentType.from_int(getattr(tls_packet, 'type', None))
+            parsed_messages :list[ClientHelloInfo | ServerHelloInfo | GenericTlsMessageInfo] = []
+            server_hello = None
+            certificate = None
+            def _append_message(msg: ClientHelloInfo | ServerHelloInfo | GenericTlsMessageInfo | Certificate):
+                nonlocal server_hello, certificate
+
+                if isinstance(msg, ServerHelloInfo):
+                    server_hello = msg
+                    parsed_messages.append(msg)
+                elif isinstance(msg, Certificate):
+                    certificate = msg
+                else:
+                    parsed_messages.append(msg)
+
+            def _setup_messages():
+                nonlocal server_hello, certificate
+                if server_hello is not None and certificate is not None:
+                    server_hello.certificate = certificate
+
+            if hasattr(tls_packet, 'msg') and isinstance(tls_packet.msg, list):
+                for msg_layer in tls_packet.msg:
+                    if record_type == TlsContentType.HANDSHAKE:
+                        _append_message(_parse_handshake_message(tls_packet, msg_layer))
+                        
+                    elif isinstance(msg_layer, TLSChangeCipherSpec):
+                        _append_message(GenericTlsMessageInfo(name='ChangeCipherSpec'))
+                    elif isinstance(msg_layer, Raw):
+                        logger.warning(f'encountered raw message layer inside tls record: {msg_layer.load!r}')
+                        _append_message(GenericTlsMessageInfo(name='Raw'))
+                    else:
+                        name = msg_layer.__class__.__name__ if isinstance(msg_layer, Packet) else 'UnknownObject'
+                        _append_message(GenericTlsMessageInfo(name=name))
+            _setup_messages()
+            return TlsRecordInfo(
+                name=tls_packet.__class__.__name__,
+                type=record_type,
+                version=record_version,
+                messages=parsed_messages
+            )
+        else:
+            return None
     except Exception as e:
         logger.exception(f'error parsing tls content: {e}', exc_info=True)
         logger.error(content)

@@ -7,6 +7,7 @@ import sys
 
 compatible_justniffer_version = '0.6.7'
 compatible_python_version = '3.10'
+VIRTUAL_ENV_VAR = 'VIRTUAL_ENV'
 
 
 def justniffer_cmd() -> str:
@@ -45,7 +46,7 @@ def _get_sudoer_prefix() -> str:
         # TODO: check if
         # 1. sudo is installed
         # 2. user is in sudoers
-        # 3. if password is required 
+        # 3. if password is required
         return 'sudo -E '
 
 
@@ -76,9 +77,6 @@ def exec_justniffer_cmd(*, interface: str | None,
         run(cmd, shell=True, check=True, env=env)
     except CalledProcessError as e:
         pass
-
-
-VIRTUAL_ENV_VAR = 'VIRTUAL_ENV'
 
 
 def _fix_virtualenv() -> dict[str, str] | None:
