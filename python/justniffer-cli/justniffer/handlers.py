@@ -3,13 +3,15 @@ from typing import Any, Iterable,  cast, Literal
 from datetime import datetime
 from enum import Enum, auto
 from dataclasses import dataclass
+from itertools import pairwise
+
 import re
 import string
 from justniffer.model import Conn, ExchangeBase
 from justniffer.logging import logger
 from justniffer.tls_info import TLSVersion, parse_tls_content as get_TLSInfo, TlsRecordInfo as TLSInfo
 from justniffer.http_info import parse_http_content, DEFAULT_CHARSET
-from justniffer.formatters import ExtractorResponse, get_formatter, to_str
+from justniffer.formatters import ExtractorResponse, get_formatter, to_str, JSONFormatter
 
 
 counts = 0
@@ -44,8 +46,6 @@ class Connection:
     time: float
     requests: int = 0
     tls: TLSConnectionInfo | None = None
-    last_response: float | None = None
-    last_request: float | None = None
 
 
 connections: dict[Conn, Connection] = {}
@@ -221,14 +221,35 @@ class ConnectionDuration(Extractor):
             return None
 
 
-class IdleTime(Extractor):
+class Idle1Time(Extractor):
     def value(self, connection: Connection, events: list[Event], time: float | None) -> float | None:
-        m = max(connection.last_request or 0, connection.last_response or 0)
-        if time is None:
-            res = None
+        open_time = None
+        request_time = None
+        for event in events:
+            if event.status is Status.open:
+                open_time = cast(TimedEvent, event).ts
+            if event.status is Status.request and request_time is None:
+                request_time = cast(TimedEvent, event).ts
+        if open_time is not None and request_time is not None:
+            return request_time - open_time
         else:
-            res = time - m if m else None
-        return res if res is not None else None
+            return None
+
+class Idle2Time(Extractor):
+    def value(self, connection: Connection, events: list[Event], time: float | None) -> float | None:
+        close_time = None
+        response_time = None
+        for event in events:
+            if event.status is Status.response:
+                response_time = cast(TimedEvent, event).ts
+            if event.status is Status.close:
+                close_time = cast(TimedEvent, event).ts
+        if close_time is None and time is not None:
+            close_time = time
+        if close_time is not None and response_time is not None:
+            return close_time - response_time
+        else:
+            return None
 
 
 class ConnectionRequests(Extractor):
@@ -291,6 +312,7 @@ class ContentExtractor(ABC, BaseExtractor):
 
 
 class PlainTextExtractor(ContentExtractor):
+    printable = string.digits + string.ascii_letters + string.punctuation + ' '
     name = 'UNKNOWN'  # type: ignore
     _length = 10
 
@@ -308,8 +330,9 @@ class PlainTextExtractor(ContentExtractor):
             return f'{to_str(req)} {to_str(res)}'
 
     def _sample(self, request: bytes):
+
         decoded_text = request[:self._length].decode(DEFAULT_CHARSET, errors='ignore')
-        cleaned_text = ''.join(c for c in decoded_text if c in string.printable)
+        cleaned_text = ''.join(c for c in decoded_text if c in self.printable)
         return cleaned_text
 
 
@@ -439,15 +462,21 @@ def remove_connection(conn: Conn) -> Connection:
     return connection
 
 
+@dataclass
+class ProtocolInfo:
+    name: str
+    info: Any
+
+
 class ProtocolSelector(ContentExtractor):
 
     _subexector: tuple[ContentExtractor, ...] = (TLSInfoExtractor(), HttpInfoExtractor(), PlainTextExtractor())
 
-    def value(self, connection: Connection, events: list[Event], time: float | None, request: bytes, response: bytes) -> tuple[str, ExtractorResponse] | None:
+    def value(self, connection: Connection, events: list[Event], time: float | None, request: bytes, response: bytes) -> ProtocolInfo | None:
         for e in self._subexector:
             res = e.value(connection, events, time, request, response)
             if res is not None:
-                return e.name or '',  res
+                return ProtocolInfo(e.name or '',  res)
         return None
 
 
@@ -455,14 +484,13 @@ class Exchange(ExchangeBase):
     _events: list[Event]
     _conn: Conn | None
     _extractors: tuple[Extractor | ContentExtractor, ...]
-    # _formatter = JSONFormatter()
     _formatter = get_formatter()
 
     def __init__(self) -> None:
         global counts
         self._extractors = (RequestTimestamp(), ConnectionID(), ConnectionState(), CloseOriginator(), ConnectionRequests(),
                             SourceIPPort(), DestIPPort(),
-                            ConnectionTime(), RequestTime(), ResponseTime(), IdleTime(), ConnectionDuration(),
+                            ConnectionTime(), RequestTime(), ResponseTime(), Idle1Time(), Idle2Time(), ConnectionDuration(),
                             RequestSize(), ResponseSize(), ProtocolSelector())
         self._events = []
         self._events.append(Event(Status.init))
@@ -486,20 +514,17 @@ class Exchange(ExchangeBase):
 
     def on_open(self, conn: Conn, time) -> None:
         self._setup_conn(conn, time)
-        connections[conn].last_response = time
         self._events.append(TimedEvent(Status.open, time))
         logger.debug(f'on_open {id(self)=}  {conn} {type(time)}')
 
     def on_request(self, conn: Conn, content: bytes, time: float) -> None:
         self._refresh_conn_last_data(conn, time)
-        connections[conn].last_request = time
         self._events.append(RequestEvent(content=content, time=time))
         logger.debug(f'on_request {id(self)=} {conn=}')
         logger.debug(repr(content))
 
     def on_response(self, conn: Conn, content: bytes, time: float) -> None:
         self._refresh_conn_last_data(conn, time)
-        connections[conn].last_response = time
         self._events.append(ResponseEvent(content=content, time=time))
         logger.debug(f'on_response {id(self)=}  {conn=} ')
         logger.debug(repr(content))
@@ -570,4 +595,10 @@ class Exchange(ExchangeBase):
         logger.debug(f'__del__ {counts=} {id(self)=}  ')
 
 
+class JSONExchange(Exchange):
+    _formatter = JSONFormatter()
+
+
 app = Exchange
+json = JSONExchange
+text = Exchange

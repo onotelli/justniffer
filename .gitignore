@@ -33,3 +33,4 @@ autom4te.cache
 /justniffer*.tar.xz
 /justniffer*.upload
 /.env
+/tmp

@@ -92,7 +92,7 @@
 #define PACKAGE_NAME "justniffer"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "justniffer 0.6.8-dev.1"
+#define PACKAGE_STRING "justniffer 0.6.8-dev.2"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "justniffer"
@@ -101,7 +101,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.6.8-dev.1"
+#define PACKAGE_VERSION "0.6.8-dev.2"
 
 /* Define to 1 if all of the C90 standard headers exist (not just the ones
    required in a freestanding environment). This macro is provided for
@@ -112,7 +112,7 @@
 /* #undef TM_IN_SYS_TIME */
 
 /* Version number of package */
-#define VERSION "0.6.8-dev.1"
+#define VERSION "0.6.8-dev.2"
 
 /* Define to empty if `const' does not conform to ANSI C. */
 /* #undef const */

@@ -1,4 +1,5 @@
 from subprocess import PIPE, getoutput, run, CalledProcessError, Popen
+from typing  import Literal
 import re
 from os import getuid, environ
 from justniffer.logging import logger
@@ -53,7 +54,8 @@ def _get_sudoer_prefix() -> str:
 def exec_justniffer_cmd(*, interface: str | None,
                         filecap: str | None,
                         packet_filter: str | None,
-                        capture_in_the_middle: bool) -> None:
+                        capture_in_the_middle: bool,
+                        format: Literal['json', 'text']) -> None:
     args = []
     if interface is not None:
         args.append(f'-i {interface}')
@@ -70,7 +72,8 @@ def exec_justniffer_cmd(*, interface: str | None,
     else:
         sudoer_prefix = ''
     env = _fix_virtualenv()
-    cmd = f'{sudoer_prefix}{justniffer_cmd()} {args_str} -l "%python(justniffer.handlers)"'
+    func = f'{format}'
+    cmd = f'{sudoer_prefix}{justniffer_cmd()} {args_str} -l "%python(justniffer.handlers:{func})"'
     logger.debug(cmd)
     check_justniffer_version()
     try:
