@@ -7,7 +7,7 @@ app = Typer()
 def version_callback(value: bool):
     if value:
         import importlib.metadata
-        __version__ = importlib.metadata.version('justniffer')
+        __version__ = importlib.metadata.version('justniffer-cli')
         from justniffer import commands
         echo(f'Justniffer CLI Version: {__version__}')
         echo(commands.get_justniffer_version())

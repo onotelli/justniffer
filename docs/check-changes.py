@@ -25,6 +25,10 @@ if __name__ == '__main__':
     observer = Observer()
     observer.schedule(event_handler, path=source_dir, recursive=False)  # Set recursive=False
     observer.start()
+    for filename in os.listdir(source_dir):
+        # touch file
+        os.utime(os.path.join(source_dir, filename), None)
+
 
     try:
         while True:

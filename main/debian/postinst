@@ -1,12 +1,3 @@
 #!/bin/bash
-
-PYTHON_DIR=/usr/share/justniffer/python
-ENV_DIR=justniffer-venv
 echo "Post-install script running..."
 
-# cd $PYTHON_DIR
-# python3 -m venv ./$ENV_DIR
-# . ./$ENV_DIR/bin/activate
-# pip install *.whl
-
-# ln -s $PYTHON_DIR/$ENV_DIR/bin/justniffer-cli /usr/bin/justniffer-cli
