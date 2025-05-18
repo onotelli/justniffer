@@ -25,6 +25,9 @@ class Format(Enum):
     text = 'text'
 
 @app.command()
+def test() -> None:
+    pass
+@app.command()
 def run(interface: str | None = Option(None, autocompletion=_interfaces),
         filecap: str | None = None,
         packet_filter: str | None = None,

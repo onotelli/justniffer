@@ -2,12 +2,15 @@ services:
   app:
     network_mode: host
     container_name: justniffer
-    image: docker.midesa.eu/justniffer-dev
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
+    image: onotelli/justniffer:0.6.7
 
     volumes:
+      - justniffer:/opt/justniffer/
       - ..:/workspace
     command: tail -f /dev/null
+    cap_add:
+      - NET_ADMIN
+      
 
+volumes:
+  justniffer:

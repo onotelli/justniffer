@@ -5,6 +5,7 @@ from typing import Any, cast
 from datetime import datetime
 from time import mktime
 
+from justniffer.model import TLSVersion
 from scapy.packet import Packet, Raw
 from scapy.layers.tls.all import TLS
 from scapy.layers.tls.handshake import (
@@ -16,6 +17,7 @@ from scapy.layers.tls.record import TLSChangeCipherSpec
 from scapy.layers.tls.crypto import suites as scapy_suites
 
 from justniffer.logging import logger
+
 
 def _remove_key_share_extension(raw_bytes: bytes) -> bytes:
     ''' 
@@ -125,6 +127,7 @@ def _remove_key_share_extension(raw_bytes: bytes) -> bytes:
         logger.error(f'unexpected error during key share removal: {e}. returning original bytes', exc_info=True)
         return raw_bytes
 
+
 class TlsHandshakeType(IntEnum):
     CLIENT_HELLO = 0x01
     SERVER_HELLO = 0x02
@@ -137,10 +140,12 @@ class TlsHandshakeType(IntEnum):
         except ValueError:
             return cls.UNKNOWN
 
+
 class TlsExtensionType(IntEnum):
     SERVER_NAME = 0x00
     SUPPORTED_VERSIONS = 0x2b
     KEY_SHARE = 0x33
+
 
 class TlsContentType(IntEnum):
     CHANGE_CIPHER_SPEC = 20
@@ -164,26 +169,9 @@ class TlsContentType(IntEnum):
             logger.warning(f'unknown tls content type: {value}')
             return None
 
-class TLSVersion(Enum):
-    TLS_1_3 = 772
-    TLS_1_2 = 771
-    TLS_1_1 = 770
-    TLS_1_0 = 769
-    SSL_3_0 = 768
-    GREASE = -1
-
-    def __str__(self) -> str:
-        return self.name
-
-    @classmethod
-    def from_int(cls, value: int | None) -> 'TLSVersion| None':
-        if value is None:
-            return None
-        else:
-            return cast(TLSVersion,cls._value2member_map_.get(value, cls.GREASE))
-
 
 _CIPHER_SUITE_MAP: dict[int, str] = {}
+
 
 def _init_cipher_maps():
     global _CIPHER_SUITE_MAP
@@ -204,20 +192,25 @@ def _init_cipher_maps():
 
     logger.debug(f'initialized cipher suite map with {len(_CIPHER_SUITE_MAP)} entries')
 
+
 _init_cipher_maps()
+
 
 def _get_cipher_name(code: int | None) -> str:
     if code is None:
         return 'unknown (no cipher)'
     return _CIPHER_SUITE_MAP.get(code, f'unknown (0x{code:04x})')
 
+
 def _parse_tls_version(version_code: int | None) -> TLSVersion | None:
     res = TLSVersion.from_int(version_code)
     return res
 
+
 @dataclass
 class BaseTlsMessageInfo:
     name: str
+
 
 @dataclass
 class ClientHelloInfo(BaseTlsMessageInfo):
@@ -226,22 +219,26 @@ class ClientHelloInfo(BaseTlsMessageInfo):
     sni_hostnames: list[str] = field(default_factory=list)
     versions: list[TLSVersion | None] = field(default_factory=list)
 
+
 @dataclass
 class Certificate:
     common_name: str
     organization_name: str
     expires: datetime
 
+
 @dataclass
 class ServerHelloInfo(BaseTlsMessageInfo):
     sid: bytes | None
     cipher: str
     version: TLSVersion | None
-    certificate : Certificate | None
+    certificate: Certificate | None
+
 
 @dataclass
 class GenericTlsMessageInfo(BaseTlsMessageInfo):
     pass
+
 
 @dataclass
 class TlsRecordInfo:
@@ -249,6 +246,7 @@ class TlsRecordInfo:
     type: TlsContentType | None
     version: TLSVersion | None
     messages: list[ClientHelloInfo | ServerHelloInfo | GenericTlsMessageInfo] = field(default_factory=list)
+
 
 def _extract_extensions(msg: Packet) -> dict[int, Any]:
     extensions = {}
@@ -259,6 +257,7 @@ def _extract_extensions(msg: Packet) -> dict[int, Any]:
             elif isinstance(ext, Raw):
                 logger.warning(f'encountered raw extension data: {ext.load!r}')
     return extensions
+
 
 def _parse_client_hello(msg: TLSClientHello) -> ClientHelloInfo:
     extensions = _extract_extensions(msg)
@@ -291,6 +290,7 @@ def _parse_client_hello(msg: TLSClientHello) -> ClientHelloInfo:
         versions=supported_versions
     )
 
+
 def _parse_server_hello(tls_packet: TLS, msg: TLSServerHello) -> ServerHelloInfo:
     extensions = _extract_extensions(msg)
     selected_version: TLSVersion | None = None
@@ -304,28 +304,30 @@ def _parse_server_hello(tls_packet: TLS, msg: TLSServerHello) -> ServerHelloInfo
 
     cipher_suite = _get_cipher_name(getattr(msg, 'cipher', None))
     certificate = None
-    for msg in getattr(tls_packet.payload, 'msg' , list()):
+    for msg in getattr(tls_packet.payload, 'msg', list()):
         if isinstance(msg, TLSCertificate):
             certificate = _parse_certificate(msg)
-    
+
     return ServerHelloInfo(
         name=msg.__class__.__name__,
         sid=getattr(msg, 'sid', None),
         cipher=cipher_suite,
-        version=selected_version, 
+        version=selected_version,
         certificate=certificate
     )
+
 
 def _parse_certificate(msg):
     certificate = None
     for cert in msg.certs or []:
         l, v = cert
-        common_name =v.subject.get('commonName')
+        common_name = v.subject.get('commonName')
         organization_name = v.issuer.get('organizationName')
         expires = datetime.fromtimestamp(mktime(v.notAfter))
         certificate = Certificate(common_name, organization_name, expires)
         break
     return certificate
+
 
 def _parse_handshake_message(tls_packet: TLS, msg: Packet) -> ClientHelloInfo | ServerHelloInfo | GenericTlsMessageInfo | Certificate:
     if isinstance(msg, TLSClientHello):
@@ -339,12 +341,12 @@ def _parse_handshake_message(tls_packet: TLS, msg: Packet) -> ClientHelloInfo | 
     else:
         _type = getattr(msg, 'load', [-1])[0]
         msg_class: type = Raw
-        if  _type == 2:
+        if _type == 2:
             msg_class = TLSServerHello
-            return _parse_server_hello( tls_packet, msg_class(_remove_key_share_extension(msg.load)))
-        elif  _type == 1:
+            return _parse_server_hello(tls_packet, msg_class(_remove_key_share_extension(msg.load)))
+        elif _type == 1:
             msg_class = TLSClientHello
-            return _parse_client_hello( msg_class(_remove_key_share_extension(msg.load)))
+            return _parse_client_hello(msg_class(_remove_key_share_extension(msg.load)))
         name = msg.__class__.__name__ if isinstance(msg, Packet) else 'UnknownObject'
         return GenericTlsMessageInfo(name=name)
 
@@ -355,6 +357,7 @@ tls_types = {
     0x16: 'Handshake',
     0x17: 'Application Data'
 }
+
 
 def is_tls_packet(data: bytes) -> bool:
     packet_type = False
@@ -378,9 +381,10 @@ def parse_tls_content(content: bytes) -> TlsRecordInfo | None:
 
             record_version = _parse_tls_version(getattr(tls_packet, 'version', None))
             record_type = TlsContentType.from_int(getattr(tls_packet, 'type', None))
-            parsed_messages :list[ClientHelloInfo | ServerHelloInfo | GenericTlsMessageInfo] = []
+            parsed_messages: list[ClientHelloInfo | ServerHelloInfo | GenericTlsMessageInfo] = []
             server_hello = None
             certificate = None
+
             def _append_message(msg: ClientHelloInfo | ServerHelloInfo | GenericTlsMessageInfo | Certificate):
                 nonlocal server_hello, certificate
 
@@ -401,7 +405,7 @@ def parse_tls_content(content: bytes) -> TlsRecordInfo | None:
                 for msg_layer in tls_packet.msg:
                     if record_type == TlsContentType.HANDSHAKE:
                         _append_message(_parse_handshake_message(tls_packet, msg_layer))
-                        
+
                     elif isinstance(msg_layer, TLSChangeCipherSpec):
                         _append_message(GenericTlsMessageInfo(name='ChangeCipherSpec'))
                     elif isinstance(msg_layer, Raw):
@@ -423,4 +427,3 @@ def parse_tls_content(content: bytes) -> TlsRecordInfo | None:
         logger.exception(f'error parsing tls content: {e}', exc_info=True)
         logger.error(content)
         return None
-

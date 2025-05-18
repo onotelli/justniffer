@@ -3,16 +3,18 @@ from typing import Any, Iterable,  cast, Literal
 from datetime import datetime
 from enum import Enum, auto
 from dataclasses import dataclass
-from itertools import pairwise
+from sys import modules
+from importlib import import_module
 
-import re
 import string
-from justniffer.model import Conn, ExchangeBase
+from justniffer.model import CloseEvent, Conn, Connection, ContentEvent, Event, ExchangeBase, ExtractorResponse, ProtocolInfo, RequestEvent, ResponseEvent, Status, TLSConnectionInfo, TimedEvent
 from justniffer.logging import logger
-from justniffer.tls_info import TLSVersion, parse_tls_content as get_TLSInfo, TlsRecordInfo as TLSInfo
+from justniffer.tls_info import parse_tls_content as get_TLSInfo, TlsRecordInfo as TLSInfo
 from justniffer.http_info import parse_http_content, DEFAULT_CHARSET
-from justniffer.formatters import ExtractorResponse, get_formatter, to_str, JSONFormatter
+from justniffer.formatters import get_formatter, to_str, JSONFormatter
+from justniffer.extractors import BaseExtractor, ContentExtractor
 
+CLASS_SEPARATOR = ':'
 
 counts = 0
 
@@ -26,79 +28,13 @@ class EndpointAddress:
         return f'{self.ip}:{self.port}'
 
 
-@dataclass
-class TLSConnectionInfo:
-    server_name_list: list[str] | None
-    sid: bytes
-    version: TLSVersion | None
-    cipher: str | None
-    common_name: str | None
-    organization_name: str | None
-    expires: datetime | None
+class TLSConnectionInfoEx(TLSConnectionInfo):
 
     def __to_output_str__(self) -> str:
         return f'{to_str(self.server_name_list[0] if self.server_name_list else None)} {to_str(self.version)} {to_str(self.cipher)} {to_str(self.common_name)} {to_str(self.organization_name)} {to_str(self.expires.strftime("%Y-%m-%d %H:%M:%S") if self.expires else None)}'
 
 
-@dataclass
-class Connection:
-    conn: Conn
-    time: float
-    requests: int = 0
-    tls: TLSConnectionInfo | None = None
-
-
 connections: dict[Conn, Connection] = {}
-
-
-class Status(Enum):
-    init = auto()
-    opening = auto()
-    open = auto()
-    request = auto()
-    response = auto()
-    close = auto()
-    interrupted = auto()
-    timed_out = auto()
-
-
-@dataclass
-class Event:
-    status: Status
-
-
-@dataclass
-class TimedEvent(Event):
-    ts: float
-
-
-@dataclass
-class CloseEvent(TimedEvent):
-    source_ip: str
-    source_port: int
-
-    def __init__(self, ts: float, source_ip: str, source_port: int) -> None:
-        super().__init__(ts=ts, status=Status.close)
-        self.source_ip = source_ip
-        self.source_port = source_port
-
-
-@dataclass
-class ContentEvent(TimedEvent):
-    ts: float
-    content: bytes
-
-
-@dataclass
-class RequestEvent(ContentEvent):
-    def __init__(self, content: bytes, time: float):
-        super().__init__(content=content, ts=time, status=Status.request)
-
-
-@dataclass
-class ResponseEvent(ContentEvent):
-    def __init__(self, content: bytes, time: float):
-        super().__init__(content=content, ts=time, status=Status.response)
 
 
 def _get_content(events: Iterable[Event], class_: type) -> bytes:
@@ -113,13 +49,6 @@ def response(events: Iterable[Event]) -> bytes:
 def request(events: Iterable[Event]) -> bytes:
     request = _get_content(events, RequestEvent)
     return request
-
-
-class BaseExtractor:
-    @property
-    def name(self) -> str:
-        __name__ = self.__class__.__name__
-        return __name__[0].lower()+__name__[1:]
 
 
 class Extractor(ABC, BaseExtractor):
@@ -235,6 +164,7 @@ class Idle1Time(Extractor):
         else:
             return None
 
+
 class Idle2Time(Extractor):
     def value(self, connection: Connection, events: list[Event], time: float | None) -> float | None:
         close_time = None
@@ -305,12 +235,6 @@ class RequestTimestamp(Extractor):
         return None
 
 
-class ContentExtractor(ABC, BaseExtractor):
-
-    @abstractmethod
-    def value(self, connection: Connection, events: list[Event], time: float | None, request: bytes, response: bytes) -> ExtractorResponse | None: ...
-
-
 class PlainTextExtractor(ContentExtractor):
     printable = string.digits + string.ascii_letters + string.punctuation + ' '
     name = 'UNKNOWN'  # type: ignore
@@ -375,7 +299,7 @@ class TLSInfoExtractor(ContentExtractor):
                 # if cipher is None:
                 #     logger.warning(request)
                 #     logger.warning(response)
-                connection.tls = TLSConnectionInfo(server_name_list, sid, version, cipher, common_name, organization_name, expires)
+                connection.tls = TLSConnectionInfoEx(server_name_list, sid, version, cipher, common_name, organization_name, expires)
             else:
                 if connection.conn[1][1] == 443:
                     logger.warning(request)
@@ -462,15 +386,50 @@ def remove_connection(conn: Conn) -> Connection:
     return connection
 
 
-@dataclass
-class ProtocolInfo:
-    name: str
-    info: Any
+class PluginManager:
+    _classes: dict[str, Any] = {}
+
+    @classmethod
+    def get_extractors(cls, *class_names: str | type) -> tuple[Any, ...]:
+        logger.debug(f'{class_names=}')
+        _classes = tuple(cls._get_class_from_name(class_name) for class_name in class_names)
+        return tuple(class_() for class_ in _classes)
+
+    @classmethod
+    def _get_class_from_name(cls, class_name: str | type) -> type[Any]:
+        if isinstance(class_name, str):
+            if class_name not in cls._classes:
+                if CLASS_SEPARATOR in class_name:
+                    module_name, class_name_ = class_name.split(CLASS_SEPARATOR)
+                else:
+                    class_name_ = class_name
+                    module_name = __name__
+                if module_name not in modules:
+                    import_module(module_name)
+                    logger.debug(f'importing {module_name}')
+                class_ = getattr(modules[module_name], class_name_)
+                cls._classes[class_name] = class_
+            return cls._classes[class_name]
+        else:
+            return class_name
+
+
+class ExtractorManager(PluginManager):
+    @classmethod
+    def get_extractors(cls, *class_names: str | type) -> tuple[Extractor | ContentExtractor, ...]:
+        return super().get_extractors(*class_names)
+
+
+class ProtocolSelectors(PluginManager):
+    @classmethod
+    def get_extractors(cls, *class_names: str | type) -> tuple[ContentExtractor, ...]:
+        return super().get_extractors(*class_names)
 
 
 class ProtocolSelector(ContentExtractor):
-
-    _subexector: tuple[ContentExtractor, ...] = (TLSInfoExtractor(), HttpInfoExtractor(), PlainTextExtractor())
+    _plugin_manager = ProtocolSelectors()
+    
+    _subexector: tuple[ContentExtractor, ...] = _plugin_manager.get_extractors(TLSInfoExtractor, HttpInfoExtractor, PlainTextExtractor)
 
     def value(self, connection: Connection, events: list[Event], time: float | None, request: bytes, response: bytes) -> ProtocolInfo | None:
         for e in self._subexector:
@@ -485,13 +444,15 @@ class Exchange(ExchangeBase):
     _conn: Conn | None
     _extractors: tuple[Extractor | ContentExtractor, ...]
     _formatter = get_formatter()
+    _plugin_manager = ExtractorManager()
 
     def __init__(self) -> None:
         global counts
-        self._extractors = (RequestTimestamp(), ConnectionID(), ConnectionState(), CloseOriginator(), ConnectionRequests(),
-                            SourceIPPort(), DestIPPort(),
-                            ConnectionTime(), RequestTime(), ResponseTime(), Idle1Time(), Idle2Time(), ConnectionDuration(),
-                            RequestSize(), ResponseSize(), ProtocolSelector())
+        classes = (RequestTimestamp, ConnectionID, ConnectionState, CloseOriginator, ConnectionRequests,
+                   SourceIPPort, DestIPPort,
+                   ConnectionTime, RequestTime, ResponseTime, Idle1Time, Idle2Time, ConnectionDuration,
+                   RequestSize, ResponseSize, 'test_extractors.tests:TestExtractor', ProtocolSelector)
+        self._extractors = self._plugin_manager.get_extractors(*classes)
         self._events = []
         self._events.append(Event(Status.init))
         counts += 1
@@ -599,6 +560,5 @@ class JSONExchange(Exchange):
     _formatter = JSONFormatter()
 
 
-app = Exchange
+app = text = Exchange
 json = JSONExchange
-text = Exchange

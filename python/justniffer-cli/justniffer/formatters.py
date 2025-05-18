@@ -4,9 +4,9 @@ from datetime import datetime
 from enum import Enum
 from dataclasses import is_dataclass
 import json
+from justniffer.model import ExtractorResponse
 from justniffer.settings import settings
-from justniffer.logging import logger
-ExtractorResponse = Any
+
 SEP = ' '
 NULL_VALUE = '-'
 

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "justniffer-cli"
-version = "0.2.0a3"
+version = "0.2.0a4"
 description = ""
 authors = ["Oreste Notelli <oreste.notelli@plecno.com>"]
 readme = "README.md"
