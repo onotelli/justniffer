@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "justniffer-cli"
-version = "0.2.0a4"
+version = "0.2.0"
 description = ""
 authors = ["Oreste Notelli <oreste.notelli@plecno.com>"]
 readme = "README.md"
@@ -13,6 +13,8 @@ loguru = "^0.7.3"
 scapy = "^2.6.1"
 httptools = "^0.6.4"
 dynaconf = "^3.2.11"
+pydantic = "^2.11.4"
+pyyaml = "^6.0.2"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -20,6 +22,7 @@ pytest = "^8.3.5"
 pudb = "^2025.1"
 ipython = "8.36.0"
 psutil = "^7.0.0"
+types-pyyaml = "^6.0.12.20250516"
 
 [build-system]
 requires = ["poetry-core"]

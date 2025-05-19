@@ -25,19 +25,18 @@ class Format(Enum):
     text = 'text'
 
 @app.command()
-def test() -> None:
-    pass
-@app.command()
 def run(interface: str | None = Option(None, autocompletion=_interfaces),
         filecap: str | None = None,
         packet_filter: str | None = None,
         capture_in_the_middle: bool = False, 
+        config_filepath: str | None = None,
         format: Format  = cast(Format, Format.text.value)) -> None:
     from justniffer import commands
     commands.exec_justniffer_cmd(interface=interface,
                                  filecap=filecap,
                                  packet_filter=packet_filter,
                                  capture_in_the_middle=capture_in_the_middle,
+                                 config_filepath=config_filepath,
                                  format=format.value)
 
 

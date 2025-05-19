@@ -1,0 +1,23 @@
+selectors:
+  - TLSInfoExtractor
+  - HttpInfoExtractor
+  - PlainTextExtractor
+extractors:
+  - RequestTimestamp
+  - ConnectionID
+  - ConnectionState
+  - CloseOriginator
+  - ConnectionRequests
+  - SourceIPPort
+  - DestIPPort
+  - ConnectionTime
+  - RequestTime
+  - ResponseTime
+  - Idle1Time
+  - Idle2Time
+  - ConnectionDuration
+  - RequestSize
+  - ResponseSize
+  - test_extractors.tests:TestExtractor
+  - ProtocolSelector
+formatter: json

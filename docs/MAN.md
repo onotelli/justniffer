@@ -196,9 +196,9 @@ The main feature of justniffer is to analize network traffic to monitor performa
 
 ## OPTIONS
 
-**-i** or **--interface=<interface>** interface to listen on (e.g. eth0, en1, etc.)
+**-i** or **--interface=[interface]** interface to listen on (e.g. eth0, en1, etc.)
 Example: justniffer -i eth0
-**-f** or **--filecap=<file>**tcpdump file to read from (for offline network traffic processing). It must be a pcap file (produced by network capture programs such as tcpdump or wireshark) WARNING: justniffer needs a complete dump, usually, sniffers collect just the few first (96) bytes per packet. (when using tcpdump you must specify "-s 0" option. Example:
+**-f** or **--filecap=[file]** tcpdump file to read from (for offline network traffic processing). It must be a pcap file (produced by network capture programs such as tcpdump or wireshark) WARNING: justniffer needs a complete dump, usually, sniffers collect just the few first (96) bytes per packet. (when using tcpdump you must specify "-s 0" option. Example:
 
      tcpdump -i eth0 -s 0 -w /tmp/file.cap)
 
@@ -235,7 +235,7 @@ sniffing  HTTP traffic from/to a specific host and port
         justniffer -i eth0 -r -p "host 10.10.10.2 and tcp port 80"
 
 
-**-l** or **--log-format=<format>** log format. You can specify the output string format containing reserved keyword that will be replaced with the proper value (see FORMAT KEYWORDS). If missing, the CLF (Common Log Format, used by almost all web servers) is used as default.
+**-l** or **--log-format=[format]** log format. You can specify the output string format containing reserved keyword that will be replaced with the proper value (see FORMAT KEYWORDS). If missing, the CLF (Common Log Format, used by almost all web servers) is used as default.
 
 Example:
 
@@ -254,7 +254,7 @@ show raw stream. it is a shortcut for -l %request%response
 
 Example: justniffer -i eth0 -r
 
-****-m or \--capture-in-the-middle****
+**-m** or **--capture-in-the-middle**
 
 Captures and reconstructs TCP streams in the middle (even without
     the initial connection).\
@@ -312,11 +312,11 @@ Example:
 
     justniffer -i eth0 -l "%request%newline%response" -e "tail -2 "
 
-**-U** or **--user=<user>** User to impersonate when executing the program specified with the -e option, used to avoid to security exploits when running justniffer with root privileges
+**-U** or **--user=[user]** User to impersonate when executing the program specified with the -e option, used to avoid to security exploits when running justniffer with root privileges
 Example:
 
     justniffer -i eth0 -l "%request%newline%response" -e "grep password >> /tmp/passwords.txt"  -U guest
-**-c** or **--config=<config file>** configuration file. You can specify options in a configuration file (command line options override file configuration options) using the following format specifications:
+**-c** or **--config=[config file]** configuration file. You can specify options in a configuration file (command line options override file configuration options) using the following format specifications:
     <option> = <value>
 
 configuration file example:

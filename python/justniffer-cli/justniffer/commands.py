@@ -2,9 +2,10 @@ from subprocess import PIPE, getoutput, run, CalledProcessError, Popen
 from typing  import Literal
 import re
 from os import getuid, environ
-from justniffer.logging import logger
 from pathlib import PosixPath
 import sys
+from justniffer.logging import logger
+from justniffer.config import  load_config
 
 compatible_justniffer_version = '0.6.7'
 compatible_python_version = '3.10'
@@ -55,7 +56,11 @@ def exec_justniffer_cmd(*, interface: str | None,
                         filecap: str | None,
                         packet_filter: str | None,
                         capture_in_the_middle: bool,
+                        config_filepath: str | None,
                         format: Literal['json', 'text']) -> None:
+    
+    config = load_config(config_filepath)
+    logger.info(config)
     args = []
     if interface is not None:
         args.append(f'-i {interface}')

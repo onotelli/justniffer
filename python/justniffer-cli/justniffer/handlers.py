@@ -13,7 +13,8 @@ from justniffer.tls_info import parse_tls_content as get_TLSInfo, TlsRecordInfo 
 from justniffer.http_info import parse_http_content, DEFAULT_CHARSET
 from justniffer.formatters import get_formatter, to_str, JSONFormatter
 from justniffer.extractors import BaseExtractor, ContentExtractor
-
+from justniffer.config import load_config
+from justniffer.settings import settings
 CLASS_SEPARATOR = ':'
 
 counts = 0
@@ -371,6 +372,25 @@ class SourceIPPort(IPPort):
     index = 0
 
 
+DEFAUL_EXTRACTOR_CLASSES = (RequestTimestamp, ConnectionID, ConnectionState, CloseOriginator, ConnectionRequests,
+                            SourceIPPort, DestIPPort,
+                            ConnectionTime, RequestTime, ResponseTime, Idle1Time, Idle2Time, ConnectionDuration,
+                            RequestSize, ResponseSize, 'ProtocolSelector')
+
+
+def extractors_classes() -> tuple[type | str, ...]:
+    config = load_config(settings.config_file)
+    return config.extractors or DEFAUL_EXTRACTOR_CLASSES
+
+
+DEFAULT_SELECTOR_CLASSES = TLSInfoExtractor, HttpInfoExtractor, PlainTextExtractor
+
+
+def selectors_classes() -> tuple[type | str, ...]:
+    config = load_config(settings.config_file)
+    return config.selectors or DEFAULT_SELECTOR_CLASSES
+
+
 def setup_connection(conn: Conn, time: float) -> Connection:
     connection = connections.get(conn)
     if connection is None:
@@ -399,6 +419,7 @@ class PluginManager:
     def _get_class_from_name(cls, class_name: str | type) -> type[Any]:
         if isinstance(class_name, str):
             if class_name not in cls._classes:
+                logger.debug(f'finding {class_name=}')
                 if CLASS_SEPARATOR in class_name:
                     module_name, class_name_ = class_name.split(CLASS_SEPARATOR)
                 else:
@@ -428,8 +449,8 @@ class ProtocolSelectors(PluginManager):
 
 class ProtocolSelector(ContentExtractor):
     _plugin_manager = ProtocolSelectors()
-    
-    _subexector: tuple[ContentExtractor, ...] = _plugin_manager.get_extractors(TLSInfoExtractor, HttpInfoExtractor, PlainTextExtractor)
+
+    _subexector: tuple[ContentExtractor, ...] = _plugin_manager.get_extractors(*selectors_classes())
 
     def value(self, connection: Connection, events: list[Event], time: float | None, request: bytes, response: bytes) -> ProtocolInfo | None:
         for e in self._subexector:
@@ -448,11 +469,7 @@ class Exchange(ExchangeBase):
 
     def __init__(self) -> None:
         global counts
-        classes = (RequestTimestamp, ConnectionID, ConnectionState, CloseOriginator, ConnectionRequests,
-                   SourceIPPort, DestIPPort,
-                   ConnectionTime, RequestTime, ResponseTime, Idle1Time, Idle2Time, ConnectionDuration,
-                   RequestSize, ResponseSize, 'test_extractors.tests:TestExtractor', ProtocolSelector)
-        self._extractors = self._plugin_manager.get_extractors(*classes)
+        self._extractors = self._plugin_manager.get_extractors(*extractors_classes())
         self._events = []
         self._events.append(Event(Status.init))
         counts += 1

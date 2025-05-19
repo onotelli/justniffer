@@ -15,7 +15,7 @@ class Exchange:
         if self._response is None: 
             self._response = content 
 
-    def result(self, time:float) -> str | None:
+    def result(self, time:float | None) -> str | None:
         for m in METHODS:
             if self._request.startswith(m):
                 line = self._request.decode(errors='ignore').split('\r')[0]
