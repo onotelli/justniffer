@@ -6,7 +6,7 @@ from pathlib import PosixPath
 import sys
 from justniffer.logging import logger
 from justniffer.config import  load_config
-
+from justniffer.settings import settings
 compatible_justniffer_version = '0.6.7'
 compatible_python_version = '3.10'
 VIRTUAL_ENV_VAR = 'VIRTUAL_ENV'
@@ -81,13 +81,15 @@ def exec_justniffer_cmd(*, interface: str | None,
     cmd = f'{sudoer_prefix}{justniffer_cmd()} {args_str} -l "%python(justniffer.handlers:{func})"'
     logger.debug(cmd)
     check_justniffer_version()
+    if config_filepath is not None:
+        env[settings.envvar_prefix_for_dynaconf + '_CONFIG_FILE'] = config_filepath
     try:
         run(cmd, shell=True, check=True, env=env)
     except CalledProcessError as e:
         pass
 
 
-def _fix_virtualenv() -> dict[str, str] | None:
+def _fix_virtualenv() -> dict[str, str] :
     env: dict[str, str] = environ.copy()
     if VIRTUAL_ENV_VAR not in environ:
         p = PosixPath(sys.executable)

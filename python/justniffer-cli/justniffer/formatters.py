@@ -6,7 +6,7 @@ from dataclasses import is_dataclass
 import json
 from justniffer.model import ExtractorResponse
 from justniffer.settings import settings
-
+from justniffer.config import load_config
 SEP = ' '
 NULL_VALUE = '-'
 
@@ -80,4 +80,5 @@ FORMATTERS = {
 }
 
 def get_formatter() -> Formatter:
-    return FORMATTERS[settings.formatter]
+    config = load_config(settings.config_file)
+    return FORMATTERS[config.formatter or settings.formatter]

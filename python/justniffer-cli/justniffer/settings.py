@@ -7,7 +7,7 @@ LogLevel = Literal['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
 
 class Settings(Protocol):
     formatter: Formatter
-    envvar_prefix: str
+    envvar_prefix_for_dynaconf: str
     config_file: str | None
     log_level: LogLevel
 

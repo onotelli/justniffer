@@ -20,4 +20,4 @@ extractors:
   - ResponseSize
   - test_extractors.tests:TestExtractor
   - ProtocolSelector
-formatter: json
+formatter: str
