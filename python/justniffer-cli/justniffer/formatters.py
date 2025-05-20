@@ -4,9 +4,11 @@ from datetime import datetime
 from enum import Enum
 from dataclasses import is_dataclass
 import json
+from justniffer.class_utils import TypedPluginManager
 from justniffer.model import ExtractorResponse
 from justniffer.settings import settings
 from justniffer.config import load_config
+from justniffer.logging import logger
 SEP = ' '
 NULL_VALUE = '-'
 
@@ -79,6 +81,21 @@ FORMATTERS = {
     'str': StrFormatter()
 }
 
+
+FormatterManager = TypedPluginManager[Formatter]
+
+
+class PippoFormatter(Formatter):
+    def format(self, value: ExtractorResponse) -> str:
+        return 'pippo'
+
 def get_formatter() -> Formatter:
     config = load_config(settings.config_file)
-    return FORMATTERS[config.formatter or settings.formatter]
+    formatter_name = settings.formatter or config.formatter or 'str'
+    if formatter_name in FORMATTERS:
+        formatter = FORMATTERS[formatter_name]
+    else:
+        formatter = FormatterManager(__name__).get_class_from_name(formatter_name)()
+
+    logger.debug(f'Formatter: {formatter}')
+    return formatter

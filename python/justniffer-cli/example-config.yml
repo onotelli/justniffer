@@ -18,6 +18,6 @@ extractors:
   - ConnectionDuration
   - RequestSize
   - ResponseSize
-  - test_extractors.tests:TestExtractor
+  #- test_extractors.tests:TestExtractor
   - ProtocolSelector
 formatter: str

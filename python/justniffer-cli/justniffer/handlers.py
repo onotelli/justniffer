@@ -1,13 +1,13 @@
 from abc import abstractmethod, ABC
 from typing import Any, Iterable,  cast, Literal
 from datetime import datetime
-from enum import Enum, auto
 from dataclasses import dataclass
-from sys import modules
-from importlib import import_module
 
 import string
-from justniffer.model import CloseEvent, Conn, Connection, ContentEvent, Event, ExchangeBase, ExtractorResponse, ProtocolInfo, RequestEvent, ResponseEvent, Status, TLSConnectionInfo, TimedEvent
+from justniffer.class_utils import TypedPluginManager
+from justniffer.model import (CloseEvent, Conn, Connection, ContentEvent, Event, ExchangeBase,
+                              ExtractorResponse, ProtocolInfo, RequestEvent, ResponseEvent,
+                              Status, TLSConnectionInfo, TimedEvent)
 from justniffer.logging import logger
 from justniffer.tls_info import parse_tls_content as get_TLSInfo, TlsRecordInfo as TLSInfo
 from justniffer.http_info import parse_http_content, DEFAULT_CHARSET
@@ -15,7 +15,6 @@ from justniffer.formatters import get_formatter, to_str, JSONFormatter
 from justniffer.extractors import BaseExtractor, ContentExtractor
 from justniffer.config import load_config
 from justniffer.settings import settings
-CLASS_SEPARATOR = ':'
 
 counts = 0
 
@@ -406,51 +405,16 @@ def remove_connection(conn: Conn) -> Connection:
     return connection
 
 
-class PluginManager:
-    _classes: dict[str, Any] = {}
-
-    @classmethod
-    def get_extractors(cls, *class_names: str | type) -> tuple[Any, ...]:
-        logger.debug(f'{class_names=}')
-        _classes = tuple(cls._get_class_from_name(class_name) for class_name in class_names)
-        return tuple(class_() for class_ in _classes)
-
-    @classmethod
-    def _get_class_from_name(cls, class_name: str | type) -> type[Any]:
-        if isinstance(class_name, str):
-            if class_name not in cls._classes:
-                logger.debug(f'finding {class_name=}')
-                if CLASS_SEPARATOR in class_name:
-                    module_name, class_name_ = class_name.split(CLASS_SEPARATOR)
-                else:
-                    class_name_ = class_name
-                    module_name = __name__
-                if module_name not in modules:
-                    import_module(module_name)
-                    logger.debug(f'importing {module_name}')
-                class_ = getattr(modules[module_name], class_name_)
-                cls._classes[class_name] = class_
-            return cls._classes[class_name]
-        else:
-            return class_name
+ExtractorManager = TypedPluginManager[Extractor | ContentExtractor]
 
 
-class ExtractorManager(PluginManager):
-    @classmethod
-    def get_extractors(cls, *class_names: str | type) -> tuple[Extractor | ContentExtractor, ...]:
-        return super().get_extractors(*class_names)
-
-
-class ProtocolSelectors(PluginManager):
-    @classmethod
-    def get_extractors(cls, *class_names: str | type) -> tuple[ContentExtractor, ...]:
-        return super().get_extractors(*class_names)
+ProtocolSelectors = TypedPluginManager[ContentExtractor]
 
 
 class ProtocolSelector(ContentExtractor):
-    _plugin_manager = ProtocolSelectors()
+    _plugin_manager = ProtocolSelectors(__name__)
 
-    _subexector: tuple[ContentExtractor, ...] = _plugin_manager.get_extractors(*selectors_classes())
+    _subexector: tuple[ContentExtractor, ...] = _plugin_manager.get_objects(*selectors_classes())
 
     def value(self, connection: Connection, events: list[Event], time: float | None, request: bytes, response: bytes) -> ProtocolInfo | None:
         for e in self._subexector:
@@ -465,11 +429,11 @@ class Exchange(ExchangeBase):
     _conn: Conn | None
     _extractors: tuple[Extractor | ContentExtractor, ...]
     _formatter = get_formatter()
-    _plugin_manager = ExtractorManager()
+    _plugin_manager = ExtractorManager(__name__)
 
     def __init__(self) -> None:
         global counts
-        self._extractors = self._plugin_manager.get_extractors(*extractors_classes())
+        self._extractors = self._plugin_manager.get_objects(*extractors_classes())
         self._events = []
         self._events.append(Event(Status.init))
         counts += 1
@@ -577,5 +541,4 @@ class JSONExchange(Exchange):
     _formatter = JSONFormatter()
 
 
-app = text = Exchange
-json = JSONExchange
+app = Exchange

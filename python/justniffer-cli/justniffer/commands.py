@@ -1,12 +1,12 @@
 from subprocess import PIPE, getoutput, run, CalledProcessError, Popen
-from typing  import Literal
+from typing import cast
 import re
 from os import getuid, environ
 from pathlib import PosixPath
 import sys
 from justniffer.logging import logger
-from justniffer.config import  load_config
-from justniffer.settings import settings
+from justniffer.config import load_config
+from justniffer.settings import settings, Settings
 compatible_justniffer_version = '0.6.7'
 compatible_python_version = '3.10'
 VIRTUAL_ENV_VAR = 'VIRTUAL_ENV'
@@ -57,8 +57,8 @@ def exec_justniffer_cmd(*, interface: str | None,
                         packet_filter: str | None,
                         capture_in_the_middle: bool,
                         config_filepath: str | None,
-                        format: Literal['json', 'text']) -> None:
-    
+                        formatter: str | None) -> None:
+
     config = load_config(config_filepath)
     logger.info(config)
     args = []
@@ -77,19 +77,20 @@ def exec_justniffer_cmd(*, interface: str | None,
     else:
         sudoer_prefix = ''
     env = _fix_virtualenv()
-    func = f'{format}'
-    cmd = f'{sudoer_prefix}{justniffer_cmd()} {args_str} -l "%python(justniffer.handlers:{func})"'
+    cmd = f'{sudoer_prefix}{justniffer_cmd()} {args_str} -l "%python(justniffer.handlers)"'
     logger.debug(cmd)
     check_justniffer_version()
     if config_filepath is not None:
         env[settings.envvar_prefix_for_dynaconf + '_CONFIG_FILE'] = config_filepath
+    if formatter is not None:
+        env[settings.envvar_prefix_for_dynaconf + '_FORMATTER'] = formatter
     try:
         run(cmd, shell=True, check=True, env=env)
     except CalledProcessError as e:
         pass
 
 
-def _fix_virtualenv() -> dict[str, str] :
+def _fix_virtualenv() -> dict[str, str]:
     env: dict[str, str] = environ.copy()
     if VIRTUAL_ENV_VAR not in environ:
         p = PosixPath(sys.executable)
