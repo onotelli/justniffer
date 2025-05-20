@@ -1,12 +1,13 @@
-from subprocess import PIPE, getoutput, run, CalledProcessError, Popen
-from typing import cast
+from subprocess import PIPE, getstatusoutput, run, CalledProcessError
 import re
 from os import getuid, environ
 from pathlib import PosixPath
 import sys
+
 from justniffer.logging import logger
 from justniffer.config import load_config
-from justniffer.settings import settings, Settings
+from justniffer.settings import settings
+
 compatible_justniffer_version = '0.6.7'
 compatible_python_version = '3.10'
 VIRTUAL_ENV_VAR = 'VIRTUAL_ENV'
@@ -16,8 +17,14 @@ def justniffer_cmd() -> str:
     return 'justniffer'
 
 
+
+
 def get_justniffer_version() -> str:
-    res = getoutput(f'{justniffer_cmd()} --version')
+    status, res = getstatusoutput(f'{justniffer_cmd()} --version')
+    if status == 127:
+        raise Exception( f'{justniffer_cmd()} not found')
+    if status != 0:        
+        raise Exception('Failed to get justniffer version')        
     return res
 
 
