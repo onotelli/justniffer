@@ -241,7 +241,7 @@ class PayloadExtractor(ContentExtractor):
         (source_ip, source_port), (dest_ip, dest_port) = connection.conn
         conn_str = f'{source_ip}-{source_port}-{dest_ip}-{dest_port}'
         req_filename, res_filename = None, None
-        tmp_dir = '/opt/midesa/projects/justniffer/tmp'
+        tmp_dir = '/tmp'
         if request:
             req_filename = f'{tmp_dir}/conn-{conn_str}-{connection.requests}-request.bin'
             with open(req_filename, 'wb+') as f:
@@ -299,11 +299,12 @@ class PlainTextExtractor(ContentExtractor):
         return cleaned_text
 
 
-class TLSInfoExtractor(ContentExtractor):
+class TLSInfoExtractor(TypedContentExtractor[TLSConnectionInfo]):
     name = 'TLS'  # type: ignore
 
     def value(self, connection: Connection, events: list[Event], time: float | None, request: bytes, response: bytes) -> TLSConnectionInfo | None:
-        if connection.tls is None:
+        tls = self.get_conn_attrs(connection)
+        if tls is None:
             server_name_list,  cipher, version, sid = None, None, None, None
             common_name, organization_name, expires = None, None, None
             if request is not None:
@@ -338,12 +339,13 @@ class TLSInfoExtractor(ContentExtractor):
                 # if cipher is None:
                 #     logger.warning(request)
                 #     logger.warning(response)
-                connection.tls = TLSConnectionInfoEx(server_name_list, sid, version, cipher, common_name, organization_name, expires)
+                tls = TLSConnectionInfoEx(server_name_list, sid, version, cipher, common_name, organization_name, expires)
+                self.set_conn_attrs(connection, tls)
             else:
                 if connection.conn[1][1] == 443:
                     logger.warning(request)
 
-        return connection.tls
+        return tls
 
 
 def get_sni(tls: TLSInfo | None) -> list[str] | None:

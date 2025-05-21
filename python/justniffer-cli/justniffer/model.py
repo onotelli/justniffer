@@ -70,7 +70,6 @@ class Connection:
     conn: Conn
     time: float
     requests: int = 0
-    tls: TLSConnectionInfo | None = None
     protocol: dict[str, Any] = field(default_factory=dict)
 
 

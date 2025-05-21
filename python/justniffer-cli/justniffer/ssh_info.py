@@ -195,7 +195,7 @@ def test() -> None:
     def _(*args: Any) -> str:
         return ' '.join([str(a) for a in args])
 
-    tmp_dir = '/opt/midesa/projects/justniffer/tmp/ssh'
+    tmp_dir = '/tmp/ssh'
     for fname in listdir(tmp_dir):
         # if '-1-' in fname:
         if True:
