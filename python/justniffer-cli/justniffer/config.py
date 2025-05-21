@@ -3,6 +3,7 @@ from functools import cache
 import yaml
 from justniffer.logging import logger
 
+
 class Config(BaseModel):
     selectors: tuple[str, ...] | None = None
     extractors: tuple[str, ...] | None = None

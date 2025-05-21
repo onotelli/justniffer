@@ -179,12 +179,12 @@ int main(int argc, char *argv[])
 		if (vm.count(help_cmd))
 		{
 			show_usage(p);
-			return 1;
+			return 0;
 		}
 		if (vm.count(version_cmd))
 		{
 			show_version();
-			return 1;
+			return 0;
 		}
 
 		pos::filtering_stream<pos::output> out;

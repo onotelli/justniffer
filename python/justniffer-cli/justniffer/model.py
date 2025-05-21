@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum, auto
 from typing import cast, Any
@@ -71,6 +71,7 @@ class Connection:
     time: float
     requests: int = 0
     tls: TLSConnectionInfo | None = None
+    protocol: dict[str, Any] = field(default_factory=dict)
 
 
 ExtractorResponse = Any

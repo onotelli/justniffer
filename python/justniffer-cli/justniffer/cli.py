@@ -9,8 +9,14 @@ def version_callback(value: bool):
         import importlib.metadata
         __version__ = importlib.metadata.version('justniffer-cli')
         from justniffer import commands
+        from justniffer.logging import logger
+
         echo(f'Justniffer CLI Version: {__version__}')
-        echo(commands.get_justniffer_version())
+        try:
+            echo(commands.get_justniffer_version())
+        except commands.VersionException as e:
+            logger.error(f'{e}')
+            pass
         raise Exit()
 
 

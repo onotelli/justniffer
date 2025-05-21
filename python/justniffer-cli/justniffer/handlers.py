@@ -11,8 +11,9 @@ from justniffer.model import (CloseEvent, Conn, Connection, ContentEvent, Event,
 from justniffer.logging import logger
 from justniffer.tls_info import parse_tls_content as get_TLSInfo, TlsRecordInfo as TLSInfo
 from justniffer.http_info import parse_http_content, DEFAULT_CHARSET
+from justniffer.ssh_info import parse_ssh_packet, SSHInfo, ssh_info
 from justniffer.formatters import get_formatter, to_str, JSONFormatter
-from justniffer.extractors import BaseExtractor, ContentExtractor
+from justniffer.extractors import BaseExtractor, ContentExtractor, TypedContentExtractor
 from justniffer.config import load_config
 from justniffer.settings import settings
 
@@ -235,6 +236,44 @@ class RequestTimestamp(Extractor):
         return None
 
 
+class PayloadExtractor(ContentExtractor):
+    def value(self, connection: Connection, events: list[Event], time: float | None, request: bytes, response: bytes) -> ExtractorResponse | None:
+        (source_ip, source_port), (dest_ip, dest_port) = connection.conn
+        conn_str = f'{source_ip}-{source_port}-{dest_ip}-{dest_port}'
+        req_filename, res_filename = None, None
+        tmp_dir = '/opt/midesa/projects/justniffer/tmp'
+        if request:
+            req_filename = f'{tmp_dir}/conn-{conn_str}-{connection.requests}-request.bin'
+            with open(req_filename, 'wb+') as f:
+                f.write(request)
+        if response:
+            res_filename = f'{tmp_dir}/conn-{conn_str}-{connection.requests}-response.bin'
+            with open(res_filename, 'wb+') as f:
+                f.write(response)
+        return req_filename, res_filename
+
+
+@dataclass
+class SSHConnData:
+    client_banner: str
+    server_banner: str
+    cookie: str
+
+
+class SSHInfoExtractor(TypedContentExtractor[SSHConnData]):
+    name = 'SSH'  # type: ignore
+
+    def value(self, connection: Connection, events: list[Event], time: float | None, request: bytes, response: bytes) -> ExtractorResponse | None:
+        res = self.get_conn_attrs(connection)
+        if res is None:
+            if response and request:
+                res_info = ssh_info(request, response)
+                if res_info is not None:
+                    res = SSHConnData(res_info.client_banner,res_info.server_banner, res_info.kexinit.cookie)
+                    self.set_conn_attrs(connection, res)
+        return res
+
+
 class PlainTextExtractor(ContentExtractor):
     printable = string.digits + string.ascii_letters + string.punctuation + ' '
     name = 'UNKNOWN'  # type: ignore
@@ -382,7 +421,7 @@ def extractors_classes() -> tuple[type | str, ...]:
     return config.extractors or DEFAUL_EXTRACTOR_CLASSES
 
 
-DEFAULT_SELECTOR_CLASSES = TLSInfoExtractor, HttpInfoExtractor, PlainTextExtractor
+DEFAULT_SELECTOR_CLASSES = TLSInfoExtractor, HttpInfoExtractor, SSHInfoExtractor
 
 
 def selectors_classes() -> tuple[type | str, ...]:
@@ -393,7 +432,7 @@ def selectors_classes() -> tuple[type | str, ...]:
 def setup_connection(conn: Conn, time: float) -> Connection:
     connection = connections.get(conn)
     if connection is None:
-        connection = Connection(conn, time)
+        connection = Connection(conn=conn, time=time)
         connections[conn] = connection
     logger.debug(f'connections = {len(connections)}')
     return connection

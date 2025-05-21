@@ -17,14 +17,19 @@ def justniffer_cmd() -> str:
     return 'justniffer'
 
 
+class VersionException(Exception):
+    pass
+
+class NotFoundJustniffer(VersionException):
+    pass
 
 
 def get_justniffer_version() -> str:
     status, res = getstatusoutput(f'{justniffer_cmd()} --version')
     if status == 127:
-        raise Exception( f'{justniffer_cmd()} not found')
-    if status != 0:        
-        raise Exception('Failed to get justniffer version')        
+        raise NotFoundJustniffer( f'{justniffer_cmd()} not found')
+    elif status != 0:        
+        raise VersionException('Failed to get justniffer version')        
     return res
 
 
@@ -32,7 +37,7 @@ def _extract_versions(text: str) -> tuple[str, str]:
     python_version = re.search(r'Python (\d+\.\d+)', text)
     justniffer_version = re.search(r'justniffer (.+)', text)
     if justniffer_version is None or python_version is None:
-        raise Exception('Failed to parse justniffer version')
+        raise VersionException('Failed to parse justniffer version')
     return justniffer_version.group(1), python_version.group(1)
 
 
@@ -42,9 +47,9 @@ def check_justniffer_version() -> None:
     logger.debug(f'justniffer version: {justniffer_version}')
     logger.debug(f'python version: {python_version}')
     if justniffer_version < compatible_justniffer_version:
-        raise Exception(f'Incompatible justniffer version: {justniffer_version}, expected: {compatible_justniffer_version}')
+        raise VersionException(f'Incompatible justniffer version: {justniffer_version}, expected: {compatible_justniffer_version}')
     if python_version < compatible_python_version:
-        raise Exception(f'Incompatible python version: {python_version}, expected: {compatible_python_version}')
+        raise VersionException(f'Incompatible python version: {python_version}, expected: {compatible_python_version}')
 
 
 def _get_sudoer_prefix() -> str:
@@ -86,7 +91,11 @@ def exec_justniffer_cmd(*, interface: str | None,
     env = _fix_virtualenv()
     cmd = f'{sudoer_prefix}{justniffer_cmd()} {args_str} -l "%python(justniffer.handlers)"'
     logger.debug(cmd)
-    check_justniffer_version()
+    try:
+        check_justniffer_version()
+    except VersionException as e:
+        logger.error(e)
+        return
     if config_filepath is not None:
         env[settings.envvar_prefix_for_dynaconf + '_CONFIG_FILE'] = config_filepath
     if formatter is not None:
