@@ -3,20 +3,16 @@
 
 ## Network TCP Packet Sniffer
 
-Justniffer is a network traffic analysis tool that allows you to analyze and trace HTTP traffic in a network. Justniffer allows capturing network packets and decoding HTTP data, providing detailed information about HTTP requests and responses, such as the IP address of the client and server, the requested URL, header fields and message content.
+Justniffer is a network TCP packet sniffer and logging tool. It captures network traffic, with a particular strength in analyzing and tracing HTTP communications. However, its flexible logging capabilities allow it to be adapted for various TCP-based protocols. Justniffer can decode HTTP data, providing detailed information about requests and responses, including client/server IP addresses, requested URLs, header fields, and message content. For other TCP traffic, it allows custom log formats to extract relevant information from the data stream.
 
-Justniffer is written in C++ and uses the libpcap network packet analysis library to capture network packets. Justniffer is able to decode network packets so that the data can be viewed in a clear and easy-to-read format, allowing for efficient traffic analysis.
+Justniffer uses the `libpcap` network packet analysis library to capture network packets. It processes these packets to present data in a clear, readable format, enabling efficient traffic analysis and custom logging.
 
 Justniffer can be used for:
 
-- Analyzing HTTP traffic in a development environment to identify any issues
-- Analyzing HTTP traffic in a production environment to monitor performance
-- Analyzing HTTP traffic in a testing environment to verify the correct functioning of applications
-- Debugging security issues
-- Analyzing bandwidth and bandwidth usage.
-
-Justniffer is a tool for developers and network administrators.
-
+* Verifying the correct functioning of applications by analyzing HTTP traffic. 
+* Debugging security issues related to network traffic.
+* Analyzing performances and connection usage.
+* Custom logging of various TCP-based protocols.
 
 ## EXAMPLES
 
