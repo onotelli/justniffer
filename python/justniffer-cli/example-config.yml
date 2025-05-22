@@ -18,6 +18,8 @@ extractors:
   - ConnectionDuration
   - RequestSize
   - ResponseSize
-  #- test_extractors.tests:TestExtractor
   - ProtocolSelector
-formatter: str
+formatter: 
+  str:
+    sep: ' | '
+    null_value: 'N/A'

@@ -68,7 +68,176 @@ Filters traffic to TCP ports **80** or **443**, using `tcpdump` syntax.
 ```bash
 justniffer-cli run --interface eth0 --capture-in-the-middle --formatter text
 ```
-Records network streams even if the handshake was missed.
+Records network streams even if the handshake was missed
+
+# Justniffer Configuration Guide
+
+Configuration is primarily managed through a YAML file, allowing for flexible customization of protocol selectors, data extractors, and output formatting. Navigate through the sections using the sidebar to learn more about each aspect of the configuration.
+
+The goal is to provide an easy way to understand and reference the various configuration options available in Justniffer.
+
+## 1. Configuration File Overview
+
+`justniffer-cli` uses a YAML file for its main configuration. The path to this file can be specified:
+
+* Via the `--config-filepath` command-line argument when running `justniffer-cli`.
+
+* Through the `JUSTNIFFER_CONFIG_FILE` environment variable.
+
+The configuration file supports the following top-level keys:
+
+* `selectors`: Defines a list of protocol selectors.
+
+* `extractors`: Defines a list of data extractors.
+
+* `formatter`: Specifies the output formatter.
+
+If no configuration file is provided, `justniffer-cli` will use default settings for selectors, extractors, and the formatter.
+
+```
+# Basic YAML Structure
+selectors:
+  # ... selector definitions
+extractors:
+  # ... extractor definitions
+formatter: # ... formatter definition
+
+
+```
+
+## 2. Selectors
+
+Selectors are responsible for identifying and parsing specific network protocols (e.g., TLS, HTTP, SSH) from the captured network traffic. The `ProtocolSelector` extractor then uses these definitions to determine the protocol of a given connection.
+
+* **Definition**: Under the `selectors` key in the YAML file.
+
+* **Format**: A list (or tuple) of selector definitions. Each item can be:
+
+  * A string: The class name of the selector (e.g., `TLSInfoExtractor`). Assumed to be in the `justniffer.handlers` module unless a full path is given.
+
+  * A dictionary: The key is the selector's class name, and the value is a dictionary of arguments to be passed to its constructor.
+
+* **Default Selectors**: If not specified, the defaults are:
+
+  * `TLSInfoExtractor`
+
+  * `HttpInfoExtractor`
+
+  * `SSHInfoExtractor`
+
+* **Custom Selectors**: To use a custom selector, provide its class name. If the class resides in a different module, use the format `your_module_name:YourSelectorClass`.
+
+### Example YAML for Selectors:
+
+```
+selectors:
+  - TLSInfoExtractor
+  - HttpInfoExtractor
+  - SSHInfoExtractor
+  - my_custom_module:MyCustomProtocolSelector # Example of a custom selector
+  - AnotherSelectorWithOptions: # Example of a selector with arguments
+      option1: true
+      threshold: 42
+
+
+```
+
+## 3. Extractors
+
+Extractors are components that pull specific pieces of information from network connections, events, and content.
+
+* **Definition**: Under the `extractors` key in the YAML file.
+
+* **Format**: A list (or tuple) of extractor definitions, similar to selectors:
+
+  * A string: The class name of the extractor.
+
+  * A dictionary: The key is the extractor's class name, and the value is a dictionary of constructor arguments.
+
+* **Default Extractors**: If `extractors` is not defined in the configuration, a predefined set of extractors is used. This set includes:
+
+  * `RequestTimestamp`, `ConnectionID`, `ConnectionState`, `CloseOriginator`, `ConnectionRequests`, `SourceIPPort`, `DestIPPort`, `ConnectionTime`, `RequestTime`, `ResponseTime`, `Idle1Time`, `Idle2Time`, `ConnectionDuration`, `RequestSize`, `ResponseSize`, `ProtocolSelector` (which in turn uses the configured `selectors`).
+
+* **Types of Extractors**:
+
+  * `Extractor`: Base for general data extraction from connection metadata and events.
+
+  * `ContentExtractor`: Base for extractors that operate on the raw request and response content bytes.
+
+  * `TypedContentExtractor`: A generic version of `ContentExtractor` for better type safety.
+
+* **Custom Extractors**: Add custom extractors by specifying their class names (e.g., `my_extractors_module:MyCustomDataExtractor`).
+
+### Example YAML for Extractors:
+
+```
+extractors:
+  - ConnectionID
+  - SourceIPPort
+  - DestIPPort
+  - ProtocolSelector # This will use the selectors defined in the 'selectors' section
+  - ResponseSize
+  - my_custom_module:MyPayloadDetailsExtractor # Example of a custom content extractor
+  - ConfigurableExtractor: # Example with arguments
+      parameter_a: "value_x"
+      parameter_b: 100
+
+
+```
+
+## 4. Formatter
+
+Formatters control the output format of the data collected by the extractors.
+
+* **Definition**: Specified under the `formatter` key in the YAML file. This can also be set via the `JUSTNIFFER_FORMATTER` environment variable or the `--formatter` command-line argument (CLI argument takes highest precedence, then environment variable, then config file).
+
+* **Format**:
+
+  * A string: The name of the formatter (e.g., `"json"`, `"str"`).
+
+  * A dictionary: The key is the formatter name, and the value is a dictionary of arguments for its constructor.
+
+* **Built-in Formatters**:
+
+  * `str`: (Default if no other formatter is specified) Formats output as a string with fields separated by a delimiter.
+
+    * Constructor arguments: `sep` (default: `" "`), `null_value` (default: `"-"`).
+
+  * `json`: Formats output as a JSON string.
+
+* **Custom Formatters**: Use custom formatters by providing their class name (e.g., `my_formatter_module:MyAdvancedFormatter`).
+
+* **Default Formatter**: If no formatter is explicitly configured, `StrFormatter` is used.
+
+### Example YAML for Formatter:
+
+#### JSON Formatter Example:
+
+```
+formatter: json
+
+
+```
+
+#### String Formatter (Custom) Example:
+
+```
+formatter:
+  str:
+    sep: "; "
+    null_value: "N/A"
+
+
+```
+
+#### Custom Formatter Example:
+
+```
+formatter: my_custom_formatters:SpecialReportFormatter
+
+```
+
+
 
 ## Licensing
 

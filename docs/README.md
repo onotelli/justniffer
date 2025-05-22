@@ -160,7 +160,23 @@ Can be extended by external scripts.
         |                                     |    |
  
 
-## INSTALL
+## Install on Ubuntu
+
+    sudo apt install software-properties-common
+    sudo add-apt-repository ppa:oreste-notelli/ppa
+    sudo apt update
+    sudo apt install justniffer
+
+## Install on Debian
+
+download the .deb file from 
+[https://github.com/onotelli/justniffer/releases](https://github.com/onotelli/justniffer/releases)
+and install it with:
+
+    sudo apt install ./justniffer_<version>.deb
+
+
+## Install From Source
 
 Be sure you have installed third-party tools and libraries:
 
@@ -183,21 +199,6 @@ unpacked the source package, type:
     $ ./configure 
     $ make 
     $ make install
-
-## Install on Ubuntu
-
-    sudo apt install software-properties-common
-    sudo add-apt-repository ppa:oreste-notelli/ppa
-    sudo apt update
-    sudo apt install justniffer
-
-## Install on Debian
-
-download the .deb file from 
-[https://github.com/onotelli/justniffer/releases](https://github.com/onotelli/justniffer/releases)
-and install it with:
-
-    sudo apt install ./justniffer_<version>.deb
 
 ---
 ## EXAMPLES
