@@ -84,8 +84,6 @@ output:
     06/28/11 13:30:51 192.168.2.2 199.93.61.126 c.fsdn.com /sf/images/phoneix/grad_white_dual_100.png 
 
 ### Example 5. Read from a capture file
-NOTE: capture file must be performed with unlimited snaplen for catching whole packets. Justniffer can work only works on pcap files with whole packets.
-tcpdump command example: tcpdump -w /tmp/file.cap -s0 -i ath0
 
     $ justniffer -f /file.cap
 
