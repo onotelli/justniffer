@@ -72,7 +72,6 @@ def exec_justniffer_cmd(*, interface: str | None,
                         formatter: str | None) -> None:
 
     config = load_config(config_filepath)
-    logger.info(config)
     args = []
     if interface is not None:
         args.append(f'-i {interface}')

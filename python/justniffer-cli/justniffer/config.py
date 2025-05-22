@@ -5,9 +5,9 @@ from justniffer.logging import logger
 
 
 class Config(BaseModel):
-    selectors: tuple[str, ...] | None = None
-    extractors: tuple[str, ...] | None = None
-    formatter: str | None = None
+    selectors: tuple[str | dict, ...] | None = None
+    extractors: tuple[str | dict, ...] | None = None
+    formatter: str | dict | None = None
 
 
 @cache

@@ -269,7 +269,7 @@ class SSHInfoExtractor(TypedContentExtractor[SSHConnData]):
             if response and request:
                 res_info = ssh_info(request, response)
                 if res_info is not None:
-                    res = SSHConnData(res_info.client_banner,res_info.server_banner, res_info.kexinit.cookie)
+                    res = SSHConnData(res_info.client_banner, res_info.server_banner, res_info.kexinit.cookie)
                     self.set_conn_attrs(connection, res)
         return res
 
@@ -418,7 +418,7 @@ DEFAUL_EXTRACTOR_CLASSES = (RequestTimestamp, ConnectionID, ConnectionState, Clo
                             RequestSize, ResponseSize, 'ProtocolSelector')
 
 
-def extractors_classes() -> tuple[type | str, ...]:
+def extractors_classes() -> tuple[type | str | dict, ...]:
     config = load_config(settings.config_file)
     return config.extractors or DEFAUL_EXTRACTOR_CLASSES
 
@@ -426,7 +426,7 @@ def extractors_classes() -> tuple[type | str, ...]:
 DEFAULT_SELECTOR_CLASSES = TLSInfoExtractor, HttpInfoExtractor, SSHInfoExtractor
 
 
-def selectors_classes() -> tuple[type | str, ...]:
+def selectors_classes() -> tuple[type | str | dict, ...]:
     config = load_config(settings.config_file)
     return config.selectors or DEFAULT_SELECTOR_CLASSES
 
