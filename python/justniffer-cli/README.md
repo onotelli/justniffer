@@ -131,13 +131,13 @@ Selectors are responsible for identifying and parsing specific network protocols
 
 ```
 selectors:
-  - TLSInfoExtractor
-  - HttpInfoExtractor
-  - SSHInfoExtractor
-  - my_custom_module:MyCustomProtocolSelector # Example of a custom selector
-  - AnotherSelectorWithOptions: # Example of a selector with arguments
-      option1: true
-      threshold: 42
+  TLSInfoExtractor:
+  HttpInfoExtractor:
+  SSHInfoExtractor:
+  my_custom_module:MyCustomProtocolSelector: # Example of a custom selector
+  AnotherSelectorWithOptions: # Example of a selector with arguments
+    option1: true
+    threshold: 42
 
 
 ```
@@ -166,19 +166,19 @@ Extractors are components that pull specific pieces of information from network 
 
   * `TypedContentExtractor`: A generic version of `ContentExtractor` for better type safety.
 
-* **Custom Extractors**: Add custom extractors by specifying their class names (e.g., `my_extractors_module:MyCustomDataExtractor`).
+* **Custom Extractors**: Add custom extractors by specifying their class names (e.g., `test_extractors.tests:TestExtractor`).
 
 ### Example YAML for Extractors:
 
 ```
 extractors:
-  - ConnectionID
-  - SourceIPPort
-  - DestIPPort
-  - ProtocolSelector # This will use the selectors defined in the 'selectors' section
-  - ResponseSize
-  - my_custom_module:MyPayloadDetailsExtractor # Example of a custom content extractor
-  - ConfigurableExtractor: # Example with arguments
+  ConnectionID:
+  SourceIPPort:
+  DestIPPort:
+  ProtocolSelector: # This will use the selectors defined in the 'selectors' section
+  ResponseSize:
+  test_extractors.tests:TestExtractor: # Example of a custom content extractor
+  ConfigurableExtractor: # Example with arguments
       parameter_a: "value_x"
       parameter_b: 100
 

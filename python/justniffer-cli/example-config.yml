@@ -19,6 +19,7 @@ extractors:
   RequestSize:
   ResponseSize:
   ProtocolSelector:
+  test_extractors.tests:TestExtractor:
 formatter: 
   str:
     sep: ' '
