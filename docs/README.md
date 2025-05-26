@@ -196,6 +196,7 @@ Be sure you have installed third-party tools and libraries:
 
 unpacked the source package, type:
 
+    $ cd main
     $ ./configure 
     $ make 
     $ make install
