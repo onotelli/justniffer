@@ -4,9 +4,10 @@ import yaml
 from justniffer.logging import logger
 
 
+
 class Config(BaseModel):
-    selectors: tuple[str | dict, ...] | None = None
-    extractors: tuple[str | dict, ...] | None = None
+    selectors: dict[str, dict | None] | None = None
+    extractors: dict[str, dict | None] | None = None
     formatter: str | dict | None = None
 
 

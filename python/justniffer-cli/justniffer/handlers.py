@@ -4,14 +4,14 @@ from datetime import datetime
 from dataclasses import dataclass
 
 import string
-from justniffer.class_utils import TypedPluginManager
+from justniffer.class_utils import ClassDef, TypedPluginManager
 from justniffer.model import (CloseEvent, Conn, Connection, ContentEvent, Event, ExchangeBase,
                               ExtractorResponse, ProtocolInfo, RequestEvent, ResponseEvent,
                               Status, TLSConnectionInfo, TimedEvent)
 from justniffer.logging import logger
 from justniffer.tls_info import parse_tls_content as get_TLSInfo, TlsRecordInfo as TLSInfo
 from justniffer.http_info import parse_http_content, DEFAULT_CHARSET
-from justniffer.ssh_info import parse_ssh_packet, SSHInfo, ssh_info
+from justniffer.ssh_info import  ssh_info
 from justniffer.formatters import get_formatter, to_str, JSONFormatter
 from justniffer.extractors import BaseExtractor, ContentExtractor, TypedContentExtractor
 from justniffer.config import load_config
@@ -25,13 +25,21 @@ class EndpointAddress:
     ip: str
     port: int
 
-    def __to_output_str__(self) -> str:
+    def __to_output_str__(self, *args, **kwargs) -> str:
         return f'{self.ip}:{self.port}'
 
 
 class TLSConnectionInfoEx(TLSConnectionInfo):
 
-    def __to_output_str__(self) -> str:
+    def __to_output_str__(self, sep: str, null_value: str) -> str:
+        return sep.join(map(lambda value: to_str(value, sep=sep, null_value=null_value), (
+            self.server_name_list[0] if self.server_name_list else None,
+            self.version,
+            self.cipher,
+            self.common_name,
+            self.organization_name,
+            self.expires.strftime("%Y-%m-%d %H:%M:%S") if self.expires else None
+        )))
         return f'{to_str(self.server_name_list[0] if self.server_name_list else None)} {to_str(self.version)} {to_str(self.cipher)} {to_str(self.common_name)} {to_str(self.organization_name)} {to_str(self.expires.strftime("%Y-%m-%d %H:%M:%S") if self.expires else None)}'
 
 
@@ -418,17 +426,24 @@ DEFAUL_EXTRACTOR_CLASSES = (RequestTimestamp, ConnectionID, ConnectionState, Clo
                             RequestSize, ResponseSize, 'ProtocolSelector')
 
 
-def extractors_classes() -> tuple[type | str | dict, ...]:
+def extractors_classes() -> tuple[ClassDef, ...]:
     config = load_config(settings.config_file)
-    return config.extractors or DEFAUL_EXTRACTOR_CLASSES
+    return _get_classes_def(config.extractors, DEFAUL_EXTRACTOR_CLASSES)
+
+
+def _get_classes_def(defs: dict[str, dict | None] | None, default: tuple[ClassDef, ...]) -> tuple[ClassDef, ...]:
+    if defs is not None:
+        return tuple(map(lambda e: e, defs.items()))
+    else:
+        return default
 
 
 DEFAULT_SELECTOR_CLASSES = TLSInfoExtractor, HttpInfoExtractor, SSHInfoExtractor
 
 
-def selectors_classes() -> tuple[type | str | dict, ...]:
+def selectors_classes() -> tuple[ClassDef, ...]:
     config = load_config(settings.config_file)
-    return config.selectors or DEFAULT_SELECTOR_CLASSES
+    return _get_classes_def(config.selectors, DEFAULT_SELECTOR_CLASSES)
 
 
 def setup_connection(conn: Conn, time: float) -> Connection:

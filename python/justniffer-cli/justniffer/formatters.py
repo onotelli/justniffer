@@ -25,7 +25,7 @@ def to_str(value: Any | None, *, sep: str = SEP, null_value: str = NULL_VALUE) -
     if value is None:
         return null_value
     if hasattr(value, '__to_output_str__'):
-        return value.__to_output_str__()
+        return value.__to_output_str__(sep=sep, null_value=null_value)
     if isinstance(value, str):
         return value
     if isinstance(value, float):
@@ -101,7 +101,7 @@ _logged = False
 def get_formatter() -> Formatter:
     global _logged
     config = load_config(settings.config_file)
-    formatter_def = settings.formatter or config.formatter or 'str'
+    formatter_def: Any = settings.formatter or config.formatter or 'str'
     formatter_args: dict = {}
     if isinstance(formatter_def, str):
         formatter_name = formatter_def
@@ -114,7 +114,9 @@ def get_formatter() -> Formatter:
     if formatter_name in FORMATTERS:
         formatter = FORMATTERS[formatter_name](**formatter_args)
     else:
+        if isinstance(formatter_def, dict):
+            formatter_def = tuple(formatter_def.items())[0]
         formatter_class, kargs = FormatterManager(__name__).get_class_from_name(formatter_def)
-        formatter = formatter_class(**kargs)
+        formatter = formatter_class(**(kargs or {}))
     logger.debug(f'Formatter: {formatter}')
     return formatter

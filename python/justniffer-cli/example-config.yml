@@ -1,25 +1,28 @@
 selectors:
-  - TLSInfoExtractor
-  - HttpInfoExtractor
-  - PlainTextExtractor
+  TLSInfoExtractor:
+  HttpInfoExtractor:
+  PlainTextExtractor:
 extractors:
-  - RequestTimestamp
-  - ConnectionID
-  - ConnectionState
-  - CloseOriginator
-  - ConnectionRequests
-  - SourceIPPort
-  - DestIPPort
-  - ConnectionTime
-  - RequestTime
-  - ResponseTime
-  - Idle1Time
-  - Idle2Time
-  - ConnectionDuration
-  - RequestSize
-  - ResponseSize
-  - ProtocolSelector
+  RequestTimestamp:
+  ConnectionID:
+  ConnectionState:
+  CloseOriginator:
+  ConnectionRequests:
+  SourceIPPort:
+  DestIPPort:
+  ConnectionTime:
+  RequestTime:
+  ResponseTime:
+  Idle1Time:
+  Idle2Time:
+  ConnectionDuration:
+  RequestSize:
+  ResponseSize:
+  ProtocolSelector:
 formatter: 
   str:
-    sep: ' | '
-    null_value: 'N/A'
+    sep: ' '
+    null_value: '-'
+  # str:
+  #   sep: ' | '
+  #   null_value: 'N/A'

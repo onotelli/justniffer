@@ -71,7 +71,6 @@ def exec_justniffer_cmd(*, interface: str | None,
                         config_filepath: str | None,
                         formatter: str | None) -> None:
 
-    config = load_config(config_filepath)
     args = []
     if interface is not None:
         args.append(f'-i {interface}')

@@ -3,7 +3,14 @@ from sys import modules
 from importlib import import_module
 
 from justniffer.logging import logger
+
+
 CLASS_SEPARATOR = ':'
+
+
+ClassNameDef = str | type
+
+ClassDef = ClassNameDef | tuple[ClassNameDef, dict | None]
 
 
 class PluginManager:
@@ -14,20 +21,21 @@ class PluginManager:
         self._module_name = module_name
         self._logged = False
 
-    def get_objects(self, *class_names: str | type | dict) -> tuple[Any, ...]:
+    def get_objects(self, *class_names: ClassDef) -> tuple[Any, ...]:
         if not self._logged:
             logger.info(f'{self.__class__.__name__} {class_names}')
             self._logged = True
         logger.debug(f'{class_names=}')
         _classes = tuple(self.get_class_from_name(class_name) for class_name in class_names)
-        return tuple(class_(**kwargs) for class_, kwargs in _classes)
+        return tuple(class_(**(kwargs or {})) for class_, kwargs in _classes)
 
-    def get_class_from_name(self, class_name: str | type | dict) -> tuple[type[Any], dict]:
-        if isinstance(class_name, (str, dict)):
+    def get_class_from_name(self, class_name: ClassDef) -> tuple[type[Any], dict | None]:
+        if isinstance(class_name, (str, tuple)):
+            args: dict | None
             if isinstance(class_name, str):
-                args : dict= {}
+                args = {}
             else:
-                class_name, args= next(iter(class_name .items()))
+                class_name, args = class_name
             assert isinstance(class_name, str)
             if class_name not in self._classes:
                 logger.debug(f'finding {class_name=}')
@@ -54,9 +62,9 @@ T = TypeVar('T')
 class TypedPluginManager(Generic[T], PluginManager):
     _classes: dict[str, type[Any]] = {}
 
-    def get_objects(self, *class_names: str | type | dict) -> tuple[T, ...]:
+    def get_objects(self, *class_names: ClassDef) -> tuple[T, ...]:
 
         return super().get_objects(*class_names)
 
-    def get_class_from_name(self, class_name: str | type | dict) -> tuple[type[T], dict]:
+    def get_class_from_name(self, class_name: ClassDef) -> tuple[type[T], dict | None]:
         return super().get_class_from_name(class_name)
