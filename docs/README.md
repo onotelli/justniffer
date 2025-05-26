@@ -9,7 +9,7 @@ Justniffer is a network protocol analyzer that captures network traffic and prod
 
 Additionally, Justniffer provides insights into connection behavior, including how connections are reused for keep-alive sessions, identifying whether the client or server closes the connection, and analyzing idle times.
 
-It lets you interactively trace tcp traffic from a live network or from a previously saved capture file. Justniffer's native capture file format is libpcap format, which is also the format used by tcpdump and various other tools.
+It lets you trace tcp traffic from a live network or from a previously saved capture file. Justniffer's native capture file format is libpcap format, which is also the format used by tcpdump and various other tools.
 
 It is highly customizable, especially through the use of Python handler classes, allowing you to tailor its functionality to specific needs
 
