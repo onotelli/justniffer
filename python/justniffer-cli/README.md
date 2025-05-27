@@ -86,18 +86,14 @@ The goal is to provide an easy way to understand and reference the various confi
 
 The configuration file supports the following top-level keys:
 
-* `selectors`: Defines a list of protocol selectors.
-
 * `extractors`: Defines a list of data extractors.
 
 * `formatter`: Specifies the output formatter.
 
-If no configuration file is provided, `justniffer-cli` will use default settings for selectors, extractors, and the formatter.
+If no configuration file is provided, `justniffer-cli` will use default settings for extractors and formatter.
 
-```
+```yaml
 # Basic YAML Structure
-selectors:
-  # ... selector definitions
 extractors:
   # ... extractor definitions
 formatter: # ... formatter definition
@@ -105,44 +101,7 @@ formatter: # ... formatter definition
 
 ```
 
-## 2. Selectors
-
-Selectors are responsible for identifying and parsing specific network protocols (e.g., TLS, HTTP, SSH) from the captured network traffic. The `ProtocolSelector` extractor then uses these definitions to determine the protocol of a given connection.
-
-* **Definition**: Under the `selectors` key in the YAML file.
-
-* **Format**: A list (or tuple) of selector definitions. Each item can be:
-
-  * A string: The class name of the selector (e.g., `TLSInfoExtractor`). Assumed to be in the `justniffer.handlers` module unless a full path is given.
-
-  * A dictionary: The key is the selector's class name, and the value is a dictionary of arguments to be passed to its constructor.
-
-* **Default Selectors**: If not specified, the defaults are:
-
-  * `TLSInfoExtractor`
-
-  * `HttpInfoExtractor`
-
-  * `SSHInfoExtractor`
-
-* **Custom Selectors**: To use a custom selector, provide its class name. If the class resides in a different module, use the format `your_module_name:YourSelectorClass`.
-
-### Example YAML for Selectors:
-
-```
-selectors:
-  TLSInfoExtractor:
-  HttpInfoExtractor:
-  SSHInfoExtractor:
-  my_custom_module:MyCustomProtocolSelector: # Example of a custom selector
-  AnotherSelectorWithOptions: # Example of a selector with arguments
-    option1: true
-    threshold: 42
-
-
-```
-
-## 3. Extractors
+## 2. Extractors
 
 Extractors are components that pull specific pieces of information from network connections, events, and content.
 
@@ -168,9 +127,49 @@ Extractors are components that pull specific pieces of information from network 
 
 * **Custom Extractors**: Add custom extractors by specifying their class names (e.g., `test_extractors.tests:TestExtractor`).
 
+### Selectors
+
+Selectors are key components of the `ProtocolSelector`, responsible for identifying and parsing specific network protocols (e.g., TLS, HTTP, SSH) from captured network traffic. By inspecting the content of network streams, selectors determine the protocol of a given connection and extract relevant information.
+
+* **Definition**: Under the `selectors` key in the YAML file.
+
+* **Format**: A list (or tuple) of selector definitions. Each item can be:
+
+  * A string: The class name of the selector (e.g., `TLSInfoExtractor`). Assumed to be in the `justniffer.handlers` module unless a full path is given.
+
+  * A dictionary: The key is the selector's class name, and the value is a dictionary of arguments to be passed to its constructor.
+
+* **Default Selectors**: If not specified, the defaults are:
+
+  * `TLSInfoExtractor`
+
+  * `HttpInfoExtractor`
+
+  * `SSHInfoExtractor`
+
+* **Custom Selectors**: To use a custom selector, provide its class name. If the class resides in a different module, use the format `your_module_name:YourSelectorClass`.
+
+### Example YAML for Selectors:
+
+```yaml
+extractors:
+  ConnectionID:
+  SourceIPPort:
+  DestIPPort:
+  ProtocolSelector:
+    selectors:
+      TLSInfoExtractor:
+      HttpInfoExtractor:
+      SSHInfoExtractor:
+      my_custom_module:MyCustomProtocolSelector: # Example of a custom selector
+      AnotherSelectorWithOptions: # Example of a selector with arguments
+        option1: true
+        threshold: 42
+```
+
 ### Example YAML for Extractors:
 
-```
+```yaml
 extractors:
   ConnectionID:
   SourceIPPort:
@@ -185,7 +184,7 @@ extractors:
 
 ```
 
-## 4. Formatter
+## 3. Formatter
 
 Formatters control the output format of the data collected by the extractors.
 
@@ -213,7 +212,7 @@ Formatters control the output format of the data collected by the extractors.
 
 #### JSON Formatter Example:
 
-```
+```yaml
 formatter: json
 
 
@@ -221,7 +220,7 @@ formatter: json
 
 #### String Formatter (Custom) Example:
 
-```
+```yaml
 formatter:
   str:
     sep: "; "
@@ -232,7 +231,7 @@ formatter:
 
 #### Custom Formatter Example:
 
-```
+```yaml
 formatter: my_custom_formatters:SpecialReportFormatter
 
 ```
