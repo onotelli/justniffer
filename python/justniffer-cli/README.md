@@ -174,13 +174,17 @@ extractors:
   ConnectionID:
   SourceIPPort:
   DestIPPort:
-  ProtocolSelector: # This will use the selectors defined in the 'selectors' section
   ResponseSize:
   test_extractors.tests:TestExtractor: # Example of a custom content extractor
-  ConfigurableExtractor: # Example with arguments
-      parameter_a: "value_x"
+      parameter_a: "value_x" # Arguments are passed as keyword arguments to TestExtractor
       parameter_b: 100
-
+  ProtocolSelector:
+    selectors:
+      TLSInfoExtractor:
+      HttpInfoExtractor:
+      SSHInfoExtractor:
+      PlainTextExtractor:
+        length: 20
 
 ```
 

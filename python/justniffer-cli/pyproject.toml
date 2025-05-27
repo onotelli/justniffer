@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "justniffer-cli"
-version = "0.2.0a12"
+version = "0.2.0a13"
 description = "A Python-based command-line interface (CLI) for interacting with [justniffer] (https://github.com/onotelli/justniffer)."
 authors = ["Oreste Notelli <oreste.notelli@plecno.com>"]
 readme = "README.md"
