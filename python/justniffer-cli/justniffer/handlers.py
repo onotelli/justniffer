@@ -11,7 +11,7 @@ from justniffer.model import (CloseEvent, Conn, Connection, ContentEvent, Event,
 from justniffer.logging import logger
 from justniffer.tls_info import parse_tls_content as get_TLSInfo, TlsRecordInfo as TLSInfo
 from justniffer.http_info import parse_http_content, DEFAULT_CHARSET
-from justniffer.ssh_info import  ssh_info
+from justniffer.ssh_info import ssh_info, extract_kexinit_info
 from justniffer.formatters import get_formatter, to_str, JSONFormatter
 from justniffer.extractors import BaseExtractor, ContentExtractor, TypedContentExtractor
 from justniffer.config import load_config
@@ -265,7 +265,7 @@ class PayloadExtractor(ContentExtractor):
 class SSHConnData:
     client_banner: str
     server_banner: str
-    cookie: str
+    cookie: str | None
 
 
 class SSHInfoExtractor(TypedContentExtractor[SSHConnData]):
@@ -277,8 +277,12 @@ class SSHInfoExtractor(TypedContentExtractor[SSHConnData]):
             if response and request:
                 res_info = ssh_info(request, response)
                 if res_info is not None:
-                    res = SSHConnData(res_info.client_banner, res_info.server_banner, res_info.kexinit.cookie)
+                    res = SSHConnData(res_info.client_banner, res_info.server_banner, res_info.kexinit.cookie if res_info.kexinit is not None else None)
                     self.set_conn_attrs(connection, res)
+        elif res.cookie is None:
+            kexinit = extract_kexinit_info(response)
+            if kexinit is not None:
+                res.cookie = kexinit.cookie
         return res
 
 
@@ -286,6 +290,9 @@ class PlainTextExtractor(ContentExtractor):
     printable = string.digits + string.ascii_letters + string.punctuation + ' '
     name = 'UNKNOWN'  # type: ignore
     _length = 10
+
+    def __init__(self, length: int = 10):
+        self._length = length
 
     def value(self, connection: Connection, events: list[Event], time: float | None, request: bytes, response: bytes) -> ExtractorResponse | None:
         req = None
@@ -438,12 +445,11 @@ def _get_classes_def(defs: dict[str, dict | None] | None, default: tuple[ClassDe
         return default
 
 
-DEFAULT_SELECTOR_CLASSES = TLSInfoExtractor, HttpInfoExtractor, SSHInfoExtractor
+DEFAULT_SELECTOR_CLASSES = TLSInfoExtractor, HttpInfoExtractor, SSHInfoExtractor, PlainTextExtractor
 
 
-def selectors_classes() -> tuple[ClassDef, ...]:
-    config = load_config(settings.config_file)
-    return _get_classes_def(config.selectors, DEFAULT_SELECTOR_CLASSES)
+def selectors_classes(selectors: dict[str, dict | None] | None = None) -> tuple[ClassDef, ...]:
+    return _get_classes_def(selectors, DEFAULT_SELECTOR_CLASSES)
 
 
 def setup_connection(conn: Conn, time: float) -> Connection:
@@ -470,7 +476,10 @@ ProtocolSelectors = TypedPluginManager[ContentExtractor]
 class ProtocolSelector(ContentExtractor):
     _plugin_manager = ProtocolSelectors(__name__)
 
-    _subexector: tuple[ContentExtractor, ...] = _plugin_manager.get_objects(*selectors_classes())
+    _subexector: tuple[ContentExtractor, ...]
+
+    def __init__(self, selectors: dict[str, dict | None] | None = None) -> None:
+        self._subexector = self._plugin_manager.get_objects(*selectors_classes(selectors))
 
     def value(self, connection: Connection, events: list[Event], time: float | None, request: bytes, response: bytes) -> ProtocolInfo | None:
         for e in self._subexector:

@@ -71,7 +71,7 @@ class KexInitInfo:
 class SSHInfo:
     client_banner: str
     server_banner: str
-    kexinit: KexInitInfo
+    kexinit: KexInitInfo | None
 
 
 def parse_kexinit_payload(payload: bytes) -> KexInitInfo | None:
@@ -165,29 +165,28 @@ response = (
     b'\x00\x00\x00\x00'  # reserved (uint32, 0)
 )
 
+def extract_kexinit_info(payload: bytes) -> KexInitInfo | None:
+    kexinit_res = parse_ssh_packet(payload)
+    kexinit = None
+    if kexinit_res is not None:
+        subpayload, pkt_length, pad_length = kexinit_res
+        kexinit = parse_kexinit_payload(subpayload)
+    return kexinit
 
 def ssh_info(request: bytes, response: bytes) -> SSHInfo | None:
     client_banner_res = parse_ssh_banner(request)
     client_banner = None
     if client_banner_res is None:
         return None
-
     client_banner = client_banner_res[0]
     banner_res = parse_ssh_banner(response)
     if banner_res is None:
         return None
     banner, remaining = banner_res
-    kexinit_res = parse_ssh_packet(remaining)
-    if kexinit_res is None:
-        return None
-    payload, pkt_length, pad_length = kexinit_res
-    kexinit = parse_kexinit_payload(payload)
-    if kexinit is None:
-        return None
     return SSHInfo(
         client_banner=client_banner,
         server_banner=banner,
-        kexinit=kexinit
+        kexinit=extract_kexinit_info(remaining)
     )
 
 

@@ -6,7 +6,6 @@ from justniffer.logging import logger
 
 
 class Config(BaseModel):
-    selectors: dict[str, dict | None] | None = None
     extractors: dict[str, dict | None] | None = None
     formatter: str | dict | None = None
 

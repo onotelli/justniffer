@@ -1,7 +1,4 @@
-selectors:
-  TLSInfoExtractor:
-  HttpInfoExtractor:
-  PlainTextExtractor:
+
 extractors:
   RequestTimestamp:
   ConnectionID:
@@ -19,7 +16,12 @@ extractors:
   RequestSize:
   ResponseSize:
   ProtocolSelector:
-  test_extractors.tests:TestExtractor:
+    selectors:
+      TLSInfoExtractor:
+      HttpInfoExtractor:
+      SSHInfoExtractor:
+      PlainTextExtractor:
+        length: 20
 formatter: 
   str:
     sep: ' '
