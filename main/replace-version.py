@@ -3,11 +3,7 @@ from os import environ
 import re
 
 def replace_version(text: str, new_version: str) -> str:
-#text = "justniffer (0.6.8-dev.2.jammy) jammy; urgency=low"
-
-    # Replace the last part of the version string inside the parentheses
-    text = re.sub(r"\(([\d\w.-]+)\.(\w+)\)", rf"(\1.{new_version})", text)
-    # Replace the word after the parentheses
+    text = re.sub(r"(\([\d\w.-]+.*\.)(\w*)(\))", rf"\1{new_version}\3", text)
     text = re.sub(r"\)\s*(\w+)", rf") {new_version}", text)
     print (f'version {new_version} in changelog {text}') 
     return text 
