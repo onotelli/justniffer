@@ -35,7 +35,7 @@ after(u_int seq1, u_int seq2)
   return ((int)(seq2 - seq1) < 0);
 }
 */
- inline _printf(const char *format, ...) {
+ inline void _printf(const char *format, ...) {
   
 }
 
@@ -433,7 +433,7 @@ add_middle_tcp(struct tcphdr *this_tcphdr, struct ip *this_iphdr, const struct t
       {
         _printf("no listeners\n");
         nids_free_tcp_stream(a_tcp);
-        return;
+        return NULL;
       }
       a_tcp->nids_state = NIDS_DATA;
     }    
@@ -511,7 +511,7 @@ ride_lurkers(struct tcp_stream *a_tcp, char mask, struct timeval *t)
 }
 
 static void
-notify(struct tcp_stream *a_tcp, struct half_stream *rcv, struct time *t)
+notify(struct tcp_stream *a_tcp, struct half_stream *rcv, struct timeval *t)
 {
   struct lurker_node *i, **prev_addr;
   char mask;

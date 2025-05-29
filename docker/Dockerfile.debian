@@ -18,7 +18,7 @@ ARG DEBIAN_VERSION
 ENV DEBIAN_VERSION=${DEBIAN_VERSION}
 
 RUN cd /workspace/main; \
-    DEBIAN_VERSION=${DEBIAN_VERSION} ./replace-version.sh; \
+    DEBIAN_VERSION=${DEBIAN_VERSION} ./replace-version.py; \
     dpkg-buildpackage -d
 
 
