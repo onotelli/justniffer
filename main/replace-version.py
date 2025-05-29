@@ -9,6 +9,7 @@ def replace_version(text: str, new_version: str) -> str:
     text = re.sub(r"\(([\d\w.-]+)\.(\w+)\)", rf"(\1.{new_version})", text)
     # Replace the word after the parentheses
     text = re.sub(r"\)\s*(\w+)", rf") {new_version}", text)
+    print (f'version {new_version} in changelog {text}') 
     return text 
 
 
