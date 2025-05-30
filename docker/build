@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+import subprocess
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+DISTRO_VERSIONS = {
+    'ubuntu': ['jammy', 'noble'],
+    'debian': ['trixie', 'bookworm']
+}
+
+for distro, versions in DISTRO_VERSIONS.items():
+    logging.info(f'Processing {distro}...')
+    
+    for version in versions:
+        logging.info(f'  Building for {distro} {version}...')
+        logging.info(f'Building Docker image for {distro} {version}...')
+        
+        subprocess.run([
+            'docker', 'build',
+            '--build-arg', f'DEBIAN_VERSION={version}',
+            '--build-arg', f'DISTRO={distro}',
+            '-f', 'Dockerfile.debian',
+            '..',
+            '-t', f'{distro}-justniffer-{version}'
+        ], check=True)
+        
+        logging.info(f'Running container for {distro} {version}...')
+        
+        subprocess.run([
+            'docker', 'run', '-it', '--rm',
+            '-v', f'{subprocess.run(["pwd"], capture_output=True, text=True).stdout.strip()}:/mnt',
+            f'{distro}-justniffer-{version}',
+            '/bin/bash', '-c', 'cp /workspace/*.deb /mnt/ && ls -l /mnt/'
+        ], check=True)
+        
+        logging.info(f'Finished processing {distro} {version}!')
+
