@@ -132,7 +132,7 @@ MAX_BITS = 2**64
 
 class ConnectionID(Extractor):
     def value(self, connection: Connection, events: list[Event], time: float | None) -> str:
-        pos_hash = hash(connection.conn) % (MAX_BITS)
+        pos_hash = hash(id(connection)) % (MAX_BITS)
         return hex(pos_hash)[2:].zfill(16)
 
 
