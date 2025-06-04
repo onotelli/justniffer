@@ -3,7 +3,6 @@ from typing import Any, TypeVar, Generic
 
 from justniffer.model import Event, Connection, ExtractorResponse
 
-
 class BaseExtractor:
     @property
     def name(self) -> str:

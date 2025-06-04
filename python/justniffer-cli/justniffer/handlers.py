@@ -392,7 +392,7 @@ class HttpInfoExtractor(ContentExtractor):
         return None
 
     def value(self, connection: Connection, events: list[Event], time: float | None, request: bytes, response: bytes) -> HttpInfo | None:
-
+        
         res = parse_http_content(request, response)
         request_obj, response_obj = res
         method = request_obj.method if request_obj else None
@@ -404,10 +404,18 @@ class HttpInfoExtractor(ContentExtractor):
         code = response_obj.code if response_obj else None
         version = response_obj.version if response_obj else None
         if request_obj is None and response_obj is None:
-            return None
+            http_info_old = self.get_conn_attrs(connection)
+            if http_info_old is not None:
+                return HttpInfo(method='...', url=http_info_old.url, host=http_info_old.host)
+            else:
+                return None
         else:
             content_type = self._get_header(response_obj.headers, 'Content-Type') if response_obj else None
-            return HttpInfo(method=method, url=url, host=host, code=code, version=version, content_type=content_type)
+            http_info = HttpInfo(method=method, url=url, host=host, code=code, version=version, content_type=content_type)
+            http_info_old  = self.get_conn_attrs(connection)
+            if http_info_old is None:
+                self.set_conn_attrs(connection, http_info)
+            return http_info
 
 
 class IPPort(Extractor, ABC):
