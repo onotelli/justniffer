@@ -2,6 +2,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum, auto
 from typing import cast, Any
+from time import time
+
 
 
 Endpoint = tuple[str, int]
@@ -71,6 +73,11 @@ class Connection:
     time: float
     requests: int = 0
     protocol: dict[str, Any] = field(default_factory=dict)
+    start : float = field(default_factory=lambda: time())     
+
+    @property
+    def id(self) -> str:
+        return hex(hash(id(self)+self.start))
 
 
 ExtractorResponse = Any
