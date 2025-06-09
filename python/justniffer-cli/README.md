@@ -149,25 +149,7 @@ Selectors are key components of the `ProtocolSelector`, responsible for identify
 
 * **Custom Selectors**: To use a custom selector, provide its class name. If the class resides in a different module, use the format `your_module_name:YourSelectorClass`.
 
-### Example YAML for Selectors:
-
-```yaml
-extractors:
-  ConnectionID:
-  SourceIPPort:
-  DestIPPort:
-  ProtocolSelector:
-    selectors:
-      TLSInfoExtractor:
-      HttpInfoExtractor:
-      SSHInfoExtractor:
-      my_custom_module:MyCustomProtocolSelector: # Example of a custom selector
-      AnotherSelectorWithOptions: # Example of a selector with arguments
-        option1: true
-        threshold: 42
-```
-
-### Example YAML for Extractors:
+### Example YAML:
 
 ```yaml
 extractors:
@@ -185,6 +167,10 @@ extractors:
       SSHInfoExtractor:
       PlainTextExtractor:
         length: 20
+      my_custom_module:MyCustomProtocolSelector: # Example of a custom selector
+      my_custom_module2:AnotherSelectorWithOptions: # Example of a selector with arguments
+        option1: true
+        threshold: 42
 
 ```
 
