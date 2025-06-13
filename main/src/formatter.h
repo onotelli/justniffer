@@ -1112,11 +1112,12 @@ public:
 	}
 	virtual void append(std::basic_ostream<char> &out, const timeval *t, connections_container *pconnections_container)
 	{
-		t2 = *t;
-		if (response)
+		if (t && response) {
+			t2 = *t;
 			out << to_double(t2 - t1);
-		else
+		} else {
 			out << _not_found;
+		}	
 	}
 	virtual void onResponse(tcp_stream *pstream, const timeval *t)
 	{
@@ -1148,7 +1149,7 @@ public:
 		t1 = *t;
 		open = true;
 	}
-	virtual void append(std::basic_ostream<char> &out, const timeval *t, connections_container *pconnections_container)
+	virtual void append(std::basic_ostream<char> &out, const timeval *, connections_container *pconnections_container)
 	{
 		if (open && request)
 			out << to_double(t2 - t1);
