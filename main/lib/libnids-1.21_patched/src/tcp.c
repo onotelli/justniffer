@@ -316,6 +316,7 @@ add_new_tcp(struct tcphdr *this_tcphdr, struct ip *this_iphdr, const struct time
   tcp_num++;
   tolink = tcp_stream_table[hash_index];
   memset(a_tcp, 0, sizeof(struct tcp_stream));
+  a_tcp->close_initiator = 0; 
   a_tcp->hash_index = hash_index;
   a_tcp->addr = addr;
   a_tcp->client.state = TCP_SYN_SENT;
@@ -648,7 +649,15 @@ add_from_skb(struct tcp_stream *a_tcp, struct half_stream *rcv,
   if (fin)
   {
     snd->state = FIN_SENT;
-    _printf("FIN sent\n");
+    _printf("FIN sent a_tcp->close_initiator %d\n", a_tcp->close_initiator);
+    if (a_tcp->close_initiator == 0) {
+      if (snd == &a_tcp->client) {
+          a_tcp->close_initiator = 1; // Client is the originator
+      } else {
+          a_tcp->close_initiator = 2; // Server is the originator
+      }
+    }
+    _printf("FIN sent a_tcp->close_initiator %d\n", a_tcp->close_initiator);
     if (rcv->state == TCP_CLOSING)
       add_tcp_closing_timeout(a_tcp);
   }
@@ -851,7 +860,7 @@ nids_find_tcp_stream(struct tuple4 *addr)
   struct tcp_stream *a_tcp;
 
   hash_index = mk_hash_index(*addr);
-  _printf("hash_index = %d\n", hash_index);
+  //_printf("hash_index = %d\n", hash_index);
   for (a_tcp = tcp_stream_table[hash_index];
        a_tcp && memcmp(&a_tcp->addr, addr, sizeof(struct tuple4));
        a_tcp = a_tcp->next_node)
@@ -910,6 +919,17 @@ void process_tcp(u_char *data, int skblen, struct timeval *ts)
   } // ktos sie bawi
 
   datalen = iplen - 4 * this_iphdr->ip_hl - 4 * this_tcphdr->th_off;
+//   /* --- Begin TCP-flag printing --- */
+//     _printf("SRC:%u DST:%u FLAGS:%s%s%s%s%s%s\n",
+//     ntohs(this_tcphdr->th_sport),
+//     ntohs(this_tcphdr->th_dport),
+//     this_tcphdr->th_flags & TH_SYN  ? " SYN" : "",
+//     this_tcphdr->th_flags & TH_ACK  ? " ACK" : "",
+//     this_tcphdr->th_flags & TH_FIN  ? " FIN" : "",
+//     this_tcphdr->th_flags & TH_RST  ? " RST" : "",
+//     this_tcphdr->th_flags & TH_PUSH ? " PSH" : "",
+//     this_tcphdr->th_flags & TH_URG  ? " URG" : ""
+// );
 
   if (datalen < 0)
   {
@@ -1032,10 +1052,18 @@ void process_tcp(u_char *data, int skblen, struct timeval *ts)
   {
     _printf("TH_RST\n");
     a_tcp->nids_state = NIDS_RESET;
+    if ( a_tcp->close_initiator == 0)
+    {
+      if (from_client)
+        a_tcp->close_initiator = 1;
+      else
+        a_tcp->close_initiator = 2;
+    
+    }
+
     if (a_tcp->nids_state == NIDS_DATA)
     {
       struct lurker_node *i;
-
       for (i = a_tcp->listeners; i; i = i->next)
         (i->item)(a_tcp, &i->data, ts, data);
     }
@@ -1143,10 +1171,12 @@ void process_tcp(u_char *data, int skblen, struct timeval *ts)
     if (rcv->state == FIN_SENT)
       rcv->state = FIN_CONFIRMED;
     _printf("rcv->state == FIN_CONFIRMED && snd->state == FIN_CONFIRMED = %d \n", rcv->state == FIN_CONFIRMED && snd->state == FIN_CONFIRMED);
-    if (rcv->state == FIN_CONFIRMED && snd->state == FIN_CONFIRMED)
+    //if (rcv->state == FIN_CONFIRMED && snd->state == FIN_CONFIRMED) 
+     if ((rcv->state >= FIN_SENT || rcv->state == TCP_CLOSING) &&
+        (snd->state >= FIN_SENT || snd->state == TCP_CLOSING))
     {
       struct lurker_node *i;
-      _printf("FIN_CONFIRMED\n");
+      _printf("FIN_CONFIRMED a_tcp->close_initiator = %d a_tcp = %p\n", a_tcp->close_initiator,  (void *)a_tcp);
 
       a_tcp->nids_state = NIDS_CLOSE;
       for (i = a_tcp->listeners; i; i = i->next)

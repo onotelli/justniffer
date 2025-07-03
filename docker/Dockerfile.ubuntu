@@ -5,8 +5,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update -y && apt install -y wget 
 
-ARG JUSTNIFFER_DEB=justniffer_0.6.8.noble_amd64.deb
-RUN wget https://github.com/onotelli/justniffer/releases/download/v0.6.8/${JUSTNIFFER_DEB}
+ARG JUSTNIFFER_VERSION=0.6.9
+ARG JUSTNIFFER_DEB=justniffer_${JUSTNIFFER_VERSION}.noble_amd64.deb
+RUN wget https://github.com/onotelli/justniffer/releases/download/v${JUSTNIFFER_VERSION}/${JUSTNIFFER_DEB}
 RUN apt install -y ./${JUSTNIFFER_DEB} 
 
 CMD [ "tail", "-f", "/dev/null" ]

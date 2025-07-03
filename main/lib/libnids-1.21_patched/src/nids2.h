@@ -107,6 +107,7 @@ struct tcp_stream
   int read;
   struct tcp_stream *next_free;
   void *user;
+  int close_initiator; 
 };
 
 struct nids_prm

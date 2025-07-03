@@ -631,6 +631,8 @@ void stream::copy_tcp_stream(tcp_stream *pstream)
 	read = pstream->read;
 	next_free = pstream->next_free;
 	user = pstream->user;
+	close_initiator = pstream->close_initiator;
+
 }
 
 void stream::init(tcp_stream *pstream)
@@ -688,12 +690,19 @@ void close_originator::onTimedOut(tcp_stream *pstream, const timeval *t, unsigne
 void close_originator::onClose(tcp_stream *pstream, const timeval *t, unsigned char *packet)
 {
 	stat = closed;
-	if (packet)
-	{
-		struct ip *this_iphdr = (struct ip *)packet;
-		struct tcphdr *this_tcphdr = (struct tcphdr *)(packet + 4 * this_iphdr->ip_hl);
-		ip_originator = this_iphdr->ip_src.s_addr;
-		port_originator = ntohs(this_tcphdr->th_sport);
+	if (packet )
+	{	
+		if (pstream->close_initiator == 1)
+		{
+			ip_originator = pstream->addr.saddr;
+			port_originator = pstream->addr.source;
+		}
+		else if  (pstream->close_initiator == 2)
+		{
+			ip_originator = pstream->addr.daddr;
+			port_originator = pstream->addr.dest;
+
+		}
 	}
 }
 

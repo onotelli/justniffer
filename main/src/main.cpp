@@ -95,16 +95,15 @@ const char *capture_in_the_middle = "capture-in-the-middle";
 const char *python_function = "python";
 const char *no_newline = "no-newline";
 
-typedef vector<string>::const_iterator args_type;
+using args_type = vector<string>::const_iterator ;
 bool check_conflicts(const po::variables_map &vm, const vector<string> &arguments)
 {
 	vector<string> founds;
-	for (args_type it = arguments.begin(); it != arguments.end(); it++)
+	for (const auto& arg_name : arguments)
 	{
-		string a = *it;
-		po::variable_value arg = vm[*it];
+		po::variable_value arg = vm[arg_name];
 		if (!arg.empty())
-			founds.push_back(*it);
+			founds.push_back(arg_name);
 	}
 	if (founds.size() > 1)
 	{
@@ -257,15 +256,15 @@ int main(int argc, char *argv[])
 		}
 
 		nids_params.scan_num_hosts = 0;
-		nids_params.pcap_timeout = 10;
-		nids_params.tcp_workarounds = 1;
+		nids_params.pcap_timeout = 60;
+		nids_params.tcp_workarounds = 0;
 
 		// Thanks to Benet Leong
 		nids_params.n_tcp_streams = max_concurrent_tcp_stream_v;
 		nids_params.n_hosts = max_fragmented_ip_hosts_v;
 		// we don want to log intrusions
 		nids_params.syslog = reinterpret_cast<void (*)()>(null_syslog);
-		bool bcapture_in_the_middle = (vm.count(capture_in_the_middle) > 0) ? true : false;
+		bool bcapture_in_the_middle = (vm.count(capture_in_the_middle) > 0);
 		nids_params.reassemble_in_the_middle = bcapture_in_the_middle;
 		if (!nids_init())
 		{
