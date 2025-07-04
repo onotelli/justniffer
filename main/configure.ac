@@ -10,7 +10,7 @@ dnl
 
 AC_PREREQ([2.71])
 AC_COPYRIGHT([2007-2025 (c) Plecno s.r.l]) # Use [] for strings with special chars like ()
-AC_INIT([justniffer],[0.6.10-alpha],[info@plecno.com])
+AC_INIT([justniffer],[0.6.10],[info@plecno.com])
 AC_DEFINE([JUSTNIFFER_VERSION], [PACKAGE_VERSION], [justniffer version])
 AC_DEFINE([JUSTNIFFER_YEAR], ["2025"], [justniffer year])
 #AC_CONFIG_MACRO_DIR([included])
