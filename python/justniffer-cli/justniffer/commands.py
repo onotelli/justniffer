@@ -1,5 +1,6 @@
 from subprocess import PIPE, getstatusoutput, run, CalledProcessError
 import re
+from packaging.version import Version
 from os import getuid, environ
 from pathlib import PosixPath
 import sys
@@ -33,12 +34,12 @@ def get_justniffer_version() -> str:
     return res
 
 
-def _extract_versions(text: str) -> tuple[str, str]:
+def _extract_versions(text: str) -> tuple[Version,Version]:
     python_version = re.search(r'Python (\d+\.\d+)', text)
     justniffer_version = re.search(r'justniffer (.+)', text)
     if justniffer_version is None or python_version is None:
         raise VersionException('Failed to parse justniffer version')
-    return justniffer_version.group(1), python_version.group(1)
+    return Version(justniffer_version.group(1)), Version(python_version.group(1))
 
 
 def check_justniffer_version() -> None:
@@ -46,9 +47,9 @@ def check_justniffer_version() -> None:
     justniffer_version, python_version = _extract_versions(version)
     logger.debug(f'justniffer version: {justniffer_version}')
     logger.debug(f'python version: {python_version}')
-    if justniffer_version < compatible_justniffer_version:
+    if justniffer_version < Version(compatible_justniffer_version):
         raise VersionException(f'Incompatible justniffer version: {justniffer_version}, expected: {compatible_justniffer_version}')
-    if python_version < compatible_python_version:
+    if python_version < Version(compatible_python_version):
         raise VersionException(f'Incompatible python version: {python_version}, expected: {compatible_python_version}')
 
 

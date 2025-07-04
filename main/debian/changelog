@@ -1,3 +1,8 @@
+justniffer (0.6.11.noble) noble; urgency=low
+  * minor code refactoring.
+ 
+ -- Oreste Notelli <oreste.notelli@gmail.com>  Mon, 4 Jul 2025 13:45:00 +0200
+
 justniffer (0.6.10.jammy) jammy; urgency=low
   * Fix Properly handle close_originator.
  

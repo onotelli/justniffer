@@ -28,7 +28,9 @@
 #endif //HAVE_BOOST_PYTHON
 #include "utilities.h"
 
-#define DEFAULT_TIMEFORMAT "%Y-%m-%d %T"
+
+constexpr const char* DEFAULT_TIMEFORMAT = "%Y-%m-%d %T";
+
 static const std::string default_timeformat (DEFAULT_TIMEFORMAT);
 
 class ascii_filter : public boost::iostreams::output_filter
@@ -443,7 +445,7 @@ public:
 	}
 	static void nids_handler(struct tcp_stream *ts, void **yoda, struct timeval *t, unsigned char *packet);
 	void parse(const char *format);
-	virtual ~parser() { theOnlyParser = NULL; };
+	virtual ~parser() { theOnlyParser = nullptr; };
 	void set_printer(printer *printer) { _printer = printer; }
 	void set_handle_truncated(bool value) { handle_truncated = value; }
 	void set_default_not_found(const std::string &default_not_found) { _default_not_found = default_not_found; }
@@ -457,7 +459,7 @@ private:
 	void init()
 	{
 		_already_init = false;
-		check(theOnlyParser == NULL, common_exception("parser::parser(): I am not the only parser"));
+		check(theOnlyParser == nullptr, common_exception("parser::parser(): I am not the only parser"));
 		theOnlyParser = this;
 	}
 

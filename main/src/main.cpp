@@ -354,7 +354,7 @@ int main(int argc, char *argv[])
 		io_service.stop();
 		signal_thread.join();
 		// reached when parsing file
-		exit(0);
+		return 0;
 	}
 	catch (po::error &e)
 	{
