@@ -569,6 +569,8 @@ static void cap_queue_process_thread()
 
 #endif
 
+#define DLT_LINUX_SLL2 276
+
 int nids_init()
 {
     /* free resources that previous usages might have allocated */
@@ -634,7 +636,11 @@ int nids_init()
     case DLT_PPP_SERIAL:
         nids_linkoffset = 4;
         break;
-#endif        
+#endif      
+    case DLT_LINUX_SLL2:
+        nids_linkoffset = 20; // or appropriate offset for SLL2
+        break;
+
     default:
 	strcpy(nids_errbuf, "link type unknown");
 	return 0;

@@ -35,9 +35,13 @@ after(u_int seq1, u_int seq2)
   return ((int)(seq2 - seq1) < 0);
 }
 */
+
+
+
  inline void _printf(const char *format, ...) {
   
 }
+ 
 
 void __printf(const char *format, ...) {
   va_list args;
@@ -320,8 +324,10 @@ add_new_tcp(struct tcphdr *this_tcphdr, struct ip *this_iphdr, const struct time
   a_tcp->hash_index = hash_index;
   a_tcp->addr = addr;
   a_tcp->client.state = TCP_SYN_SENT;
-  a_tcp->client.seq = ntohl(this_tcphdr->th_seq) + 1;
-  a_tcp->client.first_data_seq = a_tcp->client.seq;
+  int iplen = ntohs(this_iphdr->ip_len);
+  int datalen = iplen - 4 * this_iphdr->ip_hl - 4 * this_tcphdr->th_off;
+  a_tcp->client.seq = ntohl(this_tcphdr->th_seq) + 1 + datalen;
+  a_tcp->client.first_data_seq = a_tcp->client.seq ;
   a_tcp->client.window = ntohs(this_tcphdr->th_win);
   a_tcp->client.ts_on = get_ts(this_tcphdr, &a_tcp->client.curr_ts);
   a_tcp->client.wscale_on = get_wscale(this_tcphdr, &a_tcp->client.wscale);
@@ -920,16 +926,17 @@ void process_tcp(u_char *data, int skblen, struct timeval *ts)
 
   datalen = iplen - 4 * this_iphdr->ip_hl - 4 * this_tcphdr->th_off;
 //   /* --- Begin TCP-flag printing --- */
-//     _printf("SRC:%u DST:%u FLAGS:%s%s%s%s%s%s\n",
-//     ntohs(this_tcphdr->th_sport),
-//     ntohs(this_tcphdr->th_dport),
-//     this_tcphdr->th_flags & TH_SYN  ? " SYN" : "",
-//     this_tcphdr->th_flags & TH_ACK  ? " ACK" : "",
-//     this_tcphdr->th_flags & TH_FIN  ? " FIN" : "",
-//     this_tcphdr->th_flags & TH_RST  ? " RST" : "",
-//     this_tcphdr->th_flags & TH_PUSH ? " PSH" : "",
-//     this_tcphdr->th_flags & TH_URG  ? " URG" : ""
-// );
+// _printf("SRC:%u DST:%u DATA LEN %u FLAGS:%s%s%s%s%s%s\n",
+// ntohs(this_tcphdr->th_sport),
+// ntohs(this_tcphdr->th_dport),
+// datalen,
+// this_tcphdr->th_flags & TH_SYN  ? " SYN" : "",
+// this_tcphdr->th_flags & TH_ACK  ? " ACK" : "",
+// this_tcphdr->th_flags & TH_FIN  ? " FIN" : "",
+// this_tcphdr->th_flags & TH_RST  ? " RST" : "",
+// this_tcphdr->th_flags & TH_PUSH ? " PSH" : "",
+// this_tcphdr->th_flags & TH_URG  ? " URG" : ""
+//  );
 
   if (datalen < 0)
   {
@@ -1009,7 +1016,11 @@ void process_tcp(u_char *data, int skblen, struct timeval *ts)
         a_tcp->server.state != TCP_CLOSE || !(this_tcphdr->th_flags & TH_ACK))
       return;
     if (a_tcp->client.seq != ntohl(this_tcphdr->th_ack))
+    {
+      _printf("a_tcp->client.seq != ntohl(this_tcphdr->th_ack) (%u != %u)\n",
+               a_tcp->client.seq, ntohl(this_tcphdr->th_ack));
       return;
+    }
     a_tcp->server.state = TCP_SYN_RECV;
     a_tcp->server.seq = ntohl(this_tcphdr->th_seq) + 1;
     a_tcp->server.first_data_seq = a_tcp->server.seq;
@@ -1042,11 +1053,11 @@ void process_tcp(u_char *data, int skblen, struct timeval *ts)
   }
   _printf("datalen %d, th_seq %u, rcv->ack_seq %u, rcxv->window %u rcv->wscale %u\n",datalen, ntohl(this_tcphdr->th_seq), rcv->ack_seq, rcv->window, rcv->wscale);
   _printf("ntohl(this_tcphdr->th_seq) == rcv->ack_seq) %u\n", ntohl(this_tcphdr->th_seq) == rcv->ack_seq);
-  if (
+if (
       !(!datalen && ntohl(this_tcphdr->th_seq) == rcv->ack_seq) &&
       (!before(ntohl(this_tcphdr->th_seq), rcv->ack_seq + rcv->window * rcv->wscale) ||
        before(ntohl(this_tcphdr->th_seq) + datalen, rcv->ack_seq)))
-    return;
+  return;
 
   if ((this_tcphdr->th_flags & TH_RST))
   {

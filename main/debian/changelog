@@ -1,3 +1,11 @@
+justniffer (0.6.12.noble) noble; urgency=low
+  * Add support for DLT_LINUX_SLL2 packet capture format.
+  * Improve handling of TCP SYN packets with payload data.
+  * Fix crash in Py_InitializeEx during multi-threaded Python interpreter initialization.
+
+ -- Oreste Notelli <oreste.notelli@gmail.com>  Mon, 24 Aug 2025 13:53:00 +0200
+
+
 justniffer (0.6.11.noble) noble; urgency=low
   * minor code refactoring.
  

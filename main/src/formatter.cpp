@@ -751,8 +751,11 @@ static int initializations = 0;
 
 void python_finalize()
 {
-	if (--initializations <= 0)
-		Py_Finalize();
+	if (--initializations <= 0){
+		//cout<<"initializations "<<initializations <<"\n";
+		//Py_FinalizeEx();
+	}
+		
 }
 
 python_printer::python_printer(std::string script, std::string user) : _script(script), _finalized(false), _user(user)
@@ -786,7 +789,7 @@ Res python_init(std::string scriptname)
 		func = scriptname.substr(pos + 1);
 	}
 	if (initializations <= 0)
-		Py_Initialize();
+		Py_InitializeEx(0);
 	++initializations;
 	py::object main_module = py::import("__main__");
 	py::object main_namespace = main_module.attr("__dict__");

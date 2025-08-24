@@ -17,7 +17,20 @@ class FileChangeHandler(FileSystemEventHandler):
             src_path = event.src_path
             filename = os.path.basename(src_path)
             dest_path = os.path.join(destination_dir, filename) # type: ignore
-            shutil.copy2(src_path, dest_path)
+            content = None
+            if filename.endswith('.md'):
+                with open(src_path, 'r') as file:
+                    content = file.read()
+                with open(dest_path, 'w') as file:
+                    file.write('''
+---
+layout: default
+---
+
+''')
+                    file.write(content)
+            else:
+                shutil.copy2(src_path, dest_path)
             logger.info(f'Copied: {filename} to {destination_dir}')
 
 if __name__ == '__main__':
