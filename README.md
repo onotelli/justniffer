@@ -2,9 +2,9 @@
 # Justniffer  
 [Project Page](https://onotelli.github.io/justniffer/)
 
-![License](https://img.shields.io/badge/License-GPLv3-blue.svg)
-![Platform](https://img.shields.io/badge/Platform-Linux-darkgreen.svg)
-![Latest Release](https://img.shields.io/github/v/release/onotelli/justniffer?color=darkred)
+[![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
+[![Platform](https://img.shields.io/badge/Platform-Linux-darkgreen.svg)](https://kernel.org)
+[![Latest Release](https://img.shields.io/github/v/release/onotelli/justniffer?color=darkred)](https://github.com/onotelli/justniffer/releases/latest)
 
 ---
 
