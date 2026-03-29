@@ -162,19 +162,21 @@ Can be extended by external scripts.
 
 ## Install on Ubuntu
 
+```bash
     sudo apt install software-properties-common
     sudo add-apt-repository ppa:oreste-notelli/ppa
     sudo apt update
     sudo apt install justniffer
-
+```
 ## Install on Debian
 
 download the .deb file from 
 [https://github.com/onotelli/justniffer/releases](https://github.com/onotelli/justniffer/releases)
 and install it with:
 
+```bash
     sudo apt install ./justniffer_<version>.deb
-
+```
 
 ## Install From Source
 
@@ -196,10 +198,12 @@ Be sure you have installed third-party tools and libraries:
 
 unpacked the source package, type:
 
+```bash
     $ cd main
     $ ./configure 
     $ make 
     $ make install
+```
 
 ---
 ## EXAMPLES
@@ -221,7 +225,9 @@ output:
 ## Example 2. Like Example 1 but appending other fields,
 For example http response time (see man page for a complete keyword list)
 
+```bash
     $ justniffer -i eth0 -a " %response.time"
+```
 
 output:
 
@@ -234,7 +240,9 @@ output:
 ## Example 3. Capture all tcp traffic
 (add -u or -x options to encode unprintable characters):
 
+```bash
     $ justniffer -i eth0 -r
+```
 
 output:
 
@@ -267,7 +275,9 @@ output:
 
 ## Example 4. Define a completely custom log format
 
+```bash
     $ justniffer -i eth0 -l "%request.timestamp %source.ip %dest.ip %request.header.host %request.url" 
+```
 
 output:
 
@@ -284,9 +294,12 @@ output:
 NOTE: capture file must be performed with unlimited snaplen for catching whole packets. Justniffer can work only works on pcap files with whole packets.
 tcpdump command example: tcpdump -w /tmp/file.cap -s0 -i ath0
 
+```bash
     $ justniffer -f /file.cap
+```
 
 <br>
+
 ## Example 6. Parameters for setting a more precise formatting
 Many keyword has parameters for setting a more precise formatting:
 
@@ -324,16 +337,22 @@ output:
 ## Example 7. Capture only http traffic
 the -p option let you to specify a tcpdump compatible filter (see pcap-filter(7)): "port 80 or port 8080" capture only http traffic (usually using tcp port 80 and 8080)
 
+```bash
     $ justniffer -i eth0 -r -p "port 80 or port 8080"
+```
 
 <br>
+
 ## Example 8. Extend with an external executable
 the -e option let you to specify an external executable (usually a script) to which , for every log, the output will be redirect to. If you want to perform complex extraction operations, you can write your own script that will receive from the standard input all content specified by the -l option. A complete ad useful example is provided with justniffer-grab-http-traffic
+
+```bash
     $ justniffer -l "%response" -e ./myscript.sh -i ath0
+```
 
 myscript.sh
       
-        
+```bash        
     #!/bin/bash
     # myscript.sh 
     # example script (print all lines containing "href" string)
@@ -346,13 +365,15 @@ myscript.sh
     fi;
     done
 
-      
+```
 
 <br>
     
 ## Example 9. Capture smtp traffic (usually using tcp port 25)
-    $ justniffer -i eth0 -r -p "port 25"
 
+```bash
+    $ justniffer -i eth0 -r -p "port 25"
+```
 output:
       
             
@@ -429,19 +450,25 @@ output:
 
     
 <br>
+
 ## Example 10. Trace performances
 The following keywords are used to obtain logs that give an overview on the performance of services based on HTTP protocol measuring connection time, response time, tcp connection timeouts, keep alive requests, etc. (see man for more information)
 
+```bash
     $ sudo justniffer -i eth0 -u -p "port 80 or port 8080" -l "%request.header.host %request.url %connection.time %idle.time.0  %request.time %response.time.begin %response.time.end %idle.time.1 %connection %close.originator"
+```
 
 <br>
+
 ## Example 11. Grep keywords
 The "grep keywords"can be used to capture portions of text using regular expressions. In this example we want to collect:
 
 the url from the request header by the regular expression [^\s]*[\s]*([^\s]*)
 and the content type from the response header by the regular expression Content-Type:(\s)*([^\r]*)
 
+```bash
     $ sudo justniffer -l "%request.header.grep([^\s]*[\s]*([^\s]*)) %response.header.grep(Content-Type:(\s)*([^\r]*)) %source.ip" -i eth0
+```
 
 output:
 
@@ -453,7 +480,8 @@ output:
     /plecno_res/src/effects.js application/javascript 192.168.10.2
 
 <br>
-## Example 12. capture tcp traffic without the 3-way handshake (capture in the middle)
+
+## Example 12. Capture tcp traffic without the 3-way handshake (capture in the middle)
 Justniffer usually does not capture traffic if it starts after a connection has already been established. It was primarily designed to measure the nature and timing of TCP connections, meaning it may lack sufficient information to retrieve certain details without the initial 3-way handshake packets (e.g., client IP/port, connection reuse, etc.)
 
 However, in some cases, it can still be useful to trace traffic even without these precise details, so use it with an understanding of what you are obtaining.
@@ -462,7 +490,31 @@ You can use the flag **-m** or **--capture-in-the-middle** to enable capturing i
 
 **WARNING**: it may yield unexpected results
 
-
+```bash
     $ sudo justniffer -i eth0 -m -r -u
+```
+
+## Example 13. Logging TLS version and SNI  (Server Name Indication) 
+
+Justniffer can extract Server Name Indication (SNI) and TLS versions from encrypted traffic. This is particularly useful for identifying which services are being accessed over HTTPS without needing to decrypt the traffic
+
+```bash
+sudo justniffer -l %request.timestamp %tls.sni %tls.version %request.size %response.size %response.time %dest.ip %dest.port 
+```    
+output:
+
+    2026-03-29 19:37:43.903441 clientservices.googleapis.com TLS_1.3 1835 5777 0.025552 192.178.202.94 443
+    2026-03-29 19:37:44.308740 clientservices.googleapis.com TLS_1.3 1803 5777 0.025788 192.178.202.94 443
+    2026-03-29 19:37:44.115823 - - 527 1555 0.030843 192.178.202.94 443
+    2026-03-29 19:37:44.149183 - - 70 0 - 192.178.202.94 443
+    2026-03-29 19:37:44.157575 update.googleapis.com TLS_1.3 1731 5770 0.026058 192.178.204.94 443
+    2026-03-29 19:37:44.158740 update.googleapis.com TLS_1.3 1763 5769 0.024750 192.178.204.94 443
+    2026-03-29 19:37:44.239743 update.googleapis.com TLS_1.3 1795 5769 0.025414 192.178.204.94 443
+    2026-03-29 19:37:44.241762 update.googleapis.com TLS_1.3 1763 5768 0.029233 192.178.204.94 443
+    2026-03-29 19:37:44.291691 - - 2669 1004 0.003698 192.178.204.94 443
+    2026-03-29 19:37:44.289416 - - 90 1004 0.007066 192.178.204.94 443
+    2026-03-29 19:37:44.259114 www.google.com TLS_1.3 1756 5379 0.024325 142.251.150.119 443
+
 
 see [MAN](MAN)
+
