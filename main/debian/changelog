@@ -1,3 +1,9 @@
+justniffer (0.6.13.noble) noble; urgency=low
+  * Add %tls.sni and %tls.version keywords
+  
+ -- Oreste Notelli <oreste.notelli@gmail.com>  Sun, 29 Mar 2026 14:45:35 +0200
+
+
 justniffer (0.6.12.noble) noble; urgency=low
   * Add support for DLT_LINUX_SLL2 packet capture format.
   * Improve handling of TCP SYN packets with payload data.

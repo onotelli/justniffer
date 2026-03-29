@@ -580,8 +580,23 @@ is replaced by the source IP address
 ### %source.port
 is replaced by the source TCP port
 
+### %session.requests
+is replaced by TCP session request sequence number, since the TCP session started
+
+### %session.time
+is replaced by the TCP session lifespan
+
+### %streams
+is replaced by the number of currently opened tcp streams
+
 ### %tab
 is replaced by a tab
+
+### %tls.sni([not found string])
+is replaced by the TLS SNI (Server Name Indication). The optional "not found" string is replaced in case the keyword value was not found. If not provided the -n value or the default value "-" is used
+
+### %tls.version([not found string])
+is replaced by a TLS version. The optional "not found" string is replaced in case the keyword value was not found. If not provided the -n value or the default value "-" is used
 
 ### %-
 break (used for breaking keywords). For example, if you want to obtain output like this:
