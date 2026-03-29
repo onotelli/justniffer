@@ -241,6 +241,7 @@ void parser::init_parse_elements()
 
 	
 	elements["tls.sni"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, sni_extractor>>(_default_not_found));
+	elements["tls.version"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, tls_version_extractor>>(_default_not_found));
 
 
 	elements["idle.time.0"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, idle_time_1>>(_default_not_found));
@@ -1066,3 +1067,225 @@ void python_handler::onInterrupted()
 }
 
 #endif // HAVE_BOOST_PYTHON
+
+
+
+// tls_extractor implementation
+
+struct TlsClientHelloInfo {
+    std::string sni;
+    uint16_t legacy_version = 0;   // e.g. 0x0303
+    uint16_t real_version = 0;     // e.g. 0x0304 for TLS 1.3
+};
+
+static bool is_tls_grease_value(uint16_t v)
+{
+    return ((v & 0x0f0f) == 0x0a0a) && (((v >> 8) & 0xff) == (v & 0xff));
+}
+
+static bool is_valid_tls_version(uint16_t v)
+{
+    // Keep accepted values in the 0x03xx family and reject GREASE placeholders.
+    return (v >= 0x0301) && (v <= 0x03ff) && !is_tls_grease_value(v);
+}
+
+
+#include <string>
+#include <cstdint>
+
+#define _MIN_SNI_SIZE 5
+#define _MAX_SNI_SIZE 1024
+
+
+void tls_extractor::onRequest(tcp_stream *pstream, const timeval *t)
+{
+    if (content.size() < _MAX_SNI_SIZE)
+        content.append(pstream->server.data, pstream->server.data + pstream->server.count_new);
+}
+
+TlsClientHelloInfo parse_client_hello(const std::string& data) {
+    TlsClientHelloInfo info;
+
+    const size_t len = data.size();
+    if (len < 5)
+        return info;
+
+    // Find TLS record header
+    size_t pos = 0;
+    for (; pos + 5 <= len; ++pos) {
+        if ((uint8_t)data[pos] == 0x16 && (uint8_t)data[pos + 1] == 0x03)
+            break;
+    }
+    if (pos + 5 > len)
+        return info;
+
+    uint16_t record_len =
+        ((uint8_t)data[pos + 3] << 8) | (uint8_t)data[pos + 4];
+
+    size_t record_start = pos + 5;
+    if (record_start + record_len > len)
+        record_len = len - record_start;
+
+    pos = record_start;
+
+    // Handshake header
+    if (pos + 4 > len)
+        return info;
+
+    uint8_t hs_type = (uint8_t)data[pos];
+    if (hs_type != 0x01) // ClientHello
+        return info;
+
+    uint32_t hs_len =
+        ((uint8_t)data[pos + 1] << 16) |
+        ((uint8_t)data[pos + 2] << 8)  |
+         (uint8_t)data[pos + 3];
+
+    if (pos + 4 + hs_len > len)
+        return info;
+
+    pos += 4;
+
+    // Extract legacy TLS version
+    if (pos + 2 > len)
+        return info;
+
+    info.legacy_version =
+        ((uint8_t)data[pos] << 8) | (uint8_t)data[pos + 1];
+
+    // Skip version + random
+    pos += 2 + 32;
+
+    // session_id
+    if (pos + 1 > len)
+        return info;
+    uint8_t session_id_len = (uint8_t)data[pos];
+    pos += 1 + session_id_len;
+    if (pos > len)
+        return info;
+
+    // cipher_suites
+    if (pos + 2 > len)
+        return info;
+    uint16_t cipher_len =
+        ((uint8_t)data[pos] << 8) | (uint8_t)data[pos + 1];
+    pos += 2 + cipher_len;
+    if (pos > len)
+        return info;
+
+    // compression_methods
+    if (pos + 1 > len)
+        return info;
+    uint8_t comp_len = (uint8_t)data[pos];
+    pos += 1 + comp_len;
+    if (pos > len)
+        return info;
+
+    // extensions
+    if (pos + 2 > len)
+        return info;
+    uint16_t ext_len =
+        ((uint8_t)data[pos] << 8) | (uint8_t)data[pos + 1];
+    pos += 2;
+
+    size_t ext_end = pos + ext_len;
+    if (ext_end > len)
+        ext_end = len;
+
+    // Parse extensions
+    while (pos + 4 <= ext_end) {
+        uint16_t ext_type =
+            ((uint8_t)data[pos] << 8) | (uint8_t)data[pos + 1];
+        uint16_t ext_size =
+            ((uint8_t)data[pos + 2] << 8) | (uint8_t)data[pos + 3];
+        pos += 4;
+
+        if (pos + ext_size > ext_end)
+            break;
+
+        // --- SNI extension ---
+        if (ext_type == 0x0000 && ext_size >= 5) {
+            size_t p = pos;
+            uint16_t list_len =
+                ((uint8_t)data[p] << 8) | (uint8_t)data[p + 1];
+            p += 2;
+
+            size_t list_end = p + list_len;
+            if (list_end > pos + ext_size)
+                list_end = pos + ext_size;
+
+            while (p + 3 <= list_end) {
+                uint8_t name_type = (uint8_t)data[p];
+                uint16_t name_len =
+                    ((uint8_t)data[p + 1] << 8) | (uint8_t)data[p + 2];
+                p += 3;
+
+                if (name_type == 0x00 && p + name_len <= list_end) {
+                    info.sni = data.substr(p, name_len);
+                    break;
+                }
+                p += name_len;
+            }
+        }
+
+        // --- supported_versions extension (real TLS version) ---
+        if (ext_type == 0x002b && ext_size >= 3) {
+            size_t p = pos;
+            uint8_t list_len = (uint8_t)data[p];
+            p += 1;
+
+            size_t list_end = p + list_len;
+            if (list_end > pos + ext_size)
+                list_end = pos + ext_size;
+
+            while (p + 1 < list_end) {
+                uint16_t v =
+                    ((uint8_t)data[p] << 8) | (uint8_t)data[p + 1];
+                p += 2;
+
+                if (!is_valid_tls_version(v))
+                    continue;
+
+                // Highest version wins
+                if (v > info.real_version)
+                    info.real_version = v;
+            }
+        }
+
+        pos += ext_size;
+    }
+
+    return info;
+}
+
+
+void sni_extractor::append(std::basic_ostream<char>& out, const timeval*, connections_container*) {
+    TlsClientHelloInfo info = parse_client_hello(content);
+    if (info.sni.empty())
+        out << _not_found;
+    else    
+        out << info.sni;
+}
+
+
+
+void tls_version_extractor::append(std::basic_ostream<char>& out, const timeval*, connections_container*) {
+    TlsClientHelloInfo info = parse_client_hello(content);
+    uint16_t version = info.real_version != 0 ? info.real_version : info.legacy_version;
+
+    if (!is_valid_tls_version(version))
+        out << _not_found;
+    else
+    {    
+        switch (version) {
+            case 0x0301: out << "TLS_1.0"; break;
+            case 0x0302: out << "TLS_1.1"; break;
+            case 0x0303: out << "TLS_1.2"; break;
+            case 0x0304: out << "TLS_1.3"; break;
+            default:
+                out << std::hex << version << std::dec;
+        }
+        
+    }
+}
+

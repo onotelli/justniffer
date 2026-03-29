@@ -147,21 +147,3 @@ protected:
 	virtual string& get_text() {return text;};
 };
 
-
-
-class sni_extractor : public basic_handler
-{
-public:
-
-	sni_extractor(const string &not_found): _not_found(not_found) {}
-
-	virtual void onRequest(tcp_stream *pstream, const timeval *t);
-	virtual void append(std::basic_ostream<char>& out, const timeval*, connections_container*);
-	
-protected:
-	virtual string& get_text();
-private:
-	string content;
-	string sni;
-	string _not_found;
-};

@@ -1447,6 +1447,43 @@ private:
 };
 
 
+class tls_extractor : public basic_handler
+{
+public:	
+	virtual void onRequest(tcp_stream *pstream, const timeval *t);
+	
+protected:
+	string content;
+};
+
+
+
+class sni_extractor : public tls_extractor
+{
+public:
+
+	sni_extractor(const string &not_found): _not_found(not_found) {}
+
+	virtual void append(std::basic_ostream<char>& out, const timeval*, connections_container*);
+private:
+	string sni;
+	string _not_found;
+};
+
+
+class tls_version_extractor : public tls_extractor
+{
+public:
+
+	tls_version_extractor(const string &not_found): _not_found(not_found) {}
+	virtual void append(std::basic_ostream<char>& out, const timeval*, connections_container*);
+	
+private:
+	string tls_version;
+	string _not_found;
+};
+
+
 #ifdef HAVE_BOOST_PYTHON
 
 class python_handler_factory :public handler_factory
