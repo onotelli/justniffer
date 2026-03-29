@@ -34,37 +34,48 @@ Packet capture is performed using **libpcap**, ensuring compatibility with stand
 
 ```mermaid
 sequenceDiagram
-    autonumber
-    participant C as Client
-    participant S as Server
+    participant Client
+    participant Server
 
-    Note over C,S: %connection.time
-    C->>S: SYN
-    S->>C: SYN/ACK
-    C->>S: ACK
-    Note over C,S: Connection established
+    %% Connection setup
+    Client->>Server: SYN (connect)
+    Note right of Server: %connection.time
+    Server-->>Client: SYN/ACK
+    Client->>Server: ACK
+    Note right of Server: ESTABLISHED
 
-    Note over C,S: %idle.time.0 (before request)
+    %% Idle before request
+    Note right of Server: %idle.time.0\n(after connection, before request)
 
-    Note over C,S: %request.time
-    C->>S: Request (first packet)
-    C->>S: Request (more packets)
-    C->>S: Request (last packet)
+    %% Request phase
+    Client->>Server: Request (first packet)
+    Server-->>Client: ACK
 
-    Note over C,S: %response.time.begin
-    S->>C: Response (first packet)
+    Client->>Server: Request (data...)
+    Note right of Server: %request.time
+    Server-->>Client: ACK
 
-    Note over C,S: %response.time
-    S->>C: Response (more packets)
-    S->>C: Response (last packet)
-    Note over C,S: %response.time.end
+    Client->>Server: Request (last packet)
+    Server-->>Client: ACK
 
-    Note over C,S: %idle.time.1 (after response)
+    %% Response phase
+    Note right of Server: %response.time.begin
 
-    C-->>S: FIN or
-    S-->>C: FIN
-    Note over C,S: %close.originator
+    Server-->>Client: Response (first packet)
+    Client->>Server: ACK
 
+    Server-->>Client: Response (data...)
+    Note right of Server: %response.time.end
+    Client->>Server: ACK
+
+    Server-->>Client: Response (last packet)
+    Client->>Server: ACK
+
+    %% Idle after response
+    Note right of Server: %idle.time.1\n(after response, before next request/close)
+
+    %% Connection close
+    Server-->>Client: CLOSE
 ```
 
 
