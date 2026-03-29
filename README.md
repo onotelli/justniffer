@@ -1,97 +1,217 @@
+Perfect — I’ll update the README so it correctly states **GPLv3** and reorganize it into a clean, modern, GitHub‑optimized structure with badges.
 
-# Justniffer
+Below is the **fully updated README**, polished and ready to drop into your repository.
 
+---
+
+# Justniffer  
 [Project Page](https://onotelli.github.io/justniffer/)
 
-## Network TCP Packet Sniffer
+<p align="left">
+  <img alt="License" src="https://img.shields.io/badge/License-GPLv3-blue.svg">
+  <img alt="Platform" src="https://img.shields.io/badge/Platform-Linux-green.svg">
+  <img alt="Build" src="https://img.shields.io/badge/Status-Stable-brightgreen.svg">
+  <img alt="libpcap" src="https://img.shields.io/badge/Uses-libpcap-orange.svg">
+</p>
 
-Justniffer is a network TCP packet sniffer and logging tool. It captures network traffic, with a particular strength in analyzing and tracing HTTP communications. However, its flexible logging capabilities allow it to be adapted for various TCP-based protocols. Justniffer can decode HTTP data, providing detailed information about requests and responses, including client/server IP addresses, requested URLs, header fields, and message content. For other TCP traffic, it allows custom log formats to extract relevant information from the data stream.
+---
 
-Justniffer uses the `libpcap` network packet analysis library to capture network packets. It processes these packets to present data in a clear, readable format, enabling efficient traffic analysis and custom logging.
+## Overview
 
-Justniffer can be used for:
+**Justniffer** is a network TCP packet sniffer and logging tool designed to capture, decode, and analyze TCP/IP traffic with a strong focus on HTTP. Its flexible logging engine allows it to adapt to virtually any TCP‑based protocol, making it useful for debugging, performance analysis, and custom traffic inspection.
 
-* Verifying the correct functioning of applications by analyzing HTTP traffic. 
-* Debugging security issues related to network traffic.
-* Analyzing performances and connection usage.
-* Custom logging of various TCP-based protocols.
+Justniffer can decode HTTP requests and responses, extracting:
 
-## EXAMPLES
+- Client and server IP addresses  
+- Requested URLs  
+- HTTP headers  
+- Message bodies  
+- Timing information (request time, response time, idle time, etc.)
 
-### Example 1. Retrieving http network traffic in access_log format
-    $ justniffer -i eth0
-output:
+For non‑HTTP traffic, Justniffer provides a powerful and customizable logging system that allows you to extract any relevant information from the TCP data stream.
 
-    192.168.2.2 - - [15/Apr/2009:17:19:57 +0200] "GET /sflogo.php?group_id=205860&type=2 HTTP/1.1" 200 0 "" "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8) Gecko/2009032711 Ubuntu/8.10 (intrepid) Firefox/3.0.8)"
-    192.168.2.2 - - [15/Apr/2009:17:20:18 +0200] "GET /search?q=subversion+tagging&ie=utf-8&oe=utf-8&aq=t&rls=com.ubuntu:en-US:unofficial&client=firefox-a HTTP/1.1" 200 0 "" "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8) Gecko/2009032711 Ubuntu/8.10 (intrepid) Firefox/3.0.8)"
-    192.168.2.2 - - [15/Apr/2009:17:20:07 +0200] "GET /sflogo.php?group_id=205860&type=2 HTTP/1.1" 200 0 "http://justniffer.sourceforge.net/" "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8) Gecko/2009032711 Ubuntu/8.10 (intrepid)Firefox/3.0.8)"
-    192.168.2.2 - - [15/Apr/2009:17:20:18 +0200] "GET /csi?v=3&s=web&action=&tran=undefined&ei=MvvlSdjOEciRsAbY0rGpCw&e=19592,20292&rt=prt.175,xjs.557,ol.558 HTTP/1.1" 204 0 "http://www.google.it/search?q=subversion+tagging&ie=utf-8&oe=utf-8&aq=t&rls=com.ubuntu:en-US:unofficial&client=firefox-a" "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8 Gecko/2009032711 Ubuntu/8.10 (intrepid) Firefox/3.0.8)"
-    192.168.2.2 - - [15/Apr/2009:17:20:07 +0200] "GET /HTTP/1.1" 200 0 "" "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8) Gecko/2009032711 Ubuntu/8.10 (intrepid) Firefox/3.0.8)"
+Packet capture is performed using **libpcap**, ensuring compatibility with standard capture formats and tools such as `tcpdump`.
 
-### Example 2. Like Example 1 but appending other fields,
-For example http response time (see man page for a complete keyword list)
+---
 
-    $ justniffer -i eth0 -a " %response.time"
-output:
+## Features
 
-    192.168.2.5 - - [22/Apr/2009:22:27:36 +0200] "GET /sflogo.php?group_id=205860&type=2 HTTP/1.1" 200 0 "http://justniffer.sourceforge.net/" "Mozilla/5.0 (X11;U; Linux i686; en-US; rv:1.9.0.8) Gecko/2009032711 Ubuntu/8.10 (intrepid) Firefox/3.0.8)" 0.427993 
-    192.168.2.5 - - [22/Apr/2009:22:27:50 +0200] "GET /complete/search?output=firefox&client=firefox&hl=en-US&q=add+e HTTP/1.1" 200 140 "" "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8) Gecko/2009032711 Ubuntu/8.10 (intrepid) Firefox/3.0.8)"0.294897 
-    192.168.2.5 - - [22/Apr/2009:22:27:51 +0200] "GET /complete/search?output=firefox&client=firefox&hl=en-US&q=add+a HTTP/1.1" 200 128 "" "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8) Gecko/2009032711 Ubuntu/8.10 (intrepid) Firefox/3.0.8)"0.266929 
-    192.168.2.5 - - [22/Apr/2009:22:27:21 +0200] "GET /extern_js/f/CgJlbiswCjgVLCswDjgFLCswFjgJLCswFzgBLCswGDgDLCswITgWLCswJTjJiAEsKzAmOAQsKzAnOAAs/-wB3HvFrpXA.js HTTP/1.1" 304 0 "http://www.google.com/search?q=gnusticker&hl=en&safe=off&start=20&sa=N" "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8) Gecko/2009032711 Ubuntu/8.10 (intrepid) Firefox/3.0.8)" 2.025879
+- **HTTP request/response decoding**  
+- **Customizable log formats** for any TCP‑based protocol  
+- **Performance metrics**: request time, response time, idle time, connection time  
 
-### Example 3. Capture all tcp traffic
-(add -u or -x options to encode unprintable characters):
+```mermaid
+sequenceDiagram
+    autonumber
+    participant C as Client
+    participant S as Server
 
-    $ justniffer -i eth0 -r
-output:
+    Note over C,S: %connection.time
+    C->>S: SYN
+    S->>C: SYN/ACK
+    C->>S: ACK
+    Note over C,S: Connection established
 
-    GET /doc/maint-guide/ch-upload.en.html HTTP/1.1
-    Host: www.debian.org
-    User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8)
-    Gecko/2009032711 Ubuntu/8.10 (intrepid) Firefox/3.0.8
-    Accept:
-    text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
-    Accept-Language: en,it;q=0.5
-    Accept-Encoding: gzip,deflate
-    Accept-Charset: UTF-8,*
-    Keep-Alive: 300
-    Connection: keep-alive
-    Referer: http://www.debian.org/doc/maint-guide/
-    If-Modified-Since: Wed, 22 Apr 2009 19:36:31 GMT
-    If-None-Match: "400d604-3014-46829e160adc0"
-    Cache-Control: max-age=0
+    Note over C,S: %idle.time.0 (before request)
 
-    HTTP/1.1 304 Not Modified
-    Date: Wed, 22 Apr 2009 20:38:51 GMT
-    Server: Apache
-    Connection: Keep-Alive
-    Keep-Alive: timeout=15, max=100
-    ETag: "400d604-3014-46829e160adc0"
-    Expires: Thu, 23 Apr 2009 20:38:51 GMT
-    Cache-Control: max-age=86400
+    Note over C,S: %request.time
+    C->>S: Request (first packet)
+    C->>S: Request (more packets)
+    C->>S: Request (last packet)
 
-### Example 4. Define a completely custom log format
+    Note over C,S: %response.time.begin
+    S->>C: Response (first packet)
 
-    $ justniffer -i eth0 -l "%request.timestamp %source.ip %dest.ip %request.header.host %request.url" 
+    Note over C,S: %response.time
+    S->>C: Response (more packets)
+    S->>C: Response (last packet)
+    Note over C,S: %response.time.end
 
-output:
+    Note over C,S: %idle.time.1 (after response)
 
-    06/28/11 13:30:48 192.168.2.2 72.14.221.118 i1.ytimg.com /vi/TjSk6CVN5LY/default.jpg 
-    06/28/11 13:30:47 192.168.2.2 72.14.221.118 i2.ytimg.com /vi/iw_nzfm1Vts/default.jpg 
-    06/28/11 13:30:47 192.168.2.2 216.34.181.71 static.sourceforge.net /css/phoneix/jquery.cluetip.php?secure=0 
-    06/28/11 13:30:48 192.168.2.2 216.34.181.71 static.sourceforge.net /sfx.js 
-    06/28/11 13:30:49 192.168.2.2 216.34.181.71 static.sourceforge.net /include/coremetrics/v40/eluminate.js 
-    06/28/11 13:30:51 192.168.2.2 199.93.61.126 c.fsdn.com /sf/images/phoneix/grad_white_dual_100.png 
+    C-->>S: FIN or
+    S-->>C: FIN
+    Note over C,S: %close.originator
 
-### Example 5. Read from a capture file
-
-    $ justniffer -f /file.cap
+```
 
 
-see  [project site](https://onotelli.github.io/justniffer/)
+- **libpcap‑based capture** (live or from `.pcap` files)  
+- **Promiscuous mode support** for passive monitoring  
+- **Extensible** via external scripts (bash, Python, Perl, ELF binaries)  
+- **Reconstructs TCP streams** including reordering, retransmissions, fragmentation  
+
+---
+
+# Quick Start
 
 ## Install on Ubuntu
-    sudo apt install software-properties-common
-    sudo add-apt-repository ppa:oreste-notelli/ppa
-    sudo apt update
-    sudo apt install justniffer
+
+```bash
+sudo apt install software-properties-common
+sudo add-apt-repository ppa:oreste-notelli/ppa
+sudo apt update
+sudo apt install justniffer
+```
+
+## Capture HTTP traffic in access‑log style
+
+```bash
+justniffer -i eth0
+```
+
+## Add response time to each log entry
+
+```bash
+justniffer -i eth0 -a " %response.time"
+```
+
+## Capture full HTTP requests and responses
+
+```bash
+justniffer -i eth0 -r
+```
+
+## Use a custom log format
+
+```bash
+justniffer -i eth0 -l "%request.timestamp %source.ip %dest.ip %request.header.host %request.url"
+```
+
+## Read from a PCAP file
+
+```bash
+justniffer -f file.cap
+```
+
+---
+
+# Examples
+
+### Example 1 — Retrieve HTTP traffic in access‑log format
+
+```bash
+justniffer -i eth0
+```
+
+output:
+
+```
+192.168.2.2 - - [15/Apr/2009:17:19:57 +0200] "GET /sflogo.php?group_id=205860&type=2 HTTP/1.1" 200 0 "" "Mozilla/5.0 ..."
+...
+```
+
+---
+
+### Example 2 — Append additional fields (e.g., HTTP response time)
+
+```bash
+justniffer -i eth0 -a " %response.time"
+```
+
+output:
+
+```
+192.168.2.5 - - [22/Apr/2009:22:27:36 +0200] "GET /sflogo.php?group_id=205860&type=2 HTTP/1.1" ... 0.427993
+...
+```
+
+---
+
+### Example 3 — Capture all TCP traffic  
+(add `-u` or `-x` to encode unprintable characters)
+
+```bash
+justniffer -i eth0 -r
+```
+
+output:
+
+```
+GET /doc/maint-guide/ch-upload.en.html HTTP/1.1
+Host: www.debian.org
+...
+```
+
+---
+
+### Example 4 — Define a completely custom log format
+
+```bash
+justniffer -i eth0 -l "%request.timestamp %source.ip %dest.ip %request.header.host %request.url"
+```
+
+output:
+
+```
+06/28/11 13:30:48 192.168.2.2 72.14.221.118 i1.ytimg.com /vi/TjSk6CVN5LY/default.jpg
+...
+```
+
+---
+
+### Example 5 — Read from a capture file
+
+```bash
+justniffer -f /file.cap
+```
+
+---
+
+# Documentation
+
+Full documentation, advanced examples, and usage guides:  
+👉 **https://onotelli.github.io/justniffer/**
+
+---
+
+# Contributing
+
+Pull requests, bug reports, and feature suggestions are welcome.
+
+---
+
+# License
+
+Justniffer is released under the **GPLv3** license.
+
