@@ -3,9 +3,8 @@
 [Project Page](https://onotelli.github.io/justniffer/)
 
 ![License](https://img.shields.io/badge/License-GPLv3-blue.svg)
-![Platform](https://img.shields.io/badge/Platform-Linux-green.svg)
-![Downloads](https://img.shields.io/github/downloads/onotelli/justniffer/total.svg)
-
+![Platform](https://img.shields.io/badge/Platform-Linux-darkgreen.svg)
+![Latest Release](https://img.shields.io/github/v/release/onotelli/justniffer?color=darkred)
 
 ---
 
