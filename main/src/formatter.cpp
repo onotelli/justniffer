@@ -239,6 +239,10 @@ void parser::init_parse_elements()
 	// elements["response.header.grep"] = pelem(new keyword_params_and_arg<regex_handler_factory_t<regex_handler_response> >());
 	elements["response.header.grep"] = pelem(new keyword_params_and_arg<regex_handler_factory_t<regex_handler_response_header>>(_default_not_found));
 
+	
+	elements["tls.sni"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, sni_extractor>>(_default_not_found));
+
+
 	elements["idle.time.0"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, idle_time_1>>(_default_not_found));
 	elements["idle.time.1"] = pelem(new keyword_optional_params<handler_factory_t_arg<string, idle_time_2>>(_default_not_found));
 

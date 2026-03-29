@@ -32,7 +32,7 @@
 #define HAVE_LIB_PCAP 1
 
 /* If available, contains the Python version number currently in use. */
-#define HAVE_PYTHON "3.10"
+#define HAVE_PYTHON "3.12"
 
 /* Define to 1 if stdbool.h conforms to C99. */
 #define HAVE_STDBOOL_H 1
@@ -92,7 +92,7 @@
 #define PACKAGE_NAME "justniffer"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "justniffer 0.6.12"
+#define PACKAGE_STRING "justniffer 0.6.13-dev"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "justniffer"
@@ -101,7 +101,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.6.12"
+#define PACKAGE_VERSION "0.6.13-dev"
 
 /* Define to 1 if all of the C90 standard headers exist (not just the ones
    required in a freestanding environment). This macro is provided for
@@ -112,7 +112,7 @@
 /* #undef TM_IN_SYS_TIME */
 
 /* Version number of package */
-#define VERSION "0.6.12"
+#define VERSION "0.6.13-dev"
 
 /* Define to empty if `const' does not conform to ANSI C. */
 /* #undef const */

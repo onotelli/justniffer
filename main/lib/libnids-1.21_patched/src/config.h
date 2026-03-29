@@ -14,7 +14,7 @@
 /* #undef HAVE_LIBGTHREAD_2_0 */
 
 /* Define to 1 if you have the `nsl' library (-lnsl). */
-#define HAVE_LIBNSL 1
+/* #undef HAVE_LIBNSL */
 
 /* Define to 1 if you have the `socket' library (-lsocket). */
 /* #undef HAVE_LIBSOCKET */
