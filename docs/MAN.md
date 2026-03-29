@@ -2,7 +2,7 @@
 [HOME](/justniffer) [EXTENDING](EXTENDING)
 
     Section: (8)
-    Updated: March 22, 2025
+    Updated: March 29, 2026
 ## NAME
     justniffer - tcp flow sniffer  
 ## SYNOPSIS

@@ -1,5 +1,5 @@
 dnl
-dnl	Copyright (c) 2007-2025 Plecno s.r.l. All Rights Reserved
+dnl	Copyright (c) 2007-2026 Plecno s.r.l. All Rights Reserved
 dnl	info@plecno.com
 dnl	via Giovio 8, 20144 Milano, Italy
 dnl
@@ -9,10 +9,10 @@ dnl	Author: Oreste Notelli <oreste.notelli@plecno.com>
 dnl
 
 AC_PREREQ([2.71])
-AC_COPYRIGHT([2007-2025 (c) Plecno s.r.l]) # Use [] for strings with special chars like ()
+AC_COPYRIGHT([2007-2026 (c) Plecno s.r.l]) # Use [] for strings with special chars like ()
 AC_INIT([justniffer],[0.6.13],[info@plecno.com])
 AC_DEFINE([JUSTNIFFER_VERSION], [PACKAGE_VERSION], [justniffer version])
-AC_DEFINE([JUSTNIFFER_YEAR], ["2025"], [justniffer year])
+AC_DEFINE([JUSTNIFFER_YEAR], ["2026"], [justniffer year])
 #AC_CONFIG_MACRO_DIR([included])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign]) # Added foreign, -Wall -Werror are good practice
 AM_MAINTAINER_MODE([disable])
