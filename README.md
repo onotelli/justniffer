@@ -2,12 +2,10 @@
 # Justniffer  
 [Project Page](https://onotelli.github.io/justniffer/)
 
-<p align="left">
-  <img alt="License" src="https://img.shields.io/badge/License-GPLv3-blue.svg">
-  <img alt="Platform" src="https://img.shields.io/badge/Platform-Linux-green.svg">
-  <img alt="Build" src="https://img.shields.io/badge/Status-Stable-brightgreen.svg">
-  <img alt="libpcap" src="https://img.shields.io/badge/Uses-libpcap-orange.svg">
-</p>
+![License](https://img.shields.io/badge/License-GPLv3-blue.svg)
+![Platform](https://img.shields.io/badge/Platform-Linux-green.svg)
+![Downloads](https://img.shields.io/github/downloads/onotelli/justniffer/total.svg)
+
 
 ---
 
