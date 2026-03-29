@@ -1,8 +1,3 @@
-Perfect — I’ll update the README so it correctly states **GPLv3** and reorganize it into a clean, modern, GitHub‑optimized structure with badges.
-
-Below is the **fully updated README**, polished and ready to drop into your repository.
-
----
 
 # Justniffer  
 [Project Page](https://onotelli.github.io/justniffer/)
