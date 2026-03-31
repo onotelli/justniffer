@@ -1,4 +1,4 @@
-<img width="1449" height="430" style="background-color: rgb(161, 95, 95);" alt="image" src="https://github.com/user-attachments/assets/1b0894a0-5612-4b8a-b804-7f034cab58be" />
+<img width="1449" height="430" alt="logo" src="https://github.com/user-attachments/assets/b1760d2a-f0ef-4b2b-bfad-2baae3313ffc" />
 
 # Justniffer  
 [Project Page](https://onotelli.github.io/justniffer/)
