@@ -1,3 +1,5 @@
+<img width="1449" height="430" style="background-color: rgb(161, 95, 95);" alt="image" src="https://github.com/user-attachments/assets/1b0894a0-5612-4b8a-b804-7f034cab58be" />
+
 # Justniffer  
 [Project Page](https://onotelli.github.io/justniffer/)
 
