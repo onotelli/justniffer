@@ -81,7 +81,7 @@ sequenceDiagram
 
 - **libpcap‑based capture** (live or from `.pcap` files)  
 - **Promiscuous mode support** for passive monitoring  
-- **Extensible** via external scripts (bash, Python, Perl, ELF binaries)  
+- **Extensible** via external scripts (bash, Python, Perl, ELF binaries) — [Learn more](https://onotelli.github.io/justniffer/EXTENDING) 
 - **Reconstructs TCP streams** including reordering, retransmissions, fragmentation  
 
 ---
