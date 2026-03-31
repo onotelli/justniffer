@@ -3,9 +3,9 @@
 [Project Page](https://onotelli.github.io/justniffer/)
 
 [![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
-[![Platform](https://img.shields.io/badge/Platform-Linux-darkgreen.svg)](https://kernel.org)
-[![Latest Release](https://img.shields.io/github/v/release/onotelli/justniffer?color=darkred)](https://github.com/onotelli/justniffer/releases/latest)
-
+[![Platform](https://img.shields.io/badge/Platform-Linux-2ea44f.svg)](https://kernel.org)
+[![Latest Release](https://img.shields.io/github/v/release/onotelli/justniffer?color=b85c00&label=Latest%20Release)](https://github.com/onotelli/justniffer/releases/latest)
+[![Docker Hub](https://img.shields.io/badge/Docker-onotelli%2Fjustniffer-2496ed?logo=docker)](https://hub.docker.com/r/onotelli/justniffer)
 ---
 
 ## Overview
