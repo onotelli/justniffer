@@ -202,17 +202,18 @@ class Exchange:
 app = Exchange
 ```
 
-
 This example will log the first line of the request and the first line of the response, but only if the protocol is HTTP
-
 
 - Handles different connection events:  **opening**, **request**, **response**, and **closing**  
 
 - Can be used to **track and analyze network traffic flows** : collect and inspect tcp content (not just packets), measure time between events (opening, request, response, close), and perform advanced analysis
 
-
 <br/>
+
 This approach is suited for **advanced traffic monitoring and structured event handling**.  
+### **Real-World Example: justniffer-cli**
+
+[justniffer-cli](https://github.com/knspar/justniffer-cli) is a command-line tool that demonstrates Python Handlers in practice. It provides production-ready implementations for network protocol detection, multi-protocol analysis, and advanced traffic monitoring. This is an excellent reference for building your own custom handlers.
 
 
 
