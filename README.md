@@ -19,7 +19,8 @@ Justniffer can decode HTTP requests and responses, extracting:
 - Client and server IP addresses  
 - Requested URLs  
 - HTTP headers  
-- Message bodies  
+- Message bodies
+- TLS info
 - Timing information (request time, response time, idle time, etc.)
 
 For non‑HTTP traffic, Justniffer provides a powerful and customizable logging system that allows you to extract any relevant information from the TCP data stream.
