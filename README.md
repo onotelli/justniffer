@@ -1,4 +1,4 @@
-<img width="1900" height="562" alt="justniffer" src="https://github.com/user-attachments/assets/85469532-e605-4d07-ae59-c2c02c28f138" />
+<img width="1500" height="444" alt="justniffer" src="https://github.com/user-attachments/assets/03f65621-71c7-418f-88ca-de5615f26ff1" />
 
 
 # Justniffer  
