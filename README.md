@@ -1,4 +1,4 @@
-![572190464-b1760d2a-f0ef-4b2b-bfad-2baae3313ffc](https://github.com/user-attachments/assets/298df5ae-a8d4-4b42-b191-3a1262a04137)
+<img width="1900" height="562" alt="justniffer" src="https://github.com/user-attachments/assets/85469532-e605-4d07-ae59-c2c02c28f138" />
 
 
 # Justniffer  
