@@ -364,6 +364,9 @@ private:
 
 class stream : public shared_obj<stream>, public tcp_stream
 {
+
+public:
+
 	enum status_enum
 	{
 		unknown,
@@ -376,7 +379,6 @@ class stream : public shared_obj<stream>, public tcp_stream
 		interrupted
 	};
 
-public:
 	timeval opening_time;
 	unsigned tot_requests;
 	void copy_tcp_stream(tcp_stream *pstream);
@@ -392,6 +394,7 @@ public:
 	virtual void init(tcp_stream *pstream);
 	virtual void reinit();
 	virtual void print(const timeval *t);
+	status_enum status() const { return _status; }
 
 protected:
 	stream() {}
@@ -402,7 +405,7 @@ private:
 	connections_container *_pconnection_container;
 	handler_factories::iterator begin, end;
 	handlers _handlers;
-	status_enum status;
+	status_enum _status;
 	printer *_printer;
 };
 

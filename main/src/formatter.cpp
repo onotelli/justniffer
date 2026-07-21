@@ -21,13 +21,14 @@
 #include <functional>
 
 using std::sort;
+using std::count_if;;
 
 parser *parser::theOnlyParser = NULL;
 const char parser::_key_word_id = '%';
 
 int parser::connection_number()
 {
-	return connections.size();
+	return count_if(connections.begin(), connections.end(), [](const streams::value_type& v){ return v.second.stream_ptr->status() != stream::opening; });
 }
 
 void parser::nids_handler(struct tcp_stream *ts, void **yoda, struct timeval *t, unsigned char *packet)
@@ -539,7 +540,7 @@ void outstream_printer::doit(handlers::iterator start, handlers::iterator end, c
 
 int stream::id = 0;
 
-stream::stream(handler_factories::iterator _begin, handler_factories::iterator _end, printer *printer, connections_container *pconnection_container) : begin(_begin), end(_end), status(unknown), _printer(printer), tot_requests(0), _pconnection_container(pconnection_container)
+stream::stream(handler_factories::iterator _begin, handler_factories::iterator _end, printer *printer, connections_container *pconnection_container) : begin(_begin), end(_end), _status(unknown), _printer(printer), tot_requests(0), _pconnection_container(pconnection_container)
 {
 	id++;
 	_id = id;
@@ -552,7 +553,7 @@ void stream::onOpening(tcp_stream *pstream, const timeval *t)
 	opening_time = *t;
 	for (handlers::iterator i = _handlers.begin(); i != _handlers.end(); i++)
 		(*i)->onOpening(this, t);
-	status = opening;
+	_status = opening;
 }
 
 void stream::onOpen(tcp_stream *pstream, const timeval *t)
@@ -560,7 +561,7 @@ void stream::onOpen(tcp_stream *pstream, const timeval *t)
 	copy_tcp_stream(pstream);
 	for (handlers::iterator i = _handlers.begin(); i != _handlers.end(); i++)
 		(*i)->onOpen(this, t);
-	status = open;
+	_status = open;
 }
 
 void stream::onClose(tcp_stream *pstream, const timeval *t, unsigned char *packet)
@@ -569,7 +570,7 @@ void stream::onClose(tcp_stream *pstream, const timeval *t, unsigned char *packe
 	for (handlers::iterator i = _handlers.begin(); i != _handlers.end(); i++)
 		(*i)->onClose(this, t, packet);
 	// if (status!=open)
-	status = close;
+	_status = close;
 	print(t);
 	tot_requests = 0;
 }
@@ -579,7 +580,7 @@ void stream::onTimedOut(tcp_stream *pstream, const timeval *t, unsigned char *pa
 	copy_tcp_stream(pstream);
 	for (handlers::iterator i = _handlers.begin(); i != _handlers.end(); i++)
 		(*i)->onTimedOut(this, t, packet);
-	status = timedout;
+	_status = timedout;
 	print(t);
 	tot_requests = 0;
 }
@@ -591,7 +592,7 @@ void stream::onInterrupted()
 	{
 		(*i)->onInterrupted();
 	}
-	status = interrupted;
+	_status = interrupted;
 	print(NULL);
 	tot_requests = 0;
 }
@@ -600,17 +601,17 @@ void stream::onRequest(tcp_stream *pstream, const timeval *t)
 {
 	copy_tcp_stream(pstream);
 
-	if (status == response)
+	if (_status == response)
 	{
 		print(t);
 	}
-	if (status != request)
+	if (_status != request)
 		tot_requests++;
 	for (handlers::iterator i = _handlers.begin(); i != _handlers.end(); i++)
 	{
 		(*i)->onRequest(this, t);
 	}
-	status = request;
+	_status = request;
 }
 
 void stream::onResponse(tcp_stream *pstream, const timeval *t)
@@ -618,7 +619,7 @@ void stream::onResponse(tcp_stream *pstream, const timeval *t)
 	copy_tcp_stream(pstream);
 	for (handlers::iterator i = _handlers.begin(); i != _handlers.end(); i++)
 		(*i)->onResponse(this, t);
-	status = response;
+	_status = response;
 }
 
 void stream::copy_tcp_stream(tcp_stream *pstream)

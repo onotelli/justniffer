@@ -77,7 +77,7 @@
 #define JUSTNIFFER_VERSION PACKAGE_VERSION
 
 /* justniffer year */
-#define JUSTNIFFER_YEAR "2025"
+#define JUSTNIFFER_YEAR "2026"
 
 /* Define to the sub-directory where libtool stores uninstalled libraries. */
 #define LT_OBJDIR ".libs/"
@@ -92,7 +92,7 @@
 #define PACKAGE_NAME "justniffer"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "justniffer 0.6.13"
+#define PACKAGE_STRING "justniffer 0.6.14-dev"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "justniffer"
@@ -101,7 +101,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.6.13"
+#define PACKAGE_VERSION "0.6.14-dev"
 
 /* Define to 1 if all of the C90 standard headers exist (not just the ones
    required in a freestanding environment). This macro is provided for
@@ -112,7 +112,7 @@
 /* #undef TM_IN_SYS_TIME */
 
 /* Version number of package */
-#define VERSION "0.6.13"
+#define VERSION "0.6.14-dev"
 
 /* Define to empty if `const' does not conform to ANSI C. */
 /* #undef const */
