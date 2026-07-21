@@ -1,8 +1,14 @@
-justniffer (0.6.13.noble) noble; urgency=low
+justniffer (0.6.14.noble) noble; urgency=low
+
+  * Fix handling of undersized IP fragments to prevent invalid memory reads
+    during packet reassembly.
+
+ -- Oreste Notelli <oreste.notelli@gmail.com>  Wed, 22 Jul 2026 00:14:01 +0200
+
+justniffer (0.6.14.noble) noble; urgency=low
   * Add %tls.sni and %tls.version keywords
   
  -- Oreste Notelli <oreste.notelli@gmail.com>  Sun, 29 Mar 2026 14:45:35 +0200
-
 
 justniffer (0.6.12.noble) noble; urgency=low
   * Add support for DLT_LINUX_SLL2 packet capture format.
