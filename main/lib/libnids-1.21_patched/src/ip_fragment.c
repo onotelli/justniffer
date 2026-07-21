@@ -414,6 +414,12 @@ ip_create(struct ip * iph)
     frag_kfree_s(qp, sizeof(struct ipq));
     return (NULL);
   }
+   /* Refuse undersized fragments: need header + 8 bytes for ICMP/next-proto peek. */
+  if (ntohs(iph->ip_len) < (unsigned)(ihlen + 8)) {
+    frag_kfree_s(qp->iph, 64 + 8);
+    frag_kfree_s(qp, sizeof(struct ipq));
+    return (NULL);
+  }
   memcpy(qp->iph, iph, ihlen + 8);
   qp->len = 0;
   qp->ihlen = ihlen;
@@ -574,6 +580,10 @@ ip_defrag(struct ip *iph, struct sk_buff *skb)
     /* ANK. If the first fragment is received, we should remember the correct
        IP header (with options) */
     if (offset == 0) {
+      if (ntohs(iph->ip_len) < (unsigned)(ihl + 8)) {
+        kfree_skb(skb, FREE_READ);
+        return NULL;
+      }
       qp->ihlen = ihl;
       memcpy(qp->iph, iph, ihl + 8);
     }
